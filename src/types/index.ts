@@ -1,8 +1,8 @@
 /**
  * TypeScript Type Definitions for Resume Management System
  *
- * Design Decision: Centralized types for consistency across components
- * Why: Ensures type safety, better IDE support, easier refactoring
+ * Design Decision: Simplified types focused on file management only
+ * Why: Frontend will only handle file uploads, extraction happens on backend
  */
 
 export interface Skills {
@@ -25,20 +25,10 @@ export interface Resume {
   id: number;
   filename: string;
   filepath?: string;
-  rawText: string;
-  profile?: string;
-  emails: string[];
-  phones: string[];
-  skills: Skills;
-  experienceLevel: "junior" | "mid" | "senior";
-  experienceYears?: number;
-  education: string[];
-  workExperience: WorkExperience;
-  relevanceScore: number;
+  fileSize: number;
+  fileType: string;
   uploadedAt: string;
-  extractedAt: string;
-  matchReason?: string;
-  hasTextMatch?: boolean;
+  status: "uploaded" | "processing" | "completed" | "failed";
 }
 
 export interface UploadResult {
@@ -60,10 +50,10 @@ export interface SearchResult {
 }
 
 export interface UploadProgress {
-  filename: string;
-  progress: number;
-  status: "uploading" | "processing" | "complete" | "error";
-  error?: string;
+  filesProcessed: number;
+  totalFiles: number;
+  currentFile: string;
+  percentage: number;
 }
 
 export interface ApiResponse<T = any> {
@@ -74,18 +64,17 @@ export interface ApiResponse<T = any> {
 }
 
 export interface SearchFilters {
-  experienceLevel?: "junior" | "mid" | "senior";
-  skills?: string[];
-  minRelevanceScore?: number;
+  filename?: string;
+  dateRange?: {
+    start: string;
+    end: string;
+  };
+  status?: "uploaded" | "processing" | "completed" | "failed";
 }
 
 export interface DatabaseStats {
   totalResumes: number;
-  experienceLevels: {
-    junior: number;
-    mid: number;
-    senior: number;
-  };
-  avgRelevanceScore: number;
+  uploadedToday: number;
+  processingCount: number;
   latestUpload: string;
 }

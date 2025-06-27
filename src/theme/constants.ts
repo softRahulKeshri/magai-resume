@@ -1,6 +1,6 @@
 /**
- * Theme Constants for MAGURE.AI Resume Platform
- * Centralized configuration for colors, spacing, animations, and other design tokens
+ * Theme Constants for ResumeAI Resume Platform
+ * Centralized configuration for colors, spacing, and other design tokens
  */
 
 // Brand Colors
@@ -45,29 +45,11 @@ export const BRAND_COLORS = {
   },
 } as const;
 
-// Animation Durations
-export const ANIMATION_DURATION = {
-  fast: "0.15s",
-  normal: "0.3s",
-  slow: "0.5s",
-  slower: "1s",
-} as const;
-
 // Breakpoints
 export const BREAKPOINTS = {
   mobile: "600px",
   tablet: "900px",
   desktop: "1200px",
-} as const;
-
-// Z-Index Scale
-export const Z_INDEX = {
-  background: -2,
-  particles: -1,
-  content: 1,
-  overlay: 1000,
-  modal: 1300,
-  cursor: 9999,
 } as const;
 
 // Spacing Scale
@@ -106,53 +88,28 @@ export const TYPOGRAPHY = {
   },
 } as const;
 
-// Shadow Scales
-export const SHADOWS = {
-  sm: "0 2px 8px rgba(0, 0, 0, 0.1)",
-  md: "0 4px 16px rgba(0, 0, 0, 0.2)",
-  lg: "0 8px 32px rgba(0, 0, 0, 0.3)",
-  xl: "0 12px 48px rgba(0, 0, 0, 0.4)",
-  glow: {
-    blue: "0 0 30px rgba(37, 99, 235, 0.8)",
-    red: "0 0 30px rgba(220, 38, 38, 0.8)",
-  },
-} as const;
-
-// Blur Values
-export const BLUR = {
-  sm: "blur(10px)",
-  md: "blur(20px)",
-  lg: "blur(30px)",
-  xl: "blur(40px)",
-} as const;
-
-// Particle Configuration
-export const PARTICLE_CONFIG = {
-  count: 25,
-  minSize: 4,
-  maxSize: 12,
-  minDuration: 15,
-  maxDuration: 40,
-  magneticRange: 150,
-  regenerationInterval: 30000,
-} as const;
-
 // API Configuration
 export const API_CONFIG = {
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:3001",
+  baseURL: process.env.REACT_APP_API_URL || "http://127.0.0.1:5000",
   timeout: 30000,
   retryAttempts: 3,
   retryDelay: 1000,
 } as const;
 
+// Debug logging for API configuration (only in development)
+if (process.env.NODE_ENV === "development") {
+  console.log("API Configuration:", {
+    baseURL: API_CONFIG.baseURL,
+    envVariable: process.env.REACT_APP_API_URL,
+    fullUploadURL: `${API_CONFIG.baseURL}/upload_cv`,
+  });
+}
+
 // File Upload Configuration
 export const UPLOAD_CONFIG = {
   maxFileSize: 10 * 1024 * 1024, // 10MB
   allowedTypes: [
-    "application/pdf",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "text/plain",
+    "application/pdf", // PDF only as per UI requirements
   ],
   maxFiles: 50,
 } as const;

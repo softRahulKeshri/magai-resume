@@ -25,10 +25,10 @@ body {
   color: #ffffff;
   overflow-x: hidden;
   position: relative;
-  cursor: none; /* Custom cursor implementation */
+  cursor: default; /* Enable cursor for all interactions */
 }
 
-/* Enhanced scrollbar with MAGURE.AI brand colors */
+/* Enhanced scrollbar with ResumeAI brand colors */
 ::-webkit-scrollbar {
   width: 12px;
   height: 12px;
