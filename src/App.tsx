@@ -368,10 +368,6 @@ const App = () => {
                   </Alert>
                 )}
 
-                {/* Analytics Section */}
-                <Box sx={{ mb: 4 }}>
-                  <FileAnalytics resumes={resumes} />
-                </Box>
                 {/* Resume Collection */}
                 <ResumeCollection
                   resumes={resumes}
