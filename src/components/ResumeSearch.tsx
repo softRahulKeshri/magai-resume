@@ -1097,9 +1097,13 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                   >
                     <Box
                       sx={{
-                        p: 4,
+                        width: 120,
+                        height: 120,
                         borderRadius: "50%",
                         backgroundColor: AppColors.border.light,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       <SearchOff

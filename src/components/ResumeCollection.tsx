@@ -1,8 +1,8 @@
 /**
- * Resume Collection - Simplified File Manager Component
+ * Resume Analytics - Clean Analytics Dashboard Component
  *
- * A clean file management interface with search functionality only.
- * Focused on displaying and managing individual resumes.
+ * A focused analytics interface displaying resume statistics.
+ * Matches the modern dark theme design with essential metrics only.
  */
 
 import React, { useState, useMemo } from "react";
@@ -25,95 +25,101 @@ import {
   Visibility,
   Download,
   Delete,
-  FileOpen,
   Schedule,
   InsertDriveFile,
+  Assessment,
+  CheckCircle,
   FolderOpen,
-  CloudUpload,
 } from "@mui/icons-material";
 
 import { Resume } from "../types";
 
-// Dark theme colors to match the sidebar
+// Dark theme colors to match the analytics design
 const darkTheme = {
-  background: "#1a1a1a",
-  surface: "#2a2a2a",
-  surfaceLight: "#3a3a3a",
-  primary: "#4a90e2",
-  primaryHover: "#3a7bc8",
+  background: "#0a0a0a", // Darker background
+  surface: "#1a1a1a",
+  surfaceLight: "#2a2a2a",
+  primary: "#4a90e2", // Blue
+  success: "#22c55e", // Green
+  warning: "#f59e0b", // Orange
+  error: "#ef4444", // Red
   text: "#ffffff",
-  textSecondary: "#b0b0b0",
-  textMuted: "#808080",
-  border: "#404040",
-  success: "#4caf50",
-  error: "#f44336",
-  warning: "#ff9800",
-  info: "#2196f3",
+  textSecondary: "#a1a1aa",
+  textMuted: "#71717a",
+  border: "#27272a",
 };
 
-// Statistics Card Component
+// Enhanced Statistics Card Component - Simplified for essential metrics only
 interface StatsCardProps {
   title: string;
-  value: number;
+  value: string | number;
   color: string;
   icon: React.ReactNode;
+  bgColor: string;
 }
 
-const StatsCard = ({ title, value, color, icon }: StatsCardProps) => {
+const StatsCard = ({ title, value, color, icon, bgColor }: StatsCardProps) => {
   return (
     <Card
       sx={{
-        background: darkTheme.surface,
-        border: `1px solid ${darkTheme.border}`,
-        borderRadius: "10px",
-        transition: "all 0.3s ease",
-        cursor: "default !important",
-        minWidth: "200px",
+        background: bgColor,
+        borderRadius: "16px",
+        border: "none",
+        minWidth: "320px",
+        minHeight: "140px",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        cursor: "default",
         "&:hover": {
-          transform: "translateY(-2px)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
-          background: darkTheme.surfaceLight,
-          cursor: "default !important",
+          transform: "translateY(-4px)",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
         },
       }}
     >
-      <CardContent sx={{ textAlign: "center", py: 3 }}>
+      <CardContent sx={{ p: 4, position: "relative" }}>
+        {/* Icon positioned in top right */}
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mb: 1,
+            position: "absolute",
+            top: 20,
+            right: 20,
+            opacity: 0.8,
           }}
         >
           {icon}
+        </Box>
+
+        {/* Main content */}
+        <Box>
           <Typography
-            variant="h3"
+            variant="h6"
             sx={{
-              fontWeight: 800,
-              fontSize: "2rem",
-              color,
-              ml: 1,
+              color: "#fff",
+              fontWeight: 600,
+              fontSize: "1.1rem",
+              mb: 2,
+              opacity: 0.9,
+            }}
+          >
+            {title}
+          </Typography>
+          <Typography
+            variant="h2"
+            sx={{
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: "3rem",
+              lineHeight: 1,
             }}
           >
             {value}
           </Typography>
         </Box>
-        <Typography
-          variant="body2"
-          sx={{
-            color: darkTheme.textSecondary,
-            fontWeight: 500,
-          }}
-        >
-          {title}
-        </Typography>
       </CardContent>
     </Card>
   );
 };
 
-// File Card Component
+// File Card Component (simplified and improved)
 interface FileCardProps {
   resume: Resume;
   onView: (resume: Resume) => void;
@@ -136,21 +142,18 @@ const FileCard = ({ resume, onView, onDownload, onDelete }: FileCardProps) => {
       year: "numeric",
       month: "short",
       day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
     });
   };
 
   const getFileIcon = () => {
     switch (resume.fileType.toLowerCase()) {
       case "pdf":
-        return <PictureAsPdf sx={{ fontSize: "3rem", color: "#ff4444" }} />;
+        return <PictureAsPdf sx={{ fontSize: "2rem", color: "#ef4444" }} />;
       case "doc":
       case "docx":
-        return <Description sx={{ fontSize: "3rem", color: "#4285f4" }} />;
+        return <Description sx={{ fontSize: "2rem", color: "#4a90e2" }} />;
       default:
-        return <InsertDriveFile sx={{ fontSize: "3rem", color: "#34a853" }} />;
+        return <InsertDriveFile sx={{ fontSize: "2rem", color: "#22c55e" }} />;
     }
   };
 
@@ -163,124 +166,79 @@ const FileCard = ({ resume, onView, onDownload, onDelete }: FileCardProps) => {
       case "failed":
         return darkTheme.error;
       default:
-        return darkTheme.info;
+        return darkTheme.primary;
     }
   };
 
   return (
     <Card
       sx={{
-        width: "300px",
-        height: "380px",
-        display: "flex",
-        flexDirection: "column",
         background: darkTheme.surface,
         border: `1px solid ${darkTheme.border}`,
-        borderRadius: "10px",
+        borderRadius: "12px",
         transition: "all 0.3s ease",
-        cursor: "default !important",
-        position: "relative",
-        overflow: "hidden",
+        cursor: "default",
         "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: "0 12px 48px rgba(0,0,0,0.4)",
-          background: darkTheme.surfaceLight,
-          cursor: "default !important",
+          transform: "translateY(-2px)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+          border: `1px solid ${alpha(darkTheme.primary, 0.5)}`,
           "& .action-buttons": {
             opacity: 1,
-            transform: "translateY(0)",
           },
         },
       }}
     >
-      {/* Status Indicator */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 12,
-          right: 12,
-          zIndex: 2,
-        }}
-      >
-        <Chip
-          label={resume.status.toUpperCase()}
-          size="small"
-          sx={{
-            fontSize: "0.6rem",
-            height: 18,
-            background: alpha(getStatusColor(), 0.2),
-            color: getStatusColor(),
-            border: `1px solid ${alpha(getStatusColor(), 0.3)}`,
-            borderRadius: "8px",
-            fontWeight: 600,
-          }}
-        />
-      </Box>
-
-      <CardContent sx={{ flexGrow: 1, p: 3, textAlign: "center" }}>
-        {/* File Icon */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            mb: 2,
-          }}
-        >
-          <Box
-            sx={{
-              mb: 2,
-              p: 2,
-              borderRadius: "50%",
-              background: alpha(darkTheme.primary, 0.1),
-              border: `2px solid ${alpha(darkTheme.primary, 0.2)}`,
-            }}
-          >
-            {getFileIcon()}
+      <CardContent sx={{ p: 3 }}>
+        {/* Header with icon and status */}
+        <Box sx={{ display: "flex", alignItems: "flex-start", mb: 2 }}>
+          <Box sx={{ mr: 2 }}>{getFileIcon()}</Box>
+          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                color: darkTheme.text,
+                fontWeight: 600,
+                fontSize: "1rem",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                mb: 0.5,
+              }}
+              title={resume.filename}
+            >
+              {resume.filename}
+            </Typography>
+            <Chip
+              label={
+                resume.status.charAt(0).toUpperCase() + resume.status.slice(1)
+              }
+              size="small"
+              sx={{
+                fontSize: "0.7rem",
+                height: 20,
+                background: alpha(getStatusColor(), 0.2),
+                color: getStatusColor(),
+                border: `1px solid ${alpha(getStatusColor(), 0.3)}`,
+                borderRadius: "10px",
+                fontWeight: 600,
+              }}
+            />
           </Box>
         </Box>
 
-        {/* File Name */}
-        <Typography
-          variant="h6"
-          sx={{
-            fontWeight: 600,
-            mb: 1,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            lineHeight: 1.3,
-            minHeight: "2.6em",
-            cursor: "text !important",
-            color: darkTheme.text,
-            fontSize: "1rem",
-          }}
-          title={resume.filename}
-        >
-          {resume.filename}
-        </Typography>
-
-        {/* File Details */}
+        {/* File details */}
         <Box sx={{ mb: 2 }}>
-          <Stack
-            direction="row"
-            spacing={1}
-            justifyContent="center"
-            sx={{ mb: 1 }}
-          >
+          <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
             <Chip
               label={formatFileSize(resume.fileSize)}
               size="small"
               sx={{
                 fontSize: "0.7rem",
-                height: 22,
-                background: alpha(darkTheme.primary, 0.15),
-                color: darkTheme.primary,
-                border: `1px solid ${alpha(darkTheme.primary, 0.25)}`,
-                borderRadius: "8px",
-                fontWeight: 500,
+                height: 20,
+                background: alpha(darkTheme.textMuted, 0.1),
+                color: darkTheme.textSecondary,
+                border: `1px solid ${alpha(darkTheme.textMuted, 0.2)}`,
+                borderRadius: "10px",
               }}
             />
             <Chip
@@ -288,115 +246,88 @@ const FileCard = ({ resume, onView, onDownload, onDelete }: FileCardProps) => {
               size="small"
               sx={{
                 fontSize: "0.7rem",
-                height: 22,
+                height: 20,
                 background: alpha(darkTheme.textMuted, 0.1),
                 color: darkTheme.textSecondary,
                 border: `1px solid ${alpha(darkTheme.textMuted, 0.2)}`,
-                borderRadius: "8px",
-                fontWeight: 500,
+                borderRadius: "10px",
               }}
             />
           </Stack>
-
-          {/* Upload Date */}
-          <Box
+          <Typography
+            variant="caption"
             sx={{
+              color: darkTheme.textMuted,
+              fontSize: "0.75rem",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              color: darkTheme.textMuted,
             }}
           >
-            <Schedule sx={{ fontSize: "0.9rem", mr: 0.5 }} />
-            <Typography variant="caption" sx={{ fontSize: "0.75rem" }}>
-              {formatDate(resume.uploadedAt)}
-            </Typography>
-          </Box>
+            <Schedule sx={{ fontSize: "0.8rem", mr: 0.5 }} />
+            {formatDate(resume.uploadedAt)}
+          </Typography>
         </Box>
-      </CardContent>
 
-      {/* Action Buttons */}
-      <Box
-        className="action-buttons"
-        sx={{
-          p: 2,
-          opacity: 0,
-          transform: "translateY(10px)",
-          transition: "all 0.3s ease",
-        }}
-      >
-        <Stack direction="row" spacing={1} justifyContent="center">
+        {/* Action buttons */}
+        <Stack
+          direction="row"
+          spacing={1}
+          className="action-buttons"
+          sx={{
+            opacity: 0,
+            transition: "opacity 0.3s ease",
+          }}
+        >
           <Button
             size="small"
-            variant="contained"
-            startIcon={<Visibility sx={{ fontSize: "0.9rem" }} />}
+            startIcon={<Visibility sx={{ fontSize: "1rem" }} />}
             onClick={() => onView(resume)}
             sx={{
-              bgcolor: darkTheme.success,
-              "&:hover": {
-                bgcolor: "#45a049",
-                cursor: "pointer !important",
-              },
+              bgcolor: darkTheme.primary,
+              color: "white",
+              "&:hover": { bgcolor: "#3a7bc8" },
               borderRadius: "8px",
               textTransform: "none",
-              fontWeight: 600,
-              px: 1.5,
-              py: 0.5,
               fontSize: "0.75rem",
-              cursor: "pointer !important",
-              color: "white",
+              px: 1.5,
             }}
           >
             View
           </Button>
           <Button
             size="small"
-            variant="contained"
-            startIcon={<Download sx={{ fontSize: "0.9rem" }} />}
+            startIcon={<Download sx={{ fontSize: "1rem" }} />}
             onClick={() => onDownload(resume)}
             sx={{
-              bgcolor: darkTheme.info,
-              "&:hover": {
-                bgcolor: "#1976d2",
-                cursor: "pointer !important",
-              },
+              bgcolor: darkTheme.success,
+              color: "white",
+              "&:hover": { bgcolor: "#16a34a" },
               borderRadius: "8px",
               textTransform: "none",
-              fontWeight: 600,
-              px: 1.5,
-              py: 0.5,
               fontSize: "0.75rem",
-              cursor: "pointer !important",
-              color: "white",
+              px: 1.5,
             }}
           >
             Download
           </Button>
           <Button
             size="small"
-            variant="contained"
-            startIcon={<Delete sx={{ fontSize: "0.9rem" }} />}
+            startIcon={<Delete sx={{ fontSize: "1rem" }} />}
             onClick={() => onDelete(resume)}
             sx={{
               bgcolor: darkTheme.error,
-              "&:hover": {
-                bgcolor: "#d32f2f",
-                cursor: "pointer !important",
-              },
+              color: "white",
+              "&:hover": { bgcolor: "#dc2626" },
               borderRadius: "8px",
               textTransform: "none",
-              fontWeight: 600,
-              px: 1.5,
-              py: 0.5,
               fontSize: "0.75rem",
-              cursor: "pointer !important",
-              color: "white",
+              px: 1.5,
             }}
           >
             Delete
           </Button>
         </Stack>
-      </Box>
+      </CardContent>
     </Card>
   );
 };
@@ -430,114 +361,118 @@ const ResumeCollection = ({
     );
   }, [resumes, searchQuery]);
 
-  // Statistics
+  // Enhanced Statistics - Only 2 essential metrics to avoid clutter
   const stats = useMemo(() => {
+    const totalFiles = resumes.length;
+    const completed = resumes.filter((r) => r.status === "completed").length;
+
     return {
-      total: resumes.length,
-      showing: filteredResumes.length,
+      totalFiles,
+      completed,
     };
-  }, [resumes.length, filteredResumes.length]);
+  }, [resumes]);
 
   return (
     <Box
       sx={{
         width: "100%",
         minHeight: "100vh",
-        cursor: "default !important",
         background: darkTheme.background,
+        cursor: "default",
+        px: { xs: 2, md: 4 },
+        py: { xs: 3, md: 4 },
       }}
     >
-      {/* Header Section */}
+      {/* Analytics Header - Clean and focused */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${darkTheme.background} 0%, ${darkTheme.surface} 100%)`,
-          py: { xs: 4, md: 6 },
-          px: { xs: 2, md: 4 },
-          borderRadius: "0 0 20px 20px",
-          position: "relative",
-          overflow: "hidden",
+          textAlign: "center",
+          mb: 6,
         }}
       >
-        <Box sx={{ position: "relative", zIndex: 1 }}>
-          {/* Title and Description */}
-          <Box sx={{ textAlign: "center", mb: 4 }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                mb: 2,
-              }}
-            >
-              <FolderOpen
-                sx={{
-                  fontSize: "3rem",
-                  color: darkTheme.primary,
-                  mr: 2,
-                }}
-              />
-              <Typography
-                variant="h2"
-                sx={{
-                  fontWeight: 800,
-                  fontSize: { xs: "2.5rem", md: "3.5rem" },
-                  color: darkTheme.text,
-                }}
-              >
-                Resume Collection
-              </Typography>
-            </Box>
-            <Typography
-              variant="h6"
-              sx={{
-                color: darkTheme.textSecondary,
-                maxWidth: 600,
-                mx: "auto",
-                fontWeight: 400,
-                lineHeight: 1.6,
-              }}
-            >
-              Manage and view all uploaded resumes. Search and organize your
-              talent pipeline.
-            </Typography>
-          </Box>
-
-          {/* Statistics Cards */}
-          <Box
+        {/* Title with icon */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            mb: 2,
+          }}
+        >
+          <Assessment
             sx={{
-              display: "flex",
-              gap: 3,
-              justifyContent: "center",
-              flexWrap: "wrap",
-              mb: 4,
+              fontSize: "3rem",
+              color: darkTheme.primary,
+              mr: 1,
             }}
-          >
-            <StatsCard
-              title="Total Resumes"
-              value={stats.total}
-              color={darkTheme.primary}
-              icon={
-                <CloudUpload
-                  sx={{ fontSize: "1.5rem", color: darkTheme.primary }}
-                />
-              }
-            />
-            <StatsCard
-              title="Showing"
-              value={stats.showing}
-              color={darkTheme.info}
-              icon={
-                <Visibility
-                  sx={{ fontSize: "1.5rem", color: darkTheme.info }}
-                />
-              }
-            />
-          </Box>
+          />
+        </Box>
+
+        <Typography
+          variant="h2"
+          sx={{
+            fontWeight: 700,
+            fontSize: { xs: "2.5rem", md: "3rem" },
+            color: darkTheme.text,
+            mb: 2,
+          }}
+        >
+          Resume Analytics
+        </Typography>
+
+        <Typography
+          variant="h6"
+          sx={{
+            color: darkTheme.textSecondary,
+            fontWeight: 400,
+            maxWidth: 600,
+            mx: "auto",
+            mb: 6,
+          }}
+        >
+          View all uploaded resumes from here. You can view, delete, and
+          download any resume in your collection.
+        </Typography>
+
+        {/* Statistics Cards - Only 2 essential cards with proper spacing */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 4,
+            flexWrap: "wrap",
+            maxWidth: "800px",
+            mx: "auto",
+          }}
+        >
+          <StatsCard
+            title="Total Files"
+            value={stats.totalFiles}
+            color="#fff"
+            bgColor="linear-gradient(135deg, #4a90e2 0%, #357abd 100%)"
+            icon={
+              <FolderOpen
+                sx={{ fontSize: "2.5rem", color: "rgba(255,255,255,0.8)" }}
+              />
+            }
+          />
+          <StatsCard
+            title="Completed"
+            value={stats.completed}
+            color="#fff"
+            bgColor="linear-gradient(135deg, #22c55e 0%, #16a34a 100%)"
+            icon={
+              <CheckCircle
+                sx={{ fontSize: "2.5rem", color: "rgba(255,255,255,0.8)" }}
+              />
+            }
+          />
         </Box>
       </Box>
 
-      {/* Search Section - Full Width */}
-      <Box sx={{ px: { xs: 2, md: 4 }, py: 3 }}>
+      {/* Search and File Management Section */}
+      <Box>
+        {/* Search Bar */}
         <TextField
           fullWidth
           placeholder="Search resumes by filename..."
@@ -551,15 +486,16 @@ const ResumeCollection = ({
             ),
           }}
           sx={{
-            mb: 4,
+            mb: 6,
+            maxWidth: "600px",
+            mx: "auto",
+            display: "block",
             "& .MuiOutlinedInput-root": {
-              borderRadius: "10px",
+              borderRadius: "12px",
               background: darkTheme.surface,
-              cursor: "text !important",
               color: darkTheme.text,
               border: `1px solid ${darkTheme.border}`,
               "& input": {
-                cursor: "text !important",
                 color: darkTheme.text,
                 py: 2,
                 "&::placeholder": {
@@ -577,7 +513,7 @@ const ResumeCollection = ({
               "&.Mui-focused": {
                 background: darkTheme.surfaceLight,
                 border: `1px solid ${darkTheme.primary}`,
-                boxShadow: `0 0 0 2px ${alpha(darkTheme.primary, 0.2)}`,
+                boxShadow: `0 0 0 3px ${alpha(darkTheme.primary, 0.1)}`,
               },
             },
           }}
@@ -589,19 +525,18 @@ const ResumeCollection = ({
             sx={{
               display: "flex",
               justifyContent: "center",
-              px: { xs: 2, md: 4 },
+              py: 8,
             }}
           >
             <Card
               sx={{
                 textAlign: "center",
-                py: 8,
+                py: 6,
                 px: 4,
-                maxWidth: 500,
-                width: "100%",
+                maxWidth: 400,
                 background: darkTheme.surface,
                 border: `1px solid ${darkTheme.border}`,
-                borderRadius: "10px",
+                borderRadius: "12px",
               }}
             >
               <CardContent>
@@ -616,7 +551,8 @@ const ResumeCollection = ({
                   variant="h6"
                   sx={{
                     mb: 1,
-                    color: darkTheme.textSecondary,
+                    color: darkTheme.text,
+                    fontWeight: 600,
                   }}
                 >
                   {searchQuery.trim()
@@ -626,7 +562,7 @@ const ResumeCollection = ({
                 <Typography
                   variant="body2"
                   sx={{
-                    color: darkTheme.textMuted,
+                    color: darkTheme.textSecondary,
                   }}
                 >
                   {searchQuery.trim()
@@ -642,33 +578,21 @@ const ResumeCollection = ({
               display: "grid",
               gridTemplateColumns: {
                 xs: "1fr",
-                sm: "repeat(auto-fit, minmax(300px, 1fr))",
-                md: "repeat(auto-fit, minmax(300px, 1fr))",
-                lg: "repeat(auto-fit, minmax(300px, 1fr))",
+                sm: "repeat(auto-fit, minmax(320px, 1fr))",
               },
-              gap: { xs: 2, sm: 3, md: 4 },
-              justifyContent: "center",
-              alignItems: "start",
-              maxWidth: "1400px",
+              gap: 3,
+              maxWidth: "1200px",
               mx: "auto",
-              px: { xs: 1, sm: 2 },
             }}
           >
             {filteredResumes.map((resume) => (
-              <Box
+              <FileCard
                 key={resume.id}
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                }}
-              >
-                <FileCard
-                  resume={resume}
-                  onView={onView}
-                  onDownload={onDownload}
-                  onDelete={onDelete}
-                />
-              </Box>
+                resume={resume}
+                onView={onView}
+                onDownload={onDownload}
+                onDelete={onDelete}
+              />
             ))}
           </Box>
         )}
