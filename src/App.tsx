@@ -1,12 +1,8 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
   Box,
-  AppBar,
-  Toolbar,
   Typography,
   Container,
-  useMediaQuery,
-  useTheme,
   Paper,
   Drawer,
   List,
@@ -18,7 +14,7 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
-import { Upload, Search, AutoAwesome, Analytics } from "@mui/icons-material";
+import { Upload, Search, Analytics } from "@mui/icons-material";
 
 // Import the ResumeAI logo
 import magureAiLogo from "./images/mag_ai_small_logo.png";
@@ -28,7 +24,7 @@ import ResumeUploader from "./components/ResumeUploader";
 import ResumeSearch from "./components/ResumeSearch";
 import ResumeCollection from "./components/ResumeCollection";
 import { Resume, UploadResult } from "./types";
-import { useResumes } from "./hooks/useResumes";
+import { apiService } from "./services/api";
 
 // Tab Panel Component
 interface TabPanelProps {
@@ -49,124 +45,6 @@ const CustomTabPanel = ({ children, value, index }: TabPanelProps) => (
   </div>
 );
 
-// Analytics Component - displays real-time data from API
-const FileAnalytics = ({ resumes }: { resumes: Resume[] }) => {
-  const statusCounts = useMemo(() => {
-    return resumes.reduce((acc, resume) => {
-      acc[resume.status] = (acc[resume.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-  }, [resumes]);
-
-  const totalSize = useMemo(() => {
-    return resumes.reduce((acc, resume) => acc + resume.fileSize, 0);
-  }, [resumes]);
-
-  // Remove individual loading state - handle at parent level
-
-  return (
-    <Paper
-      sx={{
-        p: 4,
-        borderRadius: 3,
-        background: "linear-gradient(135deg, #1E1E1E 0%, #2A2A2A 100%)",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
-      }}
-    >
-      <Box sx={{ textAlign: "center", py: 4 }}>
-        <Analytics sx={{ fontSize: "4rem", color: "primary.main", mb: 2 }} />
-        <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
-          Resume Analytics
-        </Typography>
-        <Typography
-          variant="body1"
-          sx={{ opacity: 0.7, maxWidth: 500, mx: "auto", mb: 4 }}
-        >
-          Live statistics from your resume database powered by real-time API
-          data.
-        </Typography>
-
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: 3,
-          }}
-        >
-          <Box
-            sx={{
-              p: 3,
-              borderRadius: 2,
-              bgcolor: "rgba(24, 119, 242, 0.1)",
-            }}
-          >
-            <Typography variant="h6" sx={{ color: "primary.main", mb: 1 }}>
-              Total Files
-            </Typography>
-            <Typography variant="h3" sx={{ fontWeight: 800 }}>
-              {resumes.length}
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              p: 3,
-              borderRadius: 2,
-              bgcolor: "rgba(76, 175, 80, 0.1)",
-            }}
-          >
-            <Typography variant="h6" sx={{ color: "success.main", mb: 1 }}>
-              Completed
-            </Typography>
-            <Typography
-              variant="h3"
-              sx={{ fontWeight: 800, color: "success.main" }}
-            >
-              {statusCounts.completed || 0}
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              p: 3,
-              borderRadius: 2,
-              bgcolor: "rgba(255, 152, 0, 0.1)",
-            }}
-          >
-            <Typography variant="h6" sx={{ color: "warning.main", mb: 1 }}>
-              Processing
-            </Typography>
-            <Typography
-              variant="h3"
-              sx={{ fontWeight: 800, color: "warning.main" }}
-            >
-              {statusCounts.processing || 0}
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              p: 3,
-              borderRadius: 2,
-              bgcolor: "rgba(156, 39, 176, 0.1)",
-            }}
-          >
-            <Typography variant="h6" sx={{ color: "secondary.main", mb: 1 }}>
-              Total Size
-            </Typography>
-            <Typography
-              variant="h3"
-              sx={{ fontWeight: 800, color: "secondary.main" }}
-            >
-              {(totalSize / (1024 * 1024)).toFixed(1)}MB
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
-    </Paper>
-  );
-};
-
 // Sidebar width constant
 const SIDEBAR_WIDTH = 280;
 
@@ -175,22 +53,10 @@ const App = () => {
   // State management
   const [activeTab, setActiveTab] = useState(0);
 
-  // Use real API data instead of dummy data
-  const { resumes, loading, error, refresh, deleteResume } = useResumes();
-
-  // Debug logging
-  console.log(`🔍 App Component - Resumes state:`, {
-    resumesCount: resumes.length,
-    loading,
-    error,
-    hasRefresh: typeof refresh === "function",
-  });
-
-  const [uploadStats, setUploadStats] = useState({
-    total: 0,
-    successful: 0,
-    failed: 0,
-  });
+  // Simple state for resumes data
+  const [resumes, setResumes] = useState<Resume[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Add state for delete feedback
   const [deleteAlert, setDeleteAlert] = useState<{
@@ -199,9 +65,30 @@ const App = () => {
     severity: "success" | "error";
   }>({ show: false, message: "", severity: "success" });
 
-  // Hooks
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  // Hooks (removed unused theme)
+
+  // Simple function to fetch resumes
+  const fetchResumes = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const fetchedResumes = await apiService.getResumes();
+      setResumes(fetchedResumes);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch resumes";
+      setError(errorMessage);
+      console.error("❌ Failed to fetch resumes:", errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch resumes on component mount
+  useEffect(() => {
+    fetchResumes();
+  }, [fetchResumes]);
 
   // Tab change handler
   const handleTabChange = useCallback((index: number) => {
@@ -216,14 +103,12 @@ const App = () => {
   const handleUploadSuccess = useCallback(
     (result: UploadResult) => {
       // Refresh the resumes from API after successful upload
-      refresh();
-      setUploadStats({
-        total: result.successful + result.failed,
-        successful: result.successful,
-        failed: result.failed,
-      });
+      fetchResumes();
+      console.log(
+        `Upload completed: ${result.successful} successful, ${result.failed} failed`
+      );
     },
-    [refresh]
+    [fetchResumes]
   );
 
   const handleUploadError = useCallback((error: string) => {
@@ -250,13 +135,13 @@ const App = () => {
     console.log("Search results:", results.length);
   }, []);
 
-  // Delete handler with user feedback
+  // Simple delete handler
   const handleDeleteResume = useCallback(
     async (resume: Resume) => {
       try {
-        console.log("🗑️ App: Attempting to delete resume:", resume.filename);
+        console.log("🗑️ Attempting to delete resume:", resume.filename);
 
-        const result = await deleteResume(resume.id);
+        const result = await apiService.deleteResume(resume.id);
 
         if (result.success) {
           setDeleteAlert({
@@ -264,14 +149,16 @@ const App = () => {
             message: `Successfully deleted "${resume.filename}"`,
             severity: "success",
           });
-          console.log("✅ App: Resume deleted successfully");
+          console.log("✅ Resume deleted successfully");
+          // Refresh the list after successful deletion
+          await fetchResumes();
         } else {
           setDeleteAlert({
             show: true,
             message: result.message || `Failed to delete "${resume.filename}"`,
             severity: "error",
           });
-          console.error("❌ App: Delete failed:", result.message);
+          console.error("❌ Delete failed:", result.message);
         }
       } catch (error) {
         const errorMessage =
@@ -281,7 +168,7 @@ const App = () => {
           message: `Error deleting "${resume.filename}": ${errorMessage}`,
           severity: "error",
         });
-        console.error("❌ App: Delete error:", error);
+        console.error("❌ Delete error:", error);
       }
 
       // Auto-hide alert after 5 seconds
@@ -289,7 +176,7 @@ const App = () => {
         setDeleteAlert({ show: false, message: "", severity: "success" });
       }, 5000);
     },
-    [deleteResume]
+    [fetchResumes]
   );
 
   // Performance optimization - memoize tab configuration
@@ -322,13 +209,13 @@ const App = () => {
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
                 Failed to load resumes: {error}
-                <Button onClick={refresh} size="small" sx={{ ml: 1 }}>
+                <Button onClick={fetchResumes} size="small" sx={{ ml: 1 }}>
                   Retry
                 </Button>
               </Alert>
             )}
             {loading ? (
-              // Single loading state for the entire Resume Store
+              // Simple loading state for the entire Resume Store
               <Box
                 sx={{
                   display: "flex",
@@ -394,7 +281,10 @@ const App = () => {
       resumes,
       loading,
       error,
-      refresh,
+      fetchResumes,
+      deleteAlert.show,
+      deleteAlert.message,
+      deleteAlert.severity,
     ]
   );
 

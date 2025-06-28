@@ -332,7 +332,7 @@ const FileCard = ({ resume, onView, onDownload, onDelete }: FileCardProps) => {
   );
 };
 
-// Main Component Props
+// Main Component Props - Simplified to accept resumes as props
 interface ResumeCollectionProps {
   resumes: Resume[];
   onView?: (resume: Resume) => void;
