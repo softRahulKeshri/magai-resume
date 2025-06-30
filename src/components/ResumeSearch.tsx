@@ -275,6 +275,22 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Helper function to clean up filename for display
+  const getDisplayFilename = (originalFilename: string): string => {
+    if (!originalFilename) return "Unknown file";
+
+    // Remove common prefixes that might be added by the system
+    // This handles cases like "4FT2I_4duwG_RAHUL_KESHRI_SDE.pdf" -> "RAHUL_KESHRI_SDE.pdf"
+    const cleaned = originalFilename.replace(/^[a-zA-Z0-9]+_[a-zA-Z0-9]+_/, "");
+
+    // If the cleaned version is too short, return the original
+    if (cleaned.length < 5) {
+      return originalFilename;
+    }
+
+    return cleaned;
+  };
+
   // Helper function to extract meaningful highlights from resume text
   const extractHighlights = (text: string): string[] => {
     const highlights: string[] = [];
@@ -850,7 +866,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                   }}
                                 >
                                   Candidate from file:{" "}
-                                  {candidate.filename || "Unknown file"}
+                                  {getDisplayFilename(candidate.filename || "")}
                                 </Typography>
                               </Box>
 
@@ -1021,7 +1037,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                   }}
                                   onClick={() => {
                                     try {
-                                      // Use original filename without modification
+                                      // Use original filename for API calls (not display version)
                                       const originalFilename =
                                         candidate.filename || candidate.id;
 
@@ -1080,7 +1096,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                   }}
                                   onClick={async () => {
                                     try {
-                                      // Use original source_file name without modification
+                                      // Use original source_file name for API calls (not display version)
                                       // This matches the actual filename stored on the server
                                       const originalFilename =
                                         candidate.filename || candidate.id;
