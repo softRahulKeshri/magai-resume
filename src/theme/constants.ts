@@ -90,7 +90,7 @@ export const TYPOGRAPHY = {
 
 // API Configuration
 export const API_CONFIG = {
-  baseURL: process.env.REACT_APP_API_URL || "http://43.204.148.188",
+  baseURL: (process.env.REACT_APP_API_URL || "http://43.204.148.188") + "/api",
   timeout: 30000,
   retryAttempts: 3,
   retryDelay: 1000,
@@ -101,6 +101,7 @@ if (process.env.NODE_ENV === "development") {
   console.log("API Configuration:", {
     baseURL: API_CONFIG.baseURL,
     envVariable: process.env.REACT_APP_API_URL,
+    rootURL: process.env.REACT_APP_API_URL || "http://43.204.148.188",
     fullUploadURL: `${API_CONFIG.baseURL}/upload_cv`,
   });
 }
