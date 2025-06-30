@@ -17,7 +17,7 @@ import {
 import { Upload, Search, Analytics } from "@mui/icons-material";
 
 // Import the ResumeAI logo
-import magureAiLogo from "./images/mag_ai_small_logo.png";
+import magureAiLogo from "./images/magure_ai_logo.svg";
 
 // Internal imports
 import ResumeUploader from "./components/ResumeUploader";
@@ -309,7 +309,7 @@ const App = () => {
     >
       {/* Sidebar Header */}
       <Box sx={{ p: 3, borderBottom: "1px solid rgba(255, 255, 255, 0.1)" }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
           <Box
             component="img"
             src={magureAiLogo}
