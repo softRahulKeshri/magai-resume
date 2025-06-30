@@ -24,6 +24,8 @@ export interface WorkExperience {
 export interface Resume {
   id: number;
   filename: string;
+  original_filename?: string; // Original name when uploaded
+  stored_filename?: string; // Name stored on server (used for API calls)
   filepath?: string;
   fileSize: number;
   fileType: string;

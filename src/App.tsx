@@ -258,13 +258,17 @@ const App = () => {
                 {/* Resume Collection */}
                 <ResumeCollection
                   resumes={resumes}
+                  isLoading={loading}
                   onView={(resume: Resume) =>
-                    console.log("View resume:", resume.filename)
+                    console.log("View resume:", resume)
                   }
                   onDownload={(resume: Resume) =>
-                    console.log("Download resume:", resume.filename)
+                    console.log("Download resume:", resume)
                   }
-                  onDelete={handleDeleteResume}
+                  onResumeDeleted={async (resumeId: number) => {
+                    console.log("🔄 Resume deleted, refreshing data...");
+                    await fetchResumes();
+                  }}
                 />
               </>
             )}

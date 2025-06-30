@@ -435,10 +435,17 @@ const FileCard = ({
           onResumeDeleted(resume.id);
         }
       } else {
-        const errorData = await response
-          .json()
-          .catch(() => ({ error: "Unknown error" }));
-        throw new Error(errorData.error || "Delete failed");
+        let errorMsg = "";
+        try {
+          const errorData = await response.json();
+          errorMsg =
+            errorData.error ||
+            errorData.message ||
+            `HTTP ${response.status}: ${response.statusText}`;
+        } catch (parseError) {
+          errorMsg = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMsg);
       }
     } catch (error) {
       console.error("Error deleting resume:", error);
@@ -484,9 +491,9 @@ const FileCard = ({
                 whiteSpace: "nowrap",
                 mb: 0.5,
               }}
-              title={resume.filename}
+              title={resume.original_filename || resume.filename}
             >
-              {resume.filename}
+              {resume.original_filename || resume.filename}
             </Typography>
             <Chip
               label={
@@ -563,8 +570,20 @@ const FileCard = ({
             startIcon={<Visibility sx={{ fontSize: "1rem" }} />}
             onClick={() => {
               try {
-                // Open resume in new tab using the uploads endpoint
-                const viewUrl = `${API_CONFIG.baseURL}/uploads/${resume.filename}`;
+                // Extract filename from filepath by removing uploaded_ prefix and path
+                let filename;
+                if (resume.filepath) {
+                  // Remove "uploaded_" prefix and get filename after the last slash
+                  const cleanPath = resume.filepath.replace(
+                    /^uploaded_[^/]+\//,
+                    ""
+                  );
+                  filename = cleanPath.split("/").pop() || cleanPath;
+                } else {
+                  // Fallback to stored_filename or filename
+                  filename = resume.stored_filename || resume.filename;
+                }
+                const viewUrl = `${API_CONFIG.baseURL}/uploads/${filename}`;
                 window.open(viewUrl, "_blank");
                 onView(resume); // Call the optional callback
               } catch (error) {
@@ -590,9 +609,25 @@ const FileCard = ({
             startIcon={<Download sx={{ fontSize: "1rem" }} />}
             onClick={async () => {
               try {
+                // Extract filename from filepath by removing uploaded_ prefix and path
+                let filename;
+                if (resume.filepath) {
+                  // Remove "uploaded_" prefix and get filename after the last slash
+                  const cleanPath = resume.filepath.replace(
+                    /^uploaded_[^/]+\//,
+                    ""
+                  );
+                  filename = cleanPath.split("/").pop() || cleanPath;
+                } else {
+                  // Fallback to stored_filename or filename
+                  filename = resume.stored_filename || resume.filename;
+                }
+                const displayFilename =
+                  resume.original_filename || resume.filename;
+
                 // Fetch the file for download
                 const response = await fetch(
-                  `${API_CONFIG.baseURL}/uploads/${resume.filename}`,
+                  `${API_CONFIG.baseURL}/uploads/${filename}`,
                   {
                     method: "GET",
                   }
@@ -606,7 +641,7 @@ const FileCard = ({
                   // Create a temporary link element and trigger download
                   const link = document.createElement("a");
                   link.href = url;
-                  link.download = resume.filename;
+                  link.download = displayFilename; // Use original filename for download
                   document.body.appendChild(link);
                   link.click();
 
@@ -660,7 +695,7 @@ const FileCard = ({
           open={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleDeleteConfirm}
-          filename={resume.filename}
+          filename={resume.original_filename || resume.filename}
           isDeleting={isDeleting}
         />
 
@@ -710,7 +745,8 @@ const FileCard = ({
                     variant="body2"
                     sx={{ opacity: 0.9, fontSize: "0.875rem" }}
                   >
-                    "{resume.filename}" has been permanently removed.
+                    "{resume.original_filename || resume.filename}" has been
+                    permanently removed.
                   </Typography>
                 </Box>
                 <IconButton
@@ -741,6 +777,7 @@ interface ResumeCollectionProps {
   onDownload?: (resume: Resume) => void;
   onDelete?: (resume: Resume) => void;
   onResumeDeleted?: (resumeId: number) => void;
+  isLoading?: boolean;
 }
 
 const ResumeCollection = ({
@@ -749,6 +786,7 @@ const ResumeCollection = ({
   onDownload = () => {},
   onDelete = () => {},
   onResumeDeleted = () => {},
+  isLoading = false,
 }: ResumeCollectionProps) => {
   // State
   const [searchQuery, setSearchQuery] = useState("");
@@ -760,9 +798,11 @@ const ResumeCollection = ({
     }
 
     const query = searchQuery.toLowerCase();
-    return resumes.filter((resume) =>
-      resume.filename.toLowerCase().includes(query)
-    );
+    return resumes.filter((resume) => {
+      // Search by original filename if available, otherwise fallback to filename
+      const searchableFilename = resume.original_filename || resume.filename;
+      return searchableFilename.toLowerCase().includes(query);
+    });
   }, [resumes, searchQuery]);
 
   // Enhanced Statistics - Only 2 essential metrics to avoid clutter
@@ -775,6 +815,22 @@ const ResumeCollection = ({
       completed,
     };
   }, [resumes]);
+
+  // Handle resume deletion with proper callback chaining
+  const handleResumeDeleted = (resumeId: number) => {
+    // Clear search if the deleted resume was in the current filtered results
+    const deletedResume = filteredResumes.find((r) => r.id === resumeId);
+    if (deletedResume && searchQuery.trim()) {
+      // Check if this was the only result matching the search
+      const remainingMatches = filteredResumes.filter((r) => r.id !== resumeId);
+      if (remainingMatches.length === 0) {
+        setSearchQuery("");
+      }
+    }
+
+    // Call the parent callback to refresh data
+    onResumeDeleted(resumeId);
+  };
 
   return (
     <Box
@@ -882,6 +938,7 @@ const ResumeCollection = ({
           placeholder="Search resumes by filename..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          disabled={isLoading}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -919,12 +976,74 @@ const ResumeCollection = ({
                 border: `1px solid ${darkTheme.primary}`,
                 boxShadow: `0 0 0 3px ${alpha(darkTheme.primary, 0.1)}`,
               },
+              "&.Mui-disabled": {
+                background: alpha(darkTheme.surface, 0.5),
+                color: darkTheme.textMuted,
+              },
             },
           }}
         />
 
-        {/* Resume Grid */}
-        {filteredResumes.length === 0 ? (
+        {/* Loading State */}
+        {isLoading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              py: 8,
+            }}
+          >
+            <Card
+              sx={{
+                textAlign: "center",
+                py: 6,
+                px: 4,
+                maxWidth: 400,
+                background: darkTheme.surface,
+                border: `1px solid ${darkTheme.border}`,
+                borderRadius: "12px",
+              }}
+            >
+              <CardContent>
+                <Box
+                  sx={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: "50%",
+                    border: `4px solid ${darkTheme.border}`,
+                    borderTop: `4px solid ${darkTheme.primary}`,
+                    animation: "spin 1s linear infinite",
+                    mx: "auto",
+                    mb: 2,
+                    "@keyframes spin": {
+                      "0%": { transform: "rotate(0deg)" },
+                      "100%": { transform: "rotate(360deg)" },
+                    },
+                  }}
+                />
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mb: 1,
+                    color: darkTheme.text,
+                    fontWeight: 600,
+                  }}
+                >
+                  Loading Resumes...
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: darkTheme.textSecondary,
+                  }}
+                >
+                  Please wait while we fetch your data
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        ) : /* Resume Grid */
+        filteredResumes.length === 0 ? (
           <Box
             sx={{
               display: "flex",
@@ -973,6 +1092,23 @@ const ResumeCollection = ({
                     ? "Try adjusting your search criteria"
                     : "Upload your first resume to get started"}
                 </Typography>
+                {searchQuery.trim() && (
+                  <Button
+                    variant="outlined"
+                    onClick={() => setSearchQuery("")}
+                    sx={{
+                      mt: 2,
+                      borderColor: darkTheme.primary,
+                      color: darkTheme.primary,
+                      "&:hover": {
+                        borderColor: darkTheme.primary,
+                        backgroundColor: alpha(darkTheme.primary, 0.1),
+                      },
+                    }}
+                  >
+                    Clear Search
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </Box>
@@ -991,12 +1127,12 @@ const ResumeCollection = ({
           >
             {filteredResumes.map((resume) => (
               <FileCard
-                key={resume.id}
+                key={`${resume.id}-${resume.filename}`}
                 resume={resume}
                 onView={onView}
                 onDownload={onDownload}
                 onDelete={onDelete}
-                onResumeDeleted={onResumeDeleted}
+                onResumeDeleted={handleResumeDeleted}
               />
             ))}
           </Box>

@@ -447,8 +447,9 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
       }
     }
 
-    // Get filename from source_file
-    const filename = chunk.source_file.replace(/(_[a-zA-Z0-9]+)$/, ""); // Remove random suffix
+    // Use the original source_file name as stored on the server
+    // Don't modify the filename as it needs to match the server's file storage
+    const filename = chunk.source_file;
 
     // Extract highlights
     const highlights = extractHighlights(text);
@@ -1020,13 +1021,31 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                   }}
                                   onClick={() => {
                                     try {
-                                      // Clean filename by removing random suffix
-                                      const cleanFilename =
+                                      // Use original filename without modification
+                                      const originalFilename =
                                         candidate.filename || candidate.id;
-                                      const viewUrl = `${API_CONFIG.baseURL}/uploads/${cleanFilename}`;
+
+                                      if (!originalFilename) {
+                                        console.error(
+                                          "No filename available for viewing"
+                                        );
+                                        alert(
+                                          "Unable to view CV: Filename not available"
+                                        );
+                                        return;
+                                      }
+
+                                      const viewUrl = `${API_CONFIG.baseURL}/uploads/${originalFilename}`;
+                                      console.log(
+                                        "Opening CV viewer with URL:",
+                                        viewUrl
+                                      );
                                       window.open(viewUrl, "_blank");
                                     } catch (error) {
                                       console.error("Error viewing CV:", error);
+                                      alert(
+                                        "Failed to open CV viewer. Please try again."
+                                      );
                                     }
                                   }}
                                 >
@@ -1061,16 +1080,41 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                   }}
                                   onClick={async () => {
                                     try {
-                                      // Clean filename by removing random suffix
-                                      const cleanFilename =
+                                      // Use original source_file name without modification
+                                      // This matches the actual filename stored on the server
+                                      const originalFilename =
                                         candidate.filename || candidate.id;
+
+                                      if (!originalFilename) {
+                                        throw new Error(
+                                          "Filename not available for download"
+                                        );
+                                      }
+
+                                      console.log(
+                                        "Attempting to download file:",
+                                        originalFilename
+                                      );
+                                      console.log(
+                                        "Download URL:",
+                                        `${API_CONFIG.baseURL}/uploads/${originalFilename}`
+                                      );
 
                                       // Fetch the file for download
                                       const response = await fetch(
-                                        `${API_CONFIG.baseURL}/uploads/${cleanFilename}`,
+                                        `${API_CONFIG.baseURL}/uploads/${originalFilename}`,
                                         {
                                           method: "GET",
+                                          headers: {
+                                            Accept:
+                                              "application/pdf,application/octet-stream,*/*",
+                                          },
                                         }
+                                      );
+
+                                      console.log(
+                                        "Download response status:",
+                                        response.status
                                       );
 
                                       if (response.ok) {
@@ -1083,28 +1127,47 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                         const link =
                                           document.createElement("a");
                                         link.href = url;
-                                        link.download = cleanFilename.endsWith(
-                                          ".pdf"
-                                        )
-                                          ? cleanFilename
-                                          : `${cleanFilename}.pdf`;
+                                        // Use original filename for download (no modifications)
+                                        link.download = originalFilename;
+                                        // Ensure the link is not visible
+                                        link.style.display = "none";
                                         document.body.appendChild(link);
                                         link.click();
 
                                         // Clean up
                                         document.body.removeChild(link);
                                         window.URL.revokeObjectURL(url);
+
+                                        console.log(
+                                          "Download initiated successfully"
+                                        );
                                       } else {
-                                        throw new Error("Download failed");
+                                        // Log detailed error information
+                                        const errorText = await response
+                                          .text()
+                                          .catch(() => "Unknown error");
+                                        console.error("Download failed:", {
+                                          status: response.status,
+                                          statusText: response.statusText,
+                                          url: response.url,
+                                          errorBody: errorText,
+                                        });
+                                        throw new Error(
+                                          `Download failed: ${response.status} ${response.statusText}`
+                                        );
                                       }
                                     } catch (error) {
                                       console.error(
                                         "Error downloading CV:",
                                         error
                                       );
-                                      // Show user-friendly error
+                                      // Enhanced error message with debugging info
+                                      const errorMessage =
+                                        error instanceof Error
+                                          ? error.message
+                                          : "Unknown error occurred";
                                       alert(
-                                        "Failed to download CV. Please try again."
+                                        `Failed to download CV: ${errorMessage}\n\nPlease check the browser console for more details.`
                                       );
                                     }
                                   }}
