@@ -25,6 +25,9 @@ import {
   FileUpload,
   InsertDriveFile,
   Info,
+  Cancel,
+  CloudDone,
+  ErrorOutline,
 } from "@mui/icons-material";
 
 // Internal imports
@@ -167,7 +170,7 @@ interface FileWithProgress {
   type: string;
   lastModified: number;
   progress: number;
-  status: "uploading" | "processing" | "complete" | "error";
+  status: "ready" | "uploading" | "processing" | "complete" | "error";
   error?: string;
   file: File; // Keep reference to original file for upload
 }
@@ -188,6 +191,9 @@ const ResumeUploader = ({
   });
   const [uploadResults, setUploadResults] = useState<UploadResult | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
+  const [uploadStatus, setUploadStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
 
   // File validation - PDF only, 10MB max
   const validateFile = useCallback((file: File): string | null => {
@@ -222,7 +228,7 @@ const ResumeUploader = ({
         if (validationError) {
           newErrors.push(validationError);
         } else {
-          // Create a proper FileWithProgress object with explicit properties
+          // Create a proper FileWithProgress object with "ready" status
           const fileWithProgress: FileWithProgress = {
             id: `${file.name}-${Date.now()}-${Math.random()}`,
             name: file.name,
@@ -230,7 +236,7 @@ const ResumeUploader = ({
             type: file.type,
             lastModified: file.lastModified,
             progress: 0,
-            status: "uploading",
+            status: "ready", // Files start in "ready" state, not "uploading"
             file: file, // Keep reference to original file
           };
           validFiles.push(fileWithProgress);
@@ -247,8 +253,13 @@ const ResumeUploader = ({
 
       setErrors(newErrors);
       setFiles((prev) => [...prev, ...validFiles]);
+
+      // Reset upload status when new files are added
+      if (uploadStatus !== "idle") {
+        setUploadStatus("idle");
+      }
     },
-    [files.length, validateFile]
+    [files.length, validateFile, uploadStatus]
   );
 
   // Dropzone configuration - PDF only to match UI
@@ -283,13 +294,19 @@ const ResumeUploader = ({
 
     setIsUploading(true);
     setErrors([]);
-    setUploadResults(null); // Reset upload results on new upload
+    setUploadResults(null);
+    setUploadStatus("idle");
     onUploadStart();
+
+    // Update all files to uploading status ONLY when upload actually starts
+    setFiles((prev) =>
+      prev.map((file) => ({ ...file, status: "uploading" as const }))
+    );
 
     try {
       const formData = new FormData();
       files.forEach((fileWithProgress) => {
-        formData.append("cv", fileWithProgress.file); // Backend expects 'cv' field
+        formData.append("cv", fileWithProgress.file);
       });
 
       setUploadProgress({
@@ -312,6 +329,13 @@ const ResumeUploader = ({
             files.length > 1 ? "s" : ""
           }...`,
         }));
+
+        // Update files to processing status when upload is halfway
+        if (progress > 50) {
+          setFiles((prev) =>
+            prev.map((file) => ({ ...file, status: "processing" as const }))
+          );
+        }
       };
 
       const result = await uploadResumesToServer(formData, progressCallback);
@@ -324,7 +348,12 @@ const ResumeUploader = ({
         currentFile: "Upload completed!",
       }));
 
+      // Update files to complete status
+      setFiles((prev) =>
+        prev.map((file) => ({ ...file, status: "complete" as const }))
+      );
       setUploadResults(result);
+      setUploadStatus("success");
       onUploadSuccess(result);
 
       // Clear files after successful upload
@@ -336,10 +365,22 @@ const ResumeUploader = ({
           currentFile: "",
           percentage: 0,
         });
-      }, 1000);
+        setUploadStatus("idle");
+      }, 3000);
     } catch (error: unknown) {
       const errorMessage = (error as Error)?.message || "Upload failed";
       setErrors([errorMessage]);
+      setUploadStatus("error");
+
+      // Update files to error status
+      setFiles((prev) =>
+        prev.map((file) => ({
+          ...file,
+          status: "error" as const,
+          error: errorMessage,
+        }))
+      );
+
       onUploadError(errorMessage);
 
       // Reset progress on error
@@ -353,6 +394,33 @@ const ResumeUploader = ({
       setIsUploading(false);
     }
   }, [files, onUploadStart, onUploadSuccess, onUploadError]);
+
+  // Helper function to get status icon
+  const getStatusIcon = (status: FileWithProgress["status"]) => {
+    switch (status) {
+      case "complete":
+        return <CheckCircle sx={{ color: "#22c55e" }} />;
+      case "error":
+        return <Cancel sx={{ color: "#ef4444" }} />;
+      case "processing":
+        return (
+          <CircularProgress
+            size={20}
+            sx={{ color: BRAND_COLORS.primary.blue }}
+          />
+        );
+      case "uploading":
+        return (
+          <CircularProgress
+            size={20}
+            sx={{ color: BRAND_COLORS.primary.blue }}
+          />
+        );
+      case "ready":
+      default:
+        return <Description sx={{ color: BRAND_COLORS.primary.blueLight }} />;
+    }
+  };
 
   return (
     <Box
@@ -375,8 +443,18 @@ const ResumeUploader = ({
             cursor: `${isUploading ? "not-allowed" : "pointer"} !important`,
             border: 3,
             borderStyle: "dashed",
-            borderColor: BRAND_COLORS.primary.blue,
-            backgroundColor: "rgba(37, 99, 235, 0.02)",
+            borderColor:
+              uploadStatus === "success"
+                ? "#22c55e"
+                : uploadStatus === "error"
+                ? "#ef4444"
+                : BRAND_COLORS.primary.blue,
+            backgroundColor:
+              uploadStatus === "success"
+                ? "rgba(34, 197, 94, 0.02)"
+                : uploadStatus === "error"
+                ? "rgba(239, 68, 68, 0.02)"
+                : "rgba(37, 99, 235, 0.02)",
             minHeight: "400px",
             display: "flex",
             flexDirection: "column",
@@ -384,34 +462,72 @@ const ResumeUploader = ({
             alignItems: "center",
             borderRadius: 2,
             opacity: isUploading ? 0.6 : 1,
+            transition: "all 0.3s ease",
             "&:hover": {
-              borderColor: BRAND_COLORS.primary.blueLight,
-              backgroundColor: "rgba(37, 99, 235, 0.05)",
+              borderColor:
+                uploadStatus === "success"
+                  ? "#16a34a"
+                  : uploadStatus === "error"
+                  ? "#dc2626"
+                  : BRAND_COLORS.primary.blueLight,
+              backgroundColor:
+                uploadStatus === "success"
+                  ? "rgba(34, 197, 94, 0.05)"
+                  : uploadStatus === "error"
+                  ? "rgba(239, 68, 68, 0.05)"
+                  : "rgba(37, 99, 235, 0.05)",
               cursor: `${isUploading ? "not-allowed" : "pointer"} !important`,
             },
           }}
         >
           <input {...getInputProps()} />
 
-          {/* Document Icon */}
-          <InsertDriveFile
-            sx={{
-              fontSize: "5rem",
-              color: BRAND_COLORS.neutral.whiteAlpha[50],
-              mb: 3,
-            }}
-          />
+          {/* Status Icon */}
+          {uploadStatus === "success" ? (
+            <CloudDone
+              sx={{
+                fontSize: "5rem",
+                color: "#22c55e",
+                mb: 3,
+              }}
+            />
+          ) : uploadStatus === "error" ? (
+            <ErrorOutline
+              sx={{
+                fontSize: "5rem",
+                color: "#ef4444",
+                mb: 3,
+              }}
+            />
+          ) : (
+            <InsertDriveFile
+              sx={{
+                fontSize: "5rem",
+                color: BRAND_COLORS.neutral.whiteAlpha[50],
+                mb: 3,
+              }}
+            />
+          )}
 
           <Typography
             variant="h4"
             gutterBottom
             fontWeight={600}
             sx={{
-              color: "text.primary",
+              color:
+                uploadStatus === "success"
+                  ? "#22c55e"
+                  : uploadStatus === "error"
+                  ? "#ef4444"
+                  : "text.primary",
               mb: 1,
             }}
           >
-            Drag & Drop CVs Here
+            {uploadStatus === "success"
+              ? "Upload Successful!"
+              : uploadStatus === "error"
+              ? "Upload Failed!"
+              : "Drag & Drop CVs Here"}
           </Typography>
 
           <Typography
@@ -419,47 +535,53 @@ const ResumeUploader = ({
             color="text.secondary"
             sx={{ mb: 3, fontSize: "1.1rem" }}
           >
-            or click to browse files
+            {uploadStatus === "success"
+              ? "Your CVs have been processed successfully"
+              : uploadStatus === "error"
+              ? "Please try again or check your files"
+              : "or click to browse files"}
           </Typography>
 
-          {/* Browse Files Button */}
-          <Button
-            variant="contained"
-            size="large"
-            onClick={(e) => {
-              e.stopPropagation();
-              open();
-            }}
-            disabled={isUploading}
-            startIcon={
-              isUploading ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : (
-                <InsertDriveFile />
-              )
-            }
-            sx={{
-              backgroundColor: BRAND_COLORS.primary.blue,
-              color: "white",
-              px: 4,
-              py: 1.5,
-              fontSize: "1rem",
-              fontWeight: 600,
-              textTransform: "none",
-              borderRadius: 2,
-              cursor: "pointer !important",
-              "&:hover": {
-                backgroundColor: BRAND_COLORS.primary.blueDark,
+          {/* Browse Files Button - No loading state, just for file selection */}
+          {uploadStatus !== "success" && (
+            <Button
+              variant="contained"
+              size="large"
+              onClick={(e) => {
+                e.stopPropagation();
+                open();
+              }}
+              disabled={isUploading}
+              startIcon={<InsertDriveFile />}
+              sx={{
+                backgroundColor:
+                  uploadStatus === "error"
+                    ? "#ef4444"
+                    : BRAND_COLORS.primary.blue,
+                color: "white",
+                px: 4,
+                py: 1.5,
+                fontSize: "1rem",
+                fontWeight: 600,
+                textTransform: "none",
+                borderRadius: 2,
                 cursor: "pointer !important",
-              },
-              "&:disabled": {
-                backgroundColor: BRAND_COLORS.neutral.whiteAlpha[30],
-                cursor: "not-allowed !important",
-              },
-            }}
-          >
-            {isUploading ? "Processing..." : "Browse Files"}
-          </Button>
+                "&:hover": {
+                  backgroundColor:
+                    uploadStatus === "error"
+                      ? "#dc2626"
+                      : BRAND_COLORS.primary.blueDark,
+                  cursor: "pointer !important",
+                },
+                "&:disabled": {
+                  backgroundColor: BRAND_COLORS.neutral.whiteAlpha[30],
+                  cursor: "not-allowed !important",
+                },
+              }}
+            >
+              Browse Files
+            </Button>
+          )}
         </Box>
 
         {/* Info Section */}
@@ -493,7 +615,7 @@ const ResumeUploader = ({
           </Box>
         )}
 
-        {/* File List */}
+        {/* File List with Status Icons */}
         {files.length > 0 && (
           <Card
             sx={{
@@ -547,55 +669,133 @@ const ResumeUploader = ({
                     sx={{
                       px: 2,
                       py: 1,
-                      backgroundColor: BRAND_COLORS.neutral.whiteAlpha[5],
+                      backgroundColor:
+                        file.status === "complete"
+                          ? "rgba(34, 197, 94, 0.05)"
+                          : file.status === "error"
+                          ? "rgba(239, 68, 68, 0.05)"
+                          : BRAND_COLORS.neutral.whiteAlpha[5],
                       color: "text.primary",
                       borderRadius: 1,
                       mb: 1,
+                      border:
+                        file.status === "complete"
+                          ? "1px solid rgba(34, 197, 94, 0.2)"
+                          : file.status === "error"
+                          ? "1px solid rgba(239, 68, 68, 0.2)"
+                          : "none",
                       "&:last-child": { mb: 0 },
                     }}
                   >
-                    <ListItemIcon>
-                      <Description
-                        sx={{ color: BRAND_COLORS.primary.blueLight }}
-                      />
-                    </ListItemIcon>
+                    <ListItemIcon>{getStatusIcon(file.status)}</ListItemIcon>
                     <ListItemText
                       primary={
                         <Typography
-                          sx={{ color: "text.primary", fontWeight: 500 }}
+                          sx={{
+                            color:
+                              file.status === "complete"
+                                ? "#22c55e"
+                                : file.status === "error"
+                                ? "#ef4444"
+                                : "text.primary",
+                            fontWeight: 500,
+                          }}
                         >
                           {file.name}
                         </Typography>
                       }
                       secondary={
-                        <Typography
-                          sx={{ color: "text.secondary", fontSize: "0.875rem" }}
-                        >
-                          {file.size > 0
-                            ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
-                            : "0.00 MB"}
-                        </Typography>
+                        <Box>
+                          <Typography
+                            sx={{
+                              color: "text.secondary",
+                              fontSize: "0.875rem",
+                            }}
+                          >
+                            {file.size > 0
+                              ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
+                              : "0.00 MB"}
+                          </Typography>
+                          {file.status === "ready" && (
+                            <Typography
+                              sx={{
+                                color: "text.secondary",
+                                fontSize: "0.75rem",
+                                fontWeight: 500,
+                              }}
+                            >
+                              Ready to upload
+                            </Typography>
+                          )}
+                          {file.status === "complete" && (
+                            <Typography
+                              sx={{
+                                color: "#22c55e",
+                                fontSize: "0.75rem",
+                                fontWeight: 500,
+                              }}
+                            >
+                              Successfully uploaded
+                            </Typography>
+                          )}
+                          {file.status === "error" && file.error && (
+                            <Typography
+                              sx={{
+                                color: "#ef4444",
+                                fontSize: "0.75rem",
+                                fontWeight: 500,
+                              }}
+                            >
+                              {file.error}
+                            </Typography>
+                          )}
+                          {file.status === "processing" && (
+                            <Typography
+                              sx={{
+                                color: BRAND_COLORS.primary.blue,
+                                fontSize: "0.75rem",
+                                fontWeight: 500,
+                              }}
+                            >
+                              Processing...
+                            </Typography>
+                          )}
+                          {file.status === "uploading" && (
+                            <Typography
+                              sx={{
+                                color: BRAND_COLORS.primary.blue,
+                                fontSize: "0.75rem",
+                                fontWeight: 500,
+                              }}
+                            >
+                              Uploading...
+                            </Typography>
+                          )}
+                        </Box>
                       }
                     />
-                    <IconButton
-                      onClick={() => removeFile(file.id)}
-                      disabled={isUploading}
-                      size="small"
-                      sx={{
-                        color: "text.secondary",
-                        cursor: "pointer !important",
-                        "&:hover": {
-                          color: BRAND_COLORS.accent.redLight,
-                          backgroundColor: "rgba(248, 113, 113, 0.1)",
-                          cursor: "pointer !important",
-                        },
-                        "&:disabled": {
-                          cursor: "not-allowed !important",
-                        },
-                      }}
-                    >
-                      <Delete />
-                    </IconButton>
+                    {file.status !== "uploading" &&
+                      file.status !== "processing" && (
+                        <IconButton
+                          onClick={() => removeFile(file.id)}
+                          disabled={isUploading}
+                          size="small"
+                          sx={{
+                            color: "text.secondary",
+                            cursor: "pointer !important",
+                            "&:hover": {
+                              color: BRAND_COLORS.accent.redLight,
+                              backgroundColor: "rgba(248, 113, 113, 0.1)",
+                              cursor: "pointer !important",
+                            },
+                            "&:disabled": {
+                              cursor: "not-allowed !important",
+                            },
+                          }}
+                        >
+                          <Delete />
+                        </IconButton>
+                      )}
                   </ListItem>
                 ))}
               </List>
@@ -656,30 +856,82 @@ const ResumeUploader = ({
           </Card>
         )}
 
-        {/* Upload Results */}
+        {/* Enhanced Upload Results */}
         {uploadResults && (
-          <Card sx={{ mt: 2 }}>
+          <Card
+            sx={{
+              mt: 2,
+              border:
+                uploadResults.failed > 0
+                  ? "2px solid #ef4444"
+                  : "2px solid #22c55e",
+              backgroundColor:
+                uploadResults.failed > 0
+                  ? "rgba(239, 68, 68, 0.02)"
+                  : "rgba(34, 197, 94, 0.02)",
+            }}
+          >
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Upload Results
-              </Typography>
+              <Box display="flex" alignItems="center" mb={2}>
+                {uploadResults.failed > 0 ? (
+                  <Cancel sx={{ color: "#ef4444", fontSize: "2rem", mr: 2 }} />
+                ) : (
+                  <CheckCircle
+                    sx={{ color: "#22c55e", fontSize: "2rem", mr: 2 }}
+                  />
+                )}
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: uploadResults.failed > 0 ? "#ef4444" : "#22c55e",
+                    fontWeight: 600,
+                  }}
+                >
+                  {uploadResults.failed > 0
+                    ? "Upload Completed with Errors"
+                    : "Upload Successful!"}
+                </Typography>
+              </Box>
+
               <Stack direction="row" spacing={2} mb={2}>
                 <Chip
                   icon={<CheckCircle />}
                   label={`Successful: ${uploadResults.successful}`}
-                  color="success"
+                  sx={{
+                    backgroundColor: "#22c55e",
+                    color: "white",
+                    fontWeight: 600,
+                    "& .MuiChip-icon": { color: "white" },
+                  }}
                 />
                 {uploadResults.failed > 0 && (
                   <Chip
-                    icon={<ErrorIcon />}
+                    icon={<Cancel />}
                     label={`Failed: ${uploadResults.failed}`}
-                    color="error"
+                    sx={{
+                      backgroundColor: "#ef4444",
+                      color: "white",
+                      fontWeight: 600,
+                      "& .MuiChip-icon": { color: "white" },
+                    }}
                   />
                 )}
               </Stack>
-              <Typography variant="body2" color="text.secondary">
-                {uploadResults.successful} CV
-                {uploadResults.successful > 1 ? "s" : ""} uploaded successfully!
+
+              <Typography
+                variant="body2"
+                sx={{
+                  color: uploadResults.failed > 0 ? "#ef4444" : "#22c55e",
+                  fontWeight: 500,
+                }}
+              >
+                {uploadResults.failed > 0
+                  ? `${uploadResults.successful} CV${
+                      uploadResults.successful !== 1 ? "s" : ""
+                    } uploaded successfully, ${uploadResults.failed} failed.`
+                  : `${uploadResults.successful} CV${
+                      uploadResults.successful !== 1 ? "s" : ""
+                    } uploaded successfully!`}
               </Typography>
             </CardContent>
           </Card>

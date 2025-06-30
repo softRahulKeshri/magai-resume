@@ -26,6 +26,7 @@ import {
   TrendingUp,
   FilterList,
   CheckCircle,
+  Visibility,
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 
@@ -995,89 +996,122 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                 )}
                               </Box>
 
-                              {/* View Full CV Button */}
-                              <Button
-                                variant="contained"
-                                startIcon={
-                                  <Box
-                                    component="span"
-                                    sx={{ fontSize: "16px" }}
-                                  >
-                                    📄
-                                  </Box>
-                                }
-                                sx={{
-                                  backgroundColor: "#10b981",
-                                  color: "white",
-                                  textTransform: "none",
-                                  fontWeight: 600,
-                                  borderRadius: 2,
-                                  px: 3,
-                                  py: 1,
-                                  fontSize: "0.9rem",
-                                  cursor: "pointer !important",
-                                  "&:hover": {
-                                    backgroundColor: "#059669",
-                                    cursor: "pointer !important",
-                                  },
-                                }}
-                                onClick={async () => {
-                                  try {
-                                    // Extract the original filename without the random suffix
-                                    const cleanFilename =
-                                      candidate.filename || candidate.id;
-
-                                    // Try to download the file from the server
-                                    const response = await fetch(
-                                      `${API_CONFIG.baseURL}/download/${cleanFilename}`,
-                                      {
-                                        method: "GET",
-                                        headers: {
-                                          "Content-Type": "application/json",
-                                        },
-                                      }
-                                    );
-
-                                    if (response.ok) {
-                                      // Get the file as a blob
-                                      const blob = await response.blob();
-                                      const url =
-                                        window.URL.createObjectURL(blob);
-
-                                      // Create a temporary link element and trigger download
-                                      const link = document.createElement("a");
-                                      link.href = url;
-                                      link.download = cleanFilename.endsWith(
-                                        ".pdf"
-                                      )
-                                        ? cleanFilename
-                                        : `${cleanFilename}.pdf`;
-                                      document.body.appendChild(link);
-                                      link.click();
-
-                                      // Clean up
-                                      document.body.removeChild(link);
-                                      window.URL.revokeObjectURL(url);
-                                    } else {
-                                      // If download fails, try to open in new tab
-                                      const viewUrl = `${API_CONFIG.baseURL}/view/${cleanFilename}`;
-                                      window.open(viewUrl, "_blank");
-                                    }
-                                  } catch (error) {
-                                    console.error(
-                                      "Error downloading CV:",
-                                      error
-                                    );
-                                    // Fallback: try to open in new tab
-                                    const cleanFilename =
-                                      candidate.filename || candidate.id;
-                                    const viewUrl = `${API_CONFIG.baseURL}/view/${cleanFilename}`;
-                                    window.open(viewUrl, "_blank");
+                              {/* Action Buttons */}
+                              <Box sx={{ display: "flex", gap: 1 }}>
+                                <Button
+                                  variant="contained"
+                                  startIcon={
+                                    <Visibility sx={{ fontSize: "16px" }} />
                                   }
-                                }}
-                              >
-                                View Full CV
-                              </Button>
+                                  sx={{
+                                    backgroundColor: "#10b981",
+                                    color: "white",
+                                    textTransform: "none",
+                                    fontWeight: 600,
+                                    borderRadius: 2,
+                                    px: 2.5,
+                                    py: 1,
+                                    fontSize: "0.9rem",
+                                    cursor: "pointer !important",
+                                    "&:hover": {
+                                      backgroundColor: "#059669",
+                                      cursor: "pointer !important",
+                                    },
+                                  }}
+                                  onClick={() => {
+                                    try {
+                                      // Clean filename by removing random suffix
+                                      const cleanFilename =
+                                        candidate.filename || candidate.id;
+                                      const viewUrl = `${API_CONFIG.baseURL}/uploads/${cleanFilename}`;
+                                      window.open(viewUrl, "_blank");
+                                    } catch (error) {
+                                      console.error("Error viewing CV:", error);
+                                    }
+                                  }}
+                                >
+                                  View CV
+                                </Button>
+
+                                <Button
+                                  variant="outlined"
+                                  startIcon={
+                                    <Box
+                                      component="span"
+                                      sx={{ fontSize: "16px" }}
+                                    >
+                                      📥
+                                    </Box>
+                                  }
+                                  sx={{
+                                    borderColor: "#10b981",
+                                    color: "#10b981",
+                                    textTransform: "none",
+                                    fontWeight: 600,
+                                    borderRadius: 2,
+                                    px: 2.5,
+                                    py: 1,
+                                    fontSize: "0.9rem",
+                                    cursor: "pointer !important",
+                                    "&:hover": {
+                                      backgroundColor: "#10b981",
+                                      color: "white",
+                                      cursor: "pointer !important",
+                                    },
+                                  }}
+                                  onClick={async () => {
+                                    try {
+                                      // Clean filename by removing random suffix
+                                      const cleanFilename =
+                                        candidate.filename || candidate.id;
+
+                                      // Fetch the file for download
+                                      const response = await fetch(
+                                        `${API_CONFIG.baseURL}/uploads/${cleanFilename}`,
+                                        {
+                                          method: "GET",
+                                        }
+                                      );
+
+                                      if (response.ok) {
+                                        // Get the file as a blob
+                                        const blob = await response.blob();
+                                        const url =
+                                          window.URL.createObjectURL(blob);
+
+                                        // Create a temporary link element and trigger download
+                                        const link =
+                                          document.createElement("a");
+                                        link.href = url;
+                                        link.download = cleanFilename.endsWith(
+                                          ".pdf"
+                                        )
+                                          ? cleanFilename
+                                          : `${cleanFilename}.pdf`;
+                                        document.body.appendChild(link);
+                                        link.click();
+
+                                        // Clean up
+                                        document.body.removeChild(link);
+                                        window.URL.revokeObjectURL(url);
+                                      } else {
+                                        throw new Error("Download failed");
+                                      }
+                                    } catch (error) {
+                                      console.error(
+                                        "Error downloading CV:",
+                                        error
+                                      );
+                                      // Show user-friendly error
+                                      alert(
+                                        "Failed to download CV. Please try again."
+                                      );
+                                    }
+                                  }}
+                                >
+                                  Download
+                                </Button>
+                              </Box>
                             </CardContent>
                           </Card>
                         </Zoom>

@@ -17,6 +17,10 @@ import {
   Chip,
   Stack,
   alpha,
+  Modal,
+  Backdrop,
+  Fade,
+  IconButton,
 } from "@mui/material";
 import {
   Search,
@@ -30,9 +34,13 @@ import {
   Assessment,
   CheckCircle,
   FolderOpen,
+  Close,
+  Warning,
+  CheckCircleOutline,
 } from "@mui/icons-material";
 
 import { Resume } from "../types";
+import { API_CONFIG } from "../theme/constants";
 
 // Dark theme colors to match the analytics design
 const darkTheme = {
@@ -47,6 +55,220 @@ const darkTheme = {
   textSecondary: "#a1a1aa",
   textMuted: "#71717a",
   border: "#27272a",
+};
+
+// Custom Styled Modal Component
+interface DeleteConfirmModalProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  filename: string;
+  isDeleting: boolean;
+}
+
+const DeleteConfirmModal = ({
+  open,
+  onClose,
+  onConfirm,
+  filename,
+  isDeleting,
+}: DeleteConfirmModalProps) => {
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      closeAfterTransition
+      BackdropComponent={Backdrop}
+      BackdropProps={{
+        timeout: 300,
+        sx: {
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          backdropFilter: "blur(4px)",
+        },
+      }}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 2,
+      }}
+    >
+      <Fade in={open} timeout={300}>
+        <Card
+          sx={{
+            minWidth: 400,
+            maxWidth: 500,
+            background: `linear-gradient(135deg, ${darkTheme.surface} 0%, ${darkTheme.surfaceLight} 100%)`,
+            border: `2px solid ${darkTheme.error}`,
+            borderRadius: "16px",
+            boxShadow: "0 20px 60px rgba(239, 68, 68, 0.3)",
+            outline: "none",
+            position: "relative",
+            overflow: "visible",
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            {/* Close Button */}
+            <IconButton
+              onClick={onClose}
+              disabled={isDeleting}
+              sx={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                color: darkTheme.textMuted,
+                "&:hover": {
+                  backgroundColor: alpha(darkTheme.error, 0.1),
+                  color: darkTheme.error,
+                },
+              }}
+            >
+              <Close />
+            </IconButton>
+
+            {/* Warning Icon */}
+            <Box sx={{ textAlign: "center", mb: 3 }}>
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: "50%",
+                  background: `linear-gradient(135deg, ${darkTheme.error} 0%, #dc2626 100%)`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  mx: "auto",
+                  mb: 2,
+                  boxShadow: `0 8px 32px rgba(239, 68, 68, 0.4)`,
+                }}
+              >
+                <Warning
+                  sx={{
+                    fontSize: "2.5rem",
+                    color: "white",
+                  }}
+                />
+              </Box>
+            </Box>
+
+            {/* Title */}
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 700,
+                color: darkTheme.text,
+                textAlign: "center",
+                mb: 2,
+              }}
+            >
+              Delete Resume?
+            </Typography>
+
+            {/* Message */}
+            <Typography
+              variant="body1"
+              sx={{
+                color: darkTheme.textSecondary,
+                textAlign: "center",
+                mb: 1,
+                lineHeight: 1.6,
+              }}
+            >
+              Are you sure you want to permanently delete
+            </Typography>
+
+            <Typography
+              variant="body1"
+              sx={{
+                color: darkTheme.text,
+                textAlign: "center",
+                fontWeight: 600,
+                mb: 3,
+                background: alpha(darkTheme.error, 0.1),
+                borderRadius: "8px",
+                p: 1,
+                border: `1px solid ${alpha(darkTheme.error, 0.2)}`,
+              }}
+            >
+              "{filename}"
+            </Typography>
+
+            <Typography
+              variant="body2"
+              sx={{
+                color: darkTheme.textMuted,
+                textAlign: "center",
+                mb: 4,
+                fontStyle: "italic",
+              }}
+            >
+              This action cannot be undone.
+            </Typography>
+
+            {/* Action Buttons */}
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ justifyContent: "center" }}
+            >
+              <Button
+                variant="outlined"
+                onClick={onClose}
+                disabled={isDeleting}
+                sx={{
+                  minWidth: 120,
+                  borderColor: darkTheme.border,
+                  color: darkTheme.textSecondary,
+                  borderRadius: "12px",
+                  px: 3,
+                  py: 1.5,
+                  fontWeight: 600,
+                  textTransform: "none",
+                  "&:hover": {
+                    borderColor: darkTheme.textSecondary,
+                    backgroundColor: alpha(darkTheme.textSecondary, 0.05),
+                  },
+                }}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                variant="contained"
+                onClick={onConfirm}
+                disabled={isDeleting}
+                startIcon={isDeleting ? undefined : <Delete />}
+                sx={{
+                  minWidth: 120,
+                  background: `linear-gradient(135deg, ${darkTheme.error} 0%, #dc2626 100%)`,
+                  color: "white",
+                  borderRadius: "12px",
+                  px: 3,
+                  py: 1.5,
+                  fontWeight: 700,
+                  textTransform: "none",
+                  boxShadow: `0 4px 16px rgba(239, 68, 68, 0.4)`,
+                  "&:hover": {
+                    background: `linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)`,
+                    boxShadow: `0 6px 20px rgba(239, 68, 68, 0.5)`,
+                    transform: "translateY(-1px)",
+                  },
+                  "&:disabled": {
+                    background: darkTheme.textMuted,
+                    color: darkTheme.background,
+                    transform: "none",
+                    boxShadow: "none",
+                  },
+                }}
+              >
+                {isDeleting ? "Deleting..." : "Delete Forever"}
+              </Button>
+            </Stack>
+          </CardContent>
+        </Card>
+      </Fade>
+    </Modal>
+  );
 };
 
 // Enhanced Statistics Card Component - Simplified for essential metrics only
@@ -125,9 +347,21 @@ interface FileCardProps {
   onView: (resume: Resume) => void;
   onDownload: (resume: Resume) => void;
   onDelete: (resume: Resume) => void;
+  onResumeDeleted?: (resumeId: number) => void;
 }
 
-const FileCard = ({ resume, onView, onDownload, onDelete }: FileCardProps) => {
+const FileCard = ({
+  resume,
+  onView,
+  onDownload,
+  onDelete,
+  onResumeDeleted,
+}: FileCardProps) => {
+  // Modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 B";
     const k = 1024;
@@ -167,6 +401,52 @@ const FileCard = ({ resume, onView, onDownload, onDelete }: FileCardProps) => {
         return darkTheme.error;
       default:
         return darkTheme.primary;
+    }
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    try {
+      setIsDeleting(true);
+
+      // Call delete endpoint
+      const response = await fetch(
+        `${API_CONFIG.baseURL}/delete/${resume.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        setShowDeleteModal(false);
+        setShowSuccessMessage(true);
+
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          setShowSuccessMessage(false);
+        }, 3000);
+
+        onDelete(resume); // Call the optional callback
+        // Notify parent to refresh the list if callback is provided
+        if (onResumeDeleted) {
+          onResumeDeleted(resume.id);
+        }
+      } else {
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
+        throw new Error(errorData.error || "Delete failed");
+      }
+    } catch (error) {
+      console.error("Error deleting resume:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Please try again.";
+      alert(`Failed to delete resume: ${errorMessage}`);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -281,7 +561,17 @@ const FileCard = ({ resume, onView, onDownload, onDelete }: FileCardProps) => {
           <Button
             size="small"
             startIcon={<Visibility sx={{ fontSize: "1rem" }} />}
-            onClick={() => onView(resume)}
+            onClick={() => {
+              try {
+                // Open resume in new tab using the uploads endpoint
+                const viewUrl = `${API_CONFIG.baseURL}/uploads/${resume.filename}`;
+                window.open(viewUrl, "_blank");
+                onView(resume); // Call the optional callback
+              } catch (error) {
+                console.error("Error viewing resume:", error);
+                alert("Failed to view resume. Please try again.");
+              }
+            }}
             sx={{
               bgcolor: darkTheme.primary,
               color: "white",
@@ -290,6 +580,7 @@ const FileCard = ({ resume, onView, onDownload, onDelete }: FileCardProps) => {
               textTransform: "none",
               fontSize: "0.75rem",
               px: 1.5,
+              cursor: "pointer !important",
             }}
           >
             View
@@ -297,7 +588,41 @@ const FileCard = ({ resume, onView, onDownload, onDelete }: FileCardProps) => {
           <Button
             size="small"
             startIcon={<Download sx={{ fontSize: "1rem" }} />}
-            onClick={() => onDownload(resume)}
+            onClick={async () => {
+              try {
+                // Fetch the file for download
+                const response = await fetch(
+                  `${API_CONFIG.baseURL}/uploads/${resume.filename}`,
+                  {
+                    method: "GET",
+                  }
+                );
+
+                if (response.ok) {
+                  // Get the file as a blob
+                  const blob = await response.blob();
+                  const url = window.URL.createObjectURL(blob);
+
+                  // Create a temporary link element and trigger download
+                  const link = document.createElement("a");
+                  link.href = url;
+                  link.download = resume.filename;
+                  document.body.appendChild(link);
+                  link.click();
+
+                  // Clean up
+                  document.body.removeChild(link);
+                  window.URL.revokeObjectURL(url);
+
+                  onDownload(resume); // Call the optional callback
+                } else {
+                  throw new Error("Download failed");
+                }
+              } catch (error) {
+                console.error("Error downloading resume:", error);
+                alert("Failed to download resume. Please try again.");
+              }
+            }}
             sx={{
               bgcolor: darkTheme.success,
               color: "white",
@@ -306,6 +631,7 @@ const FileCard = ({ resume, onView, onDownload, onDelete }: FileCardProps) => {
               textTransform: "none",
               fontSize: "0.75rem",
               px: 1.5,
+              cursor: "pointer !important",
             }}
           >
             Download
@@ -313,7 +639,7 @@ const FileCard = ({ resume, onView, onDownload, onDelete }: FileCardProps) => {
           <Button
             size="small"
             startIcon={<Delete sx={{ fontSize: "1rem" }} />}
-            onClick={() => onDelete(resume)}
+            onClick={() => setShowDeleteModal(true)}
             sx={{
               bgcolor: darkTheme.error,
               color: "white",
@@ -322,11 +648,87 @@ const FileCard = ({ resume, onView, onDownload, onDelete }: FileCardProps) => {
               textTransform: "none",
               fontSize: "0.75rem",
               px: 1.5,
+              cursor: "pointer !important",
             }}
           >
             Delete
           </Button>
         </Stack>
+
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmModal
+          open={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDeleteConfirm}
+          filename={resume.filename}
+          isDeleting={isDeleting}
+        />
+
+        {/* Success Message */}
+        {showSuccessMessage && (
+          <Box
+            sx={{
+              position: "fixed",
+              top: 24,
+              right: 24,
+              zIndex: 9999,
+              animation: "slideInRight 0.3s ease-out",
+              "@keyframes slideInRight": {
+                from: {
+                  transform: "translateX(100%)",
+                  opacity: 0,
+                },
+                to: {
+                  transform: "translateX(0)",
+                  opacity: 1,
+                },
+              },
+            }}
+          >
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${darkTheme.success} 0%, #16a34a 100%)`,
+                color: "white",
+                borderRadius: "12px",
+                boxShadow: "0 8px 32px rgba(34, 197, 94, 0.4)",
+                minWidth: 300,
+                border: `2px solid ${alpha(darkTheme.success, 0.3)}`,
+              }}
+            >
+              <CardContent
+                sx={{ p: 3, display: "flex", alignItems: "center", gap: 2 }}
+              >
+                <CheckCircleOutline sx={{ fontSize: "1.5rem" }} />
+                <Box>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 600, fontSize: "1rem", mb: 0.5 }}
+                  >
+                    Resume Deleted Successfully
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ opacity: 0.9, fontSize: "0.875rem" }}
+                  >
+                    "{resume.filename}" has been permanently removed.
+                  </Typography>
+                </Box>
+                <IconButton
+                  onClick={() => setShowSuccessMessage(false)}
+                  sx={{
+                    color: "white",
+                    ml: "auto",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    },
+                  }}
+                >
+                  <Close sx={{ fontSize: "1.2rem" }} />
+                </IconButton>
+              </CardContent>
+            </Card>
+          </Box>
+        )}
       </CardContent>
     </Card>
   );
@@ -338,6 +740,7 @@ interface ResumeCollectionProps {
   onView?: (resume: Resume) => void;
   onDownload?: (resume: Resume) => void;
   onDelete?: (resume: Resume) => void;
+  onResumeDeleted?: (resumeId: number) => void;
 }
 
 const ResumeCollection = ({
@@ -345,6 +748,7 @@ const ResumeCollection = ({
   onView = () => {},
   onDownload = () => {},
   onDelete = () => {},
+  onResumeDeleted = () => {},
 }: ResumeCollectionProps) => {
   // State
   const [searchQuery, setSearchQuery] = useState("");
@@ -592,6 +996,7 @@ const ResumeCollection = ({
                 onView={onView}
                 onDownload={onDownload}
                 onDelete={onDelete}
+                onResumeDeleted={onResumeDeleted}
               />
             ))}
           </Box>

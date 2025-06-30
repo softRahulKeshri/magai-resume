@@ -6,7 +6,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import "./index.css";
 import App from "./App";
 
-// Clean, professional dark theme
+// Theme
 const theme = createTheme({
   palette: {
     mode: "dark",
