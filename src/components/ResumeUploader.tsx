@@ -425,12 +425,12 @@ const ResumeUploader = ({
   return (
     <Box
       sx={{
-        height: "100vh",
+        minHeight: "100vh",
         display: "flex",
-        alignItems: "center",
+        alignItems: files.length > 8 ? "flex-start" : "center",
         justifyContent: "center",
         px: 3,
-        py: 4,
+        py: files.length > 8 ? 2 : 4,
       }}
     >
       <Box sx={{ maxWidth: 800, width: "100%" }}>
@@ -662,7 +662,31 @@ const ResumeUploader = ({
                 </Button>
               </Box>
 
-              <List sx={{ py: 0 }}>
+              <List
+                sx={{
+                  py: 0,
+                  maxHeight: files.length > 8 ? "min(400px, 40vh)" : "auto",
+                  overflowY: files.length > 8 ? "auto" : "visible",
+                  // Custom scrollbar styling for better UX
+                  "&::-webkit-scrollbar": {
+                    width: "8px",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    backgroundColor: BRAND_COLORS.neutral.whiteAlpha[10],
+                    borderRadius: "4px",
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    backgroundColor: BRAND_COLORS.primary.blue,
+                    borderRadius: "4px",
+                    "&:hover": {
+                      backgroundColor: BRAND_COLORS.primary.blueDark,
+                    },
+                  },
+                  // Firefox scrollbar styling
+                  scrollbarWidth: "thin",
+                  scrollbarColor: `${BRAND_COLORS.primary.blue} ${BRAND_COLORS.neutral.whiteAlpha[10]}`,
+                }}
+              >
                 {files.map((file) => (
                   <ListItem
                     key={file.id}
