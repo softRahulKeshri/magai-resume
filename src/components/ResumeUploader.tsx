@@ -16,11 +16,22 @@ import {
   Button,
   Stack,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Snackbar,
+  SelectChangeEvent,
+  Divider,
 } from "@mui/material";
 import {
   Description,
   CheckCircle,
-  Error as ErrorIcon,
   Delete,
   FileUpload,
   InsertDriveFile,
@@ -28,133 +39,16 @@ import {
   Cancel,
   CloudDone,
   ErrorOutline,
+  Add,
+  KeyboardArrowDown,
+  Warning,
 } from "@mui/icons-material";
 
 // Internal imports
-import { UploadResult, UploadProgress } from "../types";
-import { UPLOAD_CONFIG, BRAND_COLORS, API_CONFIG } from "../theme/constants";
-
-// API function to upload resumes to the backend
-const uploadResumesToServer = async (
-  formData: FormData,
-  onProgress?: (progress: number, loaded: number, total: number) => void
-): Promise<UploadResult> => {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-
-    // Configure upload progress tracking
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable && onProgress) {
-        const percentComplete = Math.round((e.loaded / e.total) * 100);
-        onProgress(percentComplete, e.loaded, e.total);
-      }
-    });
-
-    // Handle successful completion
-    xhr.addEventListener("load", () => {
-      console.log("Response status:", xhr.status);
-      console.log("Response URL:", xhr.responseURL);
-      console.log("Response data:", xhr.responseText);
-
-      if (xhr.status === 200) {
-        // If API responds with status 200, treat as success regardless of response format
-        let result: any = {};
-
-        try {
-          // Try to parse JSON response
-          result = JSON.parse(xhr.responseText || "{}");
-          console.log("Parsed response:", result);
-        } catch (parseError) {
-          console.warn(
-            "Response is not valid JSON, but treating as success since status is 200"
-          );
-          // Even if parsing fails, we'll create a default success response
-          // Use the actual count of files being uploaded
-          const actualFileCount = formData.getAll("cv").length;
-          result = {
-            message: "Files uploaded successfully",
-            successful: actualFileCount,
-          };
-        }
-
-        // Transform the response to match our UploadResult interface
-        // Be more lenient with the response format - any data means success
-        // Use the actual count of files being uploaded from FormData
-        const actualFileCount = formData.getAll("cv").length;
-        const uploadResult: UploadResult = {
-          successful:
-            result.successful ||
-            result.files?.length ||
-            result.count ||
-            actualFileCount,
-          failed: result.failed || 0,
-          total:
-            result.total ||
-            result.files?.length ||
-            result.count ||
-            actualFileCount,
-          message:
-            result.message ||
-            result.status ||
-            "Files uploaded successfully! PDF processing completed.",
-          results: result.files || result.data || [],
-          errors: result.errors || [],
-        };
-
-        console.log("Upload successful! Result:", uploadResult);
-        resolve(uploadResult);
-      } else {
-        const errorMessage =
-          xhr.responseText || `Upload failed: ${xhr.status} ${xhr.statusText}`;
-        console.error("Upload failed:", {
-          status: xhr.status,
-          statusText: xhr.statusText,
-          url: xhr.responseURL,
-          body: xhr.responseText,
-        });
-        reject(new Error(errorMessage));
-      }
-    });
-
-    // Handle network errors
-    xhr.addEventListener("error", () => {
-      console.error("Network error during upload");
-      reject(
-        new Error(
-          "Network error: Unable to connect to server. Please check if the backend is running."
-        )
-      );
-    });
-
-    // Handle timeout
-    xhr.addEventListener("timeout", () => {
-      console.error("Upload timeout");
-      reject(
-        new Error("Upload timeout: The request took too long to complete.")
-      );
-    });
-
-    // Configure and send the request
-    xhr.open("POST", `${API_CONFIG.baseURL}/upload_cv`);
-
-    // Set headers
-    xhr.setRequestHeader("Accept", "application/json");
-
-    // Set timeout (30 seconds)
-    xhr.timeout = 30000;
-
-    console.log("Making POST request to:", `${API_CONFIG.baseURL}/upload_cv`);
-    console.log(
-      "FormData contents:",
-      Array.from(formData.entries()).map(([key, value]) => [
-        key,
-        value instanceof File ? `File: ${value.name}` : value,
-      ])
-    );
-
-    xhr.send(formData);
-  });
-};
+import { UploadResult, UploadProgress, Group } from "../types";
+import { UPLOAD_CONFIG, BRAND_COLORS } from "../theme/constants";
+import { useGroups } from "../hooks/useGroups";
+import { apiService } from "../services/api";
 
 // Props interface
 interface ResumeUploaderProps {
@@ -180,7 +74,11 @@ const ResumeUploader = ({
   onUploadSuccess,
   onUploadError,
 }: ResumeUploaderProps) => {
-  // State management
+  // Helper function to capitalize group names consistently
+  const capitalizeGroupName = useCallback((name: string) => {
+    return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+  }, []);
+  // File management state
   const [files, setFiles] = useState<FileWithProgress[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({
@@ -194,6 +92,30 @@ const ResumeUploader = ({
   const [uploadStatus, setUploadStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
+
+  // Group management with hooks
+  const {
+    groups,
+    loading: groupsLoading,
+    error: groupsError,
+    createGroup,
+    deleteGroup,
+    refreshGroups,
+  } = useGroups();
+
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
+  const [openAddGroupDialog, setOpenAddGroupDialog] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [deleteGroupDialog, setDeleteGroupDialog] = useState<{
+    open: boolean;
+    group: Group | null;
+  }>({ open: false, group: null });
+  const [addingGroup, setAddingGroup] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
 
   // File validation - PDF only, 10MB max
   const validateFile = useCallback((file: File): string | null => {
@@ -263,16 +185,15 @@ const ResumeUploader = ({
   );
 
   // Dropzone configuration - PDF only to match UI
-  const { getRootProps, getInputProps, isDragActive, isDragReject, open } =
-    useDropzone({
-      onDrop,
-      accept: {
-        "application/pdf": [".pdf"],
-      },
-      maxFiles: UPLOAD_CONFIG.maxFiles,
-      disabled: isUploading,
-      noClick: true, // Disable click on the dropzone itself
-    });
+  const { getRootProps, getInputProps, open } = useDropzone({
+    onDrop,
+    accept: {
+      "application/pdf": [".pdf"],
+    },
+    maxFiles: UPLOAD_CONFIG.maxFiles,
+    disabled: isUploading || !selectedGroup, // Disabled until group is selected
+    noClick: true, // Disable click on the dropzone itself
+  });
 
   // Remove file
   const removeFile = useCallback((fileId: string) => {
@@ -288,9 +209,83 @@ const ResumeUploader = ({
     }
   }, [isUploading]);
 
-  // Upload files to the backend API
+  // Group management handlers
+  const handleGroupChange = useCallback(
+    (event: SelectChangeEvent<string>) => {
+      const groupId = event.target.value;
+      const group = groups.find((g) => g.id.toString() === groupId) || null;
+      setSelectedGroup(group);
+    },
+    [groups]
+  );
+
+  const handleAddGroup = useCallback(async () => {
+    if (newGroupName.trim() === "") {
+      setSnackbarMessage("Group name is required");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    setAddingGroup(true);
+    try {
+      const newGroup = await createGroup({
+        name: newGroupName.trim(),
+      });
+
+      setSelectedGroup(newGroup);
+      setNewGroupName("");
+      setOpenAddGroupDialog(false);
+      setSnackbarMessage("Group created successfully!");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      setSnackbarMessage("Failed to create group");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setAddingGroup(false);
+    }
+  }, [newGroupName, createGroup]);
+
+  const handleDeleteGroup = useCallback(
+    async (group: Group) => {
+      try {
+        const success = await deleteGroup(group.id);
+        if (success) {
+          // If the deleted group was selected, clear selection
+          if (selectedGroup?.id === group.id) {
+            setSelectedGroup(null);
+          }
+          setDeleteGroupDialog({ open: false, group: null });
+          setSnackbarMessage("Group deleted successfully!");
+          setSnackbarSeverity("success");
+          setSnackbarOpen(true);
+        } else {
+          setSnackbarMessage("Failed to delete group");
+          setSnackbarSeverity("error");
+          setSnackbarOpen(true);
+        }
+      } catch (error) {
+        setSnackbarMessage("Failed to delete group");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+      }
+    },
+    [deleteGroup, selectedGroup]
+  );
+
+  const openDeleteDialog = useCallback((group: Group) => {
+    setDeleteGroupDialog({ open: true, group });
+  }, []);
+
+  const closeDeleteDialog = useCallback(() => {
+    setDeleteGroupDialog({ open: false, group: null });
+  }, []);
+
+  // Upload files to the backend API with group association
   const uploadFiles = useCallback(async () => {
-    if (files.length === 0) return;
+    if (files.length === 0 || !selectedGroup) return;
 
     setIsUploading(true);
     setErrors([]);
@@ -316,29 +311,11 @@ const ResumeUploader = ({
         percentage: 0,
       });
 
-      // Update progress during upload
-      const progressCallback = (
-        progress: number,
-        loaded: number,
-        total: number
-      ) => {
-        setUploadProgress((prev) => ({
-          ...prev,
-          percentage: progress,
-          currentFile: `Uploading ${files.length} file${
-            files.length > 1 ? "s" : ""
-          }...`,
-        }));
-
-        // Update files to processing status when upload is halfway
-        if (progress > 50) {
-          setFiles((prev) =>
-            prev.map((file) => ({ ...file, status: "processing" as const }))
-          );
-        }
-      };
-
-      const result = await uploadResumesToServer(formData, progressCallback);
+      // Use the new uploadCVsToGroup method
+      const result = await apiService.uploadCVsToGroup(
+        formData,
+        selectedGroup.id
+      );
 
       // Final progress update
       setUploadProgress((prev) => ({
@@ -393,7 +370,7 @@ const ResumeUploader = ({
     } finally {
       setIsUploading(false);
     }
-  }, [files, onUploadStart, onUploadSuccess, onUploadError]);
+  }, [files, selectedGroup, onUploadStart, onUploadSuccess, onUploadError]);
 
   // Helper function to get status icon
   const getStatusIcon = (status: FileWithProgress["status"]) => {
@@ -434,56 +411,186 @@ const ResumeUploader = ({
       }}
     >
       <Box sx={{ maxWidth: 800, width: "100%" }}>
+        {/* Group Selection Section */}
+        <Card sx={{ mb: 3, backgroundColor: "background.paper" }}>
+          <CardContent sx={{ p: 3 }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ fontWeight: 600, mb: 2 }}
+            >
+              Select Group
+            </Typography>
+
+            {groupsLoading ? (
+              <Box display="flex" alignItems="center" gap={2}>
+                <CircularProgress size={20} />
+                <Typography color="text.secondary">
+                  Loading groups...
+                </Typography>
+              </Box>
+            ) : groupsError ? (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {groupsError}
+                <Button size="small" onClick={refreshGroups} sx={{ ml: 1 }}>
+                  Retry
+                </Button>
+              </Alert>
+            ) : (
+              <Stack direction="row" spacing={2} alignItems="center">
+                <FormControl sx={{ minWidth: 200, flexGrow: 1 }}>
+                  <InputLabel id="group-select-label">
+                    Select a group...
+                  </InputLabel>
+                  <Select
+                    labelId="group-select-label"
+                    id="group-select"
+                    value={selectedGroup?.id.toString() || ""}
+                    label="Select a group..."
+                    onChange={handleGroupChange}
+                    renderValue={() => (
+                      <Typography>
+                        {selectedGroup
+                          ? capitalizeGroupName(selectedGroup.name)
+                          : ""}
+                      </Typography>
+                    )}
+                  >
+                    {groups.map((group) => (
+                      <MenuItem
+                        key={group.id}
+                        value={group.id.toString()}
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Box sx={{ flexGrow: 1 }}>
+                          <Typography>
+                            {capitalizeGroupName(group.name)}
+                          </Typography>
+                          {group.description && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {group.description}
+                            </Typography>
+                          )}
+                        </Box>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openDeleteDialog(group);
+                          }}
+                          sx={{
+                            ml: 1,
+                            color: "text.secondary",
+                            "&:hover": { color: BRAND_COLORS.accent.red },
+                          }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </MenuItem>
+                    ))}
+                    <Divider />
+                    <MenuItem
+                      onClick={() => setOpenAddGroupDialog(true)}
+                      sx={{
+                        color: BRAND_COLORS.primary.blue,
+                        fontWeight: 600,
+                      }}
+                    >
+                      <Add sx={{ mr: 1 }} />
+                      Add New Group
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+            )}
+
+            {selectedGroup && (
+              <Alert
+                severity="info"
+                sx={{
+                  mt: 2,
+                  backgroundColor: "rgba(37, 99, 235, 0.1)",
+                  border: `1px solid ${BRAND_COLORS.primary.blue}`,
+                }}
+              >
+                CVs will be uploaded to group:{" "}
+                <strong>{capitalizeGroupName(selectedGroup.name)}</strong>
+                {selectedGroup.description && ` - ${selectedGroup.description}`}
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Upload Area */}
         <Box
           {...getRootProps()}
           sx={{
             p: 6,
             textAlign: "center",
-            cursor: `${isUploading ? "not-allowed" : "pointer"} !important`,
+            cursor: `${
+              isUploading || !selectedGroup ? "not-allowed" : "pointer"
+            } !important`,
             border: 3,
             borderStyle: "dashed",
-            borderColor:
-              uploadStatus === "success"
-                ? "#22c55e"
-                : uploadStatus === "error"
-                ? "#ef4444"
-                : BRAND_COLORS.primary.blue,
-            backgroundColor:
-              uploadStatus === "success"
-                ? "rgba(34, 197, 94, 0.02)"
-                : uploadStatus === "error"
-                ? "rgba(239, 68, 68, 0.02)"
-                : "rgba(37, 99, 235, 0.02)",
+            borderColor: !selectedGroup
+              ? BRAND_COLORS.neutral.whiteAlpha[30]
+              : uploadStatus === "success"
+              ? "#22c55e"
+              : uploadStatus === "error"
+              ? "#ef4444"
+              : BRAND_COLORS.primary.blue,
+            backgroundColor: !selectedGroup
+              ? BRAND_COLORS.neutral.whiteAlpha[5]
+              : uploadStatus === "success"
+              ? "rgba(34, 197, 94, 0.02)"
+              : uploadStatus === "error"
+              ? "rgba(239, 68, 68, 0.02)"
+              : "rgba(37, 99, 235, 0.02)",
             minHeight: "400px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
             borderRadius: 2,
-            opacity: isUploading ? 0.6 : 1,
+            opacity: isUploading || !selectedGroup ? 0.6 : 1,
             transition: "all 0.3s ease",
             "&:hover": {
-              borderColor:
-                uploadStatus === "success"
-                  ? "#16a34a"
-                  : uploadStatus === "error"
-                  ? "#dc2626"
-                  : BRAND_COLORS.primary.blueLight,
-              backgroundColor:
-                uploadStatus === "success"
-                  ? "rgba(34, 197, 94, 0.05)"
-                  : uploadStatus === "error"
-                  ? "rgba(239, 68, 68, 0.05)"
-                  : "rgba(37, 99, 235, 0.05)",
-              cursor: `${isUploading ? "not-allowed" : "pointer"} !important`,
+              borderColor: !selectedGroup
+                ? BRAND_COLORS.neutral.whiteAlpha[30]
+                : uploadStatus === "success"
+                ? "#16a34a"
+                : uploadStatus === "error"
+                ? "#dc2626"
+                : BRAND_COLORS.primary.blueLight,
+              backgroundColor: !selectedGroup
+                ? BRAND_COLORS.neutral.whiteAlpha[5]
+                : uploadStatus === "success"
+                ? "rgba(34, 197, 94, 0.05)"
+                : uploadStatus === "error"
+                ? "rgba(239, 68, 68, 0.05)"
+                : "rgba(37, 99, 235, 0.05)",
             },
           }}
         >
           <input {...getInputProps()} />
 
           {/* Status Icon */}
-          {uploadStatus === "success" ? (
+          {!selectedGroup ? (
+            <Warning
+              sx={{
+                fontSize: "5rem",
+                color: BRAND_COLORS.neutral.whiteAlpha[50],
+                mb: 3,
+              }}
+            />
+          ) : uploadStatus === "success" ? (
             <CloudDone
               sx={{
                 fontSize: "5rem",
@@ -514,16 +621,19 @@ const ResumeUploader = ({
             gutterBottom
             fontWeight={600}
             sx={{
-              color:
-                uploadStatus === "success"
-                  ? "#22c55e"
-                  : uploadStatus === "error"
-                  ? "#ef4444"
-                  : "text.primary",
+              color: !selectedGroup
+                ? BRAND_COLORS.neutral.whiteAlpha[70]
+                : uploadStatus === "success"
+                ? "#22c55e"
+                : uploadStatus === "error"
+                ? "#ef4444"
+                : "text.primary",
               mb: 1,
             }}
           >
-            {uploadStatus === "success"
+            {!selectedGroup
+              ? "Select a Group First"
+              : uploadStatus === "success"
               ? "Upload Successful!"
               : uploadStatus === "error"
               ? "Upload Failed!"
@@ -535,15 +645,17 @@ const ResumeUploader = ({
             color="text.secondary"
             sx={{ mb: 3, fontSize: "1.1rem" }}
           >
-            {uploadStatus === "success"
+            {!selectedGroup
+              ? "Choose a group from the dropdown above to enable CV upload"
+              : uploadStatus === "success"
               ? "Your CVs have been processed successfully"
               : uploadStatus === "error"
               ? "Please try again or check your files"
               : "or click to browse files"}
           </Typography>
 
-          {/* Browse Files Button - No loading state, just for file selection */}
-          {uploadStatus !== "success" && (
+          {/* Browse Files Button - Only enabled when group is selected */}
+          {selectedGroup && uploadStatus !== "success" && (
             <Button
               variant="contained"
               size="large"
@@ -602,6 +714,7 @@ const ResumeUploader = ({
           }}
         >
           Supported format: PDF only • Maximum size: 10MB per file
+          {!selectedGroup && " • Select a group to enable upload"}
         </Alert>
 
         {/* Error Messages */}
@@ -952,10 +1065,14 @@ const ResumeUploader = ({
                 {uploadResults.failed > 0
                   ? `${uploadResults.successful} CV${
                       uploadResults.successful !== 1 ? "s" : ""
-                    } uploaded successfully, ${uploadResults.failed} failed.`
+                    } uploaded successfully to ${capitalizeGroupName(
+                      selectedGroup?.name || ""
+                    )}, ${uploadResults.failed} failed.`
                   : `${uploadResults.successful} CV${
                       uploadResults.successful !== 1 ? "s" : ""
-                    } uploaded successfully!`}
+                    } uploaded successfully to ${capitalizeGroupName(
+                      selectedGroup?.name || ""
+                    )}!`}
               </Typography>
             </CardContent>
           </Card>
@@ -967,7 +1084,7 @@ const ResumeUploader = ({
             variant="contained"
             size="large"
             onClick={uploadFiles}
-            disabled={files.length === 0 || isUploading}
+            disabled={files.length === 0 || isUploading || !selectedGroup}
             startIcon={
               isUploading ? (
                 <CircularProgress size={20} color="inherit" />
@@ -998,9 +1115,124 @@ const ResumeUploader = ({
           >
             {isUploading
               ? "Uploading CVs..."
+              : !selectedGroup
+              ? "Select Group to Upload"
               : `Upload CVs${files.length > 0 ? ` (${files.length})` : ""}`}
           </Button>
         </Box>
+
+        {/* Add Group Modal */}
+        <Dialog
+          open={openAddGroupDialog}
+          onClose={() => setOpenAddGroupDialog(false)}
+          maxWidth="xs"
+          fullWidth
+          PaperProps={{
+            sx: {
+              overflow: "visible",
+              width: "400px",
+              maxWidth: "400px",
+            },
+          }}
+        >
+          <DialogTitle sx={{ fontWeight: 600 }}>Add New Group</DialogTitle>
+          <DialogContent sx={{ overflow: "visible" }}>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="group-name"
+              label="Group Name"
+              type="text"
+              fullWidth
+              variant="outlined"
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              placeholder="Enter group name"
+              disabled={addingGroup}
+              sx={{ mb: 2 }}
+            />
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 3 }}>
+            <Button
+              onClick={() => setOpenAddGroupDialog(false)}
+              color="inherit"
+              disabled={addingGroup}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddGroup}
+              variant="contained"
+              disabled={!newGroupName.trim() || addingGroup}
+              startIcon={
+                addingGroup ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : null
+              }
+              sx={{
+                backgroundColor: BRAND_COLORS.primary.blue,
+                "&:hover": { backgroundColor: BRAND_COLORS.primary.blueDark },
+                minWidth: "80px",
+              }}
+            >
+              {addingGroup ? "Adding..." : "Add"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Group Confirmation Dialog */}
+        <Dialog
+          open={deleteGroupDialog.open}
+          onClose={closeDeleteDialog}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle sx={{ fontWeight: 600, color: BRAND_COLORS.accent.red }}>
+            Delete Group
+          </DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to delete the group "
+              <strong>{deleteGroupDialog.group?.name}</strong>"? This action
+              cannot be undone.
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 3 }}>
+            <Button onClick={closeDeleteDialog} color="inherit">
+              Cancel
+            </Button>
+            <Button
+              onClick={() =>
+                deleteGroupDialog.group &&
+                handleDeleteGroup(deleteGroupDialog.group)
+              }
+              variant="contained"
+              color="error"
+              sx={{
+                backgroundColor: BRAND_COLORS.accent.red,
+                "&:hover": { backgroundColor: BRAND_COLORS.accent.redDark },
+              }}
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar for notifications */}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={() => setSnackbarOpen(false)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert
+            onClose={() => setSnackbarOpen(false)}
+            severity={snackbarSeverity}
+            sx={{ width: "100%" }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Box>
     </Box>
   );

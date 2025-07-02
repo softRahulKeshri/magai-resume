@@ -14,7 +14,15 @@
  * @author ResumeAI Team
  */
 
-import { Resume, ApiResponse } from "../types";
+import {
+  Resume,
+  ApiResponse,
+  Group,
+  CreateGroupRequest,
+  CreateGroupResponse,
+  DeleteGroupResponse,
+  GroupListResponse,
+} from "../types";
 import { API_CONFIG } from "../theme/constants";
 
 class ApiService {
@@ -241,6 +249,211 @@ class ApiService {
         message:
           error instanceof Error ? error.message : "Failed to delete resume",
       };
+    }
+  }
+
+  /**
+   * Fetch all groups
+   * GET /groups
+   */
+  async getGroups(): Promise<Group[]> {
+    try {
+      const url = `${this.baseURL}/groups`;
+      console.log(`🌐 API Service: Fetching groups from: ${url}`);
+
+      const response = await this.fetchWithRetry<GroupListResponse>(url, {
+        method: "GET",
+      });
+
+      console.log(`📡 Groups API Response:`, response);
+
+      // Handle response structure - adapt based on actual API response
+      const groups = response.data || response || [];
+
+      // Transform to ensure consistent Group interface
+      const transformedGroups: Group[] = Array.isArray(groups)
+        ? groups.map((group: any) => ({
+            id: group.id || 0,
+            name: group.name || "Unknown Group",
+            description: group.description || "",
+            createdAt:
+              group.createdAt || group.created_at || new Date().toISOString(),
+            resumeCount: group.resumeCount || group.resume_count || 0,
+          }))
+        : [];
+
+      console.log(`✅ Successfully fetched ${transformedGroups.length} groups`);
+      return transformedGroups;
+    } catch (error) {
+      console.error("❌ Error fetching groups:", error);
+      // Return empty array to maintain app functionality
+      return [];
+    }
+  }
+
+  /**
+   * Create a new group
+   * POST /groups
+   */
+  async createGroup(groupData: CreateGroupRequest): Promise<Group> {
+    try {
+      const url = `${this.baseURL}/groups`;
+      console.log(`🆕 API Service: Creating group at: ${url}`, groupData);
+
+      const response = await this.fetchWithRetry<CreateGroupResponse>(url, {
+        method: "POST",
+        body: JSON.stringify(groupData),
+      });
+
+      console.log(`📡 Create Group API Response:`, response);
+
+      // Handle response structure
+      const responseData = response.data || response;
+
+      if (
+        !responseData ||
+        typeof responseData !== "object" ||
+        !("id" in responseData)
+      ) {
+        throw new Error("Invalid response: Group not created");
+      }
+
+      const group = responseData as Group;
+
+      // Transform to ensure consistent Group interface
+      const transformedGroup: Group = {
+        id: group.id,
+        name: group.name || groupData.name,
+        description: group.description || groupData.description || "",
+        createdAt:
+          group.createdAt || group.created_at || new Date().toISOString(),
+        resumeCount: group.resumeCount || group.resume_count || 0,
+      };
+
+      console.log(`✅ Successfully created group:`, transformedGroup);
+      return transformedGroup;
+    } catch (error) {
+      console.error("❌ Error creating group:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a group by ID
+   * DELETE /groups/{id}
+   */
+  async deleteGroup(
+    id: number
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      const url = `${this.baseURL}/groups/${id}`;
+      console.log(`🗑️ API Service: Deleting group with ID ${id} at: ${url}`);
+
+      const response = await this.fetchWithRetry<DeleteGroupResponse>(url, {
+        method: "DELETE",
+      });
+
+      console.log(`📡 Delete Group API Response:`, response);
+
+      return {
+        success: true,
+        message: response.message || "Group deleted successfully",
+      };
+    } catch (error) {
+      console.error("❌ Error deleting group:", error);
+
+      return {
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Failed to delete group",
+      };
+    }
+  }
+
+  /**
+   * Upload CVs to a specific group
+   * POST /upload_cv with group_id parameter
+   */
+  async uploadCVsToGroup(formData: FormData, groupId: number): Promise<any> {
+    try {
+      // Add group_id to the form data
+      formData.append("group_id", groupId.toString());
+
+      const url = `${this.baseURL}/upload_cv`;
+      console.log(
+        `📤 API Service: Uploading CVs to group ${groupId} at: ${url}`
+      );
+
+      // Use XMLHttpRequest for upload progress (same as original implementation)
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+
+        xhr.addEventListener("load", () => {
+          if (xhr.status === 200) {
+            let result: any = {};
+            try {
+              result = JSON.parse(xhr.responseText || "{}");
+            } catch (parseError) {
+              const actualFileCount = formData.getAll("cv").length;
+              result = {
+                message: "Files uploaded successfully",
+                successful: actualFileCount,
+              };
+            }
+
+            const actualFileCount = formData.getAll("cv").length;
+            const uploadResult = {
+              successful:
+                result.successful ||
+                result.files?.length ||
+                result.count ||
+                actualFileCount,
+              failed: result.failed || 0,
+              total:
+                result.total ||
+                result.files?.length ||
+                result.count ||
+                actualFileCount,
+              message:
+                result.message ||
+                result.status ||
+                "Files uploaded successfully to group!",
+              results: result.files || result.data || [],
+              errors: result.errors || [],
+            };
+
+            console.log(
+              `✅ Upload to group ${groupId} successful:`,
+              uploadResult
+            );
+            resolve(uploadResult);
+          } else {
+            const errorMessage =
+              xhr.responseText ||
+              `Upload failed: ${xhr.status} ${xhr.statusText}`;
+            console.error("❌ Upload to group failed:", errorMessage);
+            reject(new Error(errorMessage));
+          }
+        });
+
+        xhr.addEventListener("error", () => {
+          reject(new Error("Network error: Unable to connect to server"));
+        });
+
+        xhr.addEventListener("timeout", () => {
+          reject(
+            new Error("Upload timeout: The request took too long to complete")
+          );
+        });
+
+        xhr.open("POST", url);
+        xhr.setRequestHeader("Accept", "application/json");
+        xhr.timeout = 30000;
+        xhr.send(formData);
+      });
+    } catch (error) {
+      console.error("❌ Error uploading CVs to group:", error);
+      throw error;
     }
   }
 }

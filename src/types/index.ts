@@ -80,3 +80,31 @@ export interface DatabaseStats {
   processingCount: number;
   latestUpload: string;
 }
+
+// Group-related types for organizing CVs
+export interface Group {
+  id: number;
+  name: string;
+  description?: string;
+  createdAt: string;
+  created_at?: string; // Backend compatibility
+  resumeCount?: number;
+  resume_count?: number; // Backend compatibility
+}
+
+export interface CreateGroupRequest {
+  name: string;
+  description?: string;
+}
+
+export interface CreateGroupResponse extends ApiResponse {
+  data?: Group;
+}
+
+export interface DeleteGroupResponse extends ApiResponse {
+  data?: { id: number };
+}
+
+export interface GroupListResponse extends ApiResponse {
+  data?: Group[];
+}
