@@ -40,7 +40,6 @@ import {
   CloudDone,
   ErrorOutline,
   Add,
-  KeyboardArrowDown,
   Warning,
 } from "@mui/icons-material";
 
@@ -101,6 +100,7 @@ const ResumeUploader = ({
     createGroup,
     deleteGroup,
     refreshGroups,
+    clearError,
   } = useGroups();
 
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
@@ -110,7 +110,12 @@ const ResumeUploader = ({
     open: boolean;
     group: Group | null;
   }>({ open: false, group: null });
+  const [cannotDeleteDialog, setCannotDeleteDialog] = useState<{
+    open: boolean;
+    group: Group | null;
+  }>({ open: false, group: null });
   const [addingGroup, setAddingGroup] = useState(false);
+  const [deletingGroup, setDeletingGroup] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
@@ -176,9 +181,10 @@ const ResumeUploader = ({
       setErrors(newErrors);
       setFiles((prev) => [...prev, ...validFiles]);
 
-      // Reset upload status when new files are added
+      // Reset upload status and results when new files are added
       if (uploadStatus !== "idle") {
         setUploadStatus("idle");
+        setUploadResults(null);
       }
     },
     [files.length, validateFile, uploadStatus]
@@ -196,9 +202,23 @@ const ResumeUploader = ({
   });
 
   // Remove file
-  const removeFile = useCallback((fileId: string) => {
-    setFiles((prev) => prev.filter((file) => file.id !== fileId));
-  }, []);
+  const removeFile = useCallback(
+    (fileId: string) => {
+      setFiles((prev) => {
+        const newFiles = prev.filter((file) => file.id !== fileId);
+
+        // Reset upload status and results if no files left
+        if (newFiles.length === 0 && uploadStatus !== "idle") {
+          setUploadStatus("idle");
+          setUploadResults(null);
+          setErrors([]);
+        }
+
+        return newFiles;
+      });
+    },
+    [uploadStatus]
+  );
 
   // Clear all files
   const clearAllFiles = useCallback(() => {
@@ -206,6 +226,7 @@ const ResumeUploader = ({
       setFiles([]);
       setUploadResults(null);
       setErrors([]);
+      setUploadStatus("idle");
     }
   }, [isUploading]);
 
@@ -215,8 +236,15 @@ const ResumeUploader = ({
       const groupId = event.target.value;
       const group = groups.find((g) => g.id.toString() === groupId) || null;
       setSelectedGroup(group);
+
+      // Reset upload status and results when group changes
+      if (uploadStatus !== "idle") {
+        setUploadStatus("idle");
+        setUploadResults(null);
+        setErrors([]);
+      }
     },
-    [groups]
+    [groups, uploadStatus]
   );
 
   const handleAddGroup = useCallback(async () => {
@@ -250,6 +278,10 @@ const ResumeUploader = ({
 
   const handleDeleteGroup = useCallback(
     async (group: Group) => {
+      setDeletingGroup(true);
+      // Clear any existing groups error before attempting delete
+      clearError();
+
       try {
         const success = await deleteGroup(group.id);
         if (success) {
@@ -266,13 +298,31 @@ const ResumeUploader = ({
           setSnackbarSeverity("error");
           setSnackbarOpen(true);
         }
-      } catch (error) {
-        setSnackbarMessage("Failed to delete group");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
+      } catch (error: any) {
+        // Clear the groups error state to prevent it from showing in the alert
+        clearError();
+
+        // Check if the error is specifically about CVs being linked to the group
+        const errorMessage = error?.message || error?.toString() || "";
+        const isLinkedCVsError =
+          errorMessage.includes("Cannot delete group with CVs linked to it") ||
+          errorMessage.includes("CVs linked") ||
+          errorMessage.includes("associated data");
+
+        if (isLinkedCVsError) {
+          // Hide delete confirmation modal and show informative modal
+          setDeleteGroupDialog({ open: false, group: null });
+          setCannotDeleteDialog({ open: true, group });
+        } else {
+          setSnackbarMessage("Failed to delete group. Please try again.");
+          setSnackbarSeverity("error");
+          setSnackbarOpen(true);
+        }
+      } finally {
+        setDeletingGroup(false);
       }
     },
-    [deleteGroup, selectedGroup]
+    [deleteGroup, selectedGroup, capitalizeGroupName, clearError]
   );
 
   const openDeleteDialog = useCallback((group: Group) => {
@@ -281,6 +331,10 @@ const ResumeUploader = ({
 
   const closeDeleteDialog = useCallback(() => {
     setDeleteGroupDialog({ open: false, group: null });
+  }, []);
+
+  const closeCannotDeleteDialog = useCallback(() => {
+    setCannotDeleteDialog({ open: false, group: null });
   }, []);
 
   // Upload files to the backend API with group association
@@ -304,6 +358,9 @@ const ResumeUploader = ({
         formData.append("cv", fileWithProgress.file);
       });
 
+      // Add group name to the form data
+      formData.append("group", selectedGroup.name);
+
       setUploadProgress({
         filesProcessed: 0,
         totalFiles: files.length,
@@ -312,10 +369,7 @@ const ResumeUploader = ({
       });
 
       // Use the new uploadCVsToGroup method
-      const result = await apiService.uploadCVsToGroup(
-        formData,
-        selectedGroup.id
-      );
+      const result = await apiService.uploadCVsToGroup(formData);
 
       // Final progress update
       setUploadProgress((prev) => ({
@@ -333,7 +387,7 @@ const ResumeUploader = ({
       setUploadStatus("success");
       onUploadSuccess(result);
 
-      // Clear files after successful upload
+      // Clear files and upload results after successful upload
       setTimeout(() => {
         setFiles([]);
         setUploadProgress({
@@ -343,7 +397,8 @@ const ResumeUploader = ({
           percentage: 0,
         });
         setUploadStatus("idle");
-      }, 3000);
+        setUploadResults(null); // Clear the upload results to hide success UI
+      }, 5000); // Extended to 5 seconds for better UX
     } catch (error: unknown) {
       const errorMessage = (error as Error)?.message || "Upload failed";
       setErrors([errorMessage]);
@@ -485,13 +540,26 @@ const ResumeUploader = ({
                             e.stopPropagation();
                             openDeleteDialog(group);
                           }}
+                          disabled={deletingGroup}
                           sx={{
                             ml: 1,
                             color: "text.secondary",
                             "&:hover": { color: BRAND_COLORS.accent.red },
+                            "&:disabled": {
+                              color: BRAND_COLORS.neutral.whiteAlpha[30],
+                            },
                           }}
                         >
-                          <Delete fontSize="small" />
+                          {deletingGroup ? (
+                            <CircularProgress
+                              size={16}
+                              sx={{
+                                color: BRAND_COLORS.neutral.whiteAlpha[50],
+                              }}
+                            />
+                          ) : (
+                            <Delete fontSize="small" />
+                          )}
                         </IconButton>
                       </MenuItem>
                     ))}
@@ -540,7 +608,7 @@ const ResumeUploader = ({
             border: 3,
             borderStyle: "dashed",
             borderColor: !selectedGroup
-              ? BRAND_COLORS.neutral.whiteAlpha[30]
+              ? BRAND_COLORS.neutral.whiteAlpha[20]
               : uploadStatus === "success"
               ? "#22c55e"
               : uploadStatus === "error"
@@ -559,11 +627,11 @@ const ResumeUploader = ({
             justifyContent: "center",
             alignItems: "center",
             borderRadius: 2,
-            opacity: isUploading || !selectedGroup ? 0.6 : 1,
+            opacity: !selectedGroup ? 0.4 : isUploading ? 0.6 : 1,
             transition: "all 0.3s ease",
             "&:hover": {
               borderColor: !selectedGroup
-                ? BRAND_COLORS.neutral.whiteAlpha[30]
+                ? BRAND_COLORS.neutral.whiteAlpha[20]
                 : uploadStatus === "success"
                 ? "#16a34a"
                 : uploadStatus === "error"
@@ -582,15 +650,7 @@ const ResumeUploader = ({
           <input {...getInputProps()} />
 
           {/* Status Icon */}
-          {!selectedGroup ? (
-            <Warning
-              sx={{
-                fontSize: "5rem",
-                color: BRAND_COLORS.neutral.whiteAlpha[50],
-                mb: 3,
-              }}
-            />
-          ) : uploadStatus === "success" ? (
+          {uploadStatus === "success" ? (
             <CloudDone
               sx={{
                 fontSize: "5rem",
@@ -610,7 +670,9 @@ const ResumeUploader = ({
             <InsertDriveFile
               sx={{
                 fontSize: "5rem",
-                color: BRAND_COLORS.neutral.whiteAlpha[50],
+                color: !selectedGroup
+                  ? BRAND_COLORS.neutral.whiteAlpha[30]
+                  : BRAND_COLORS.neutral.whiteAlpha[50],
                 mb: 3,
               }}
             />
@@ -622,7 +684,7 @@ const ResumeUploader = ({
             fontWeight={600}
             sx={{
               color: !selectedGroup
-                ? BRAND_COLORS.neutral.whiteAlpha[70]
+                ? BRAND_COLORS.neutral.whiteAlpha[50]
                 : uploadStatus === "success"
                 ? "#22c55e"
                 : uploadStatus === "error"
@@ -631,9 +693,7 @@ const ResumeUploader = ({
               mb: 1,
             }}
           >
-            {!selectedGroup
-              ? "Select a Group First"
-              : uploadStatus === "success"
+            {uploadStatus === "success"
               ? "Upload Successful!"
               : uploadStatus === "error"
               ? "Upload Failed!"
@@ -643,50 +703,63 @@ const ResumeUploader = ({
           <Typography
             variant="body1"
             color="text.secondary"
-            sx={{ mb: 3, fontSize: "1.1rem" }}
+            sx={{
+              mb: 3,
+              fontSize: "1.1rem",
+              opacity: !selectedGroup ? 0.7 : 1,
+            }}
           >
-            {!selectedGroup
-              ? "Choose a group from the dropdown above to enable CV upload"
-              : uploadStatus === "success"
+            {uploadStatus === "success"
               ? "Your CVs have been processed successfully"
               : uploadStatus === "error"
               ? "Please try again or check your files"
               : "or click to browse files"}
           </Typography>
 
-          {/* Browse Files Button - Only enabled when group is selected */}
-          {selectedGroup && uploadStatus !== "success" && (
+          {/* Browse Files Button - Disabled when no group selected */}
+          {uploadStatus !== "success" && (
             <Button
               variant="contained"
               size="large"
               onClick={(e) => {
                 e.stopPropagation();
-                open();
+                if (selectedGroup) {
+                  open();
+                }
               }}
-              disabled={isUploading}
+              disabled={isUploading || !selectedGroup}
               startIcon={<InsertDriveFile />}
               sx={{
-                backgroundColor:
-                  uploadStatus === "error"
-                    ? "#ef4444"
-                    : BRAND_COLORS.primary.blue,
-                color: "white",
+                backgroundColor: !selectedGroup
+                  ? BRAND_COLORS.neutral.whiteAlpha[20]
+                  : uploadStatus === "error"
+                  ? "#ef4444"
+                  : BRAND_COLORS.primary.blue,
+                color: !selectedGroup
+                  ? BRAND_COLORS.neutral.whiteAlpha[60]
+                  : "white",
                 px: 4,
                 py: 1.5,
                 fontSize: "1rem",
                 fontWeight: 600,
                 textTransform: "none",
                 borderRadius: 2,
-                cursor: "pointer !important",
+                cursor: !selectedGroup
+                  ? "not-allowed !important"
+                  : "pointer !important",
                 "&:hover": {
-                  backgroundColor:
-                    uploadStatus === "error"
-                      ? "#dc2626"
-                      : BRAND_COLORS.primary.blueDark,
-                  cursor: "pointer !important",
+                  backgroundColor: !selectedGroup
+                    ? BRAND_COLORS.neutral.whiteAlpha[20]
+                    : uploadStatus === "error"
+                    ? "#dc2626"
+                    : BRAND_COLORS.primary.blueDark,
+                  cursor: !selectedGroup
+                    ? "not-allowed !important"
+                    : "pointer !important",
                 },
                 "&:disabled": {
-                  backgroundColor: BRAND_COLORS.neutral.whiteAlpha[30],
+                  backgroundColor: BRAND_COLORS.neutral.whiteAlpha[20],
+                  color: BRAND_COLORS.neutral.whiteAlpha[60],
                   cursor: "not-allowed !important",
                 },
               }}
@@ -698,14 +771,18 @@ const ResumeUploader = ({
 
         {/* Info Section */}
         <Alert
-          severity="info"
+          severity={!selectedGroup ? "warning" : "info"}
           icon={<Info />}
           sx={{
             mt: 2,
-            backgroundColor: "rgba(37, 99, 235, 0.1)",
-            border: `1px solid ${BRAND_COLORS.primary.blue}`,
+            backgroundColor: !selectedGroup
+              ? "rgba(255, 193, 7, 0.1)"
+              : "rgba(37, 99, 235, 0.1)",
+            border: !selectedGroup
+              ? `1px solid #ffc107`
+              : `1px solid ${BRAND_COLORS.primary.blue}`,
             "& .MuiAlert-icon": {
-              color: BRAND_COLORS.primary.blue,
+              color: !selectedGroup ? "#ffc107" : BRAND_COLORS.primary.blue,
             },
             "& .MuiAlert-message": {
               color: "text.primary",
@@ -713,8 +790,9 @@ const ResumeUploader = ({
             },
           }}
         >
-          Supported format: PDF only • Maximum size: 10MB per file
-          {!selectedGroup && " • Select a group to enable upload"}
+          {!selectedGroup
+            ? "Please select a group from the dropdown above to enable CV upload"
+            : "Supported format: PDF only • Maximum size: 10MB per file"}
         </Alert>
 
         {/* Error Messages */}
@@ -1183,7 +1261,7 @@ const ResumeUploader = ({
         {/* Delete Group Confirmation Dialog */}
         <Dialog
           open={deleteGroupDialog.open}
-          onClose={closeDeleteDialog}
+          onClose={deletingGroup ? undefined : closeDeleteDialog}
           maxWidth="sm"
           fullWidth
         >
@@ -1198,7 +1276,11 @@ const ResumeUploader = ({
             </Typography>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 3 }}>
-            <Button onClick={closeDeleteDialog} color="inherit">
+            <Button
+              onClick={closeDeleteDialog}
+              color="inherit"
+              disabled={deletingGroup}
+            >
               Cancel
             </Button>
             <Button
@@ -1208,12 +1290,106 @@ const ResumeUploader = ({
               }
               variant="contained"
               color="error"
+              disabled={deletingGroup}
+              startIcon={
+                deletingGroup ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : null
+              }
               sx={{
                 backgroundColor: BRAND_COLORS.accent.red,
                 "&:hover": { backgroundColor: BRAND_COLORS.accent.redDark },
+                "&:disabled": {
+                  backgroundColor: BRAND_COLORS.neutral.whiteAlpha[30],
+                },
+                minWidth: "100px",
               }}
             >
-              Delete
+              {deletingGroup ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Cannot Delete Group Informational Dialog */}
+        <Dialog
+          open={cannotDeleteDialog.open}
+          onClose={closeCannotDeleteDialog}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              border: `2px solid ${BRAND_COLORS.primary.blue}`,
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              fontWeight: 600,
+              color: BRAND_COLORS.primary.blue,
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              pb: 2,
+            }}
+          >
+            <Warning
+              sx={{ fontSize: "2rem", color: BRAND_COLORS.primary.blue }}
+            />
+            Cannot Delete Group
+          </DialogTitle>
+          <DialogContent sx={{ pb: 2 }}>
+            <Stack spacing={2}>
+              <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                The group "
+                <strong>
+                  {capitalizeGroupName(cannotDeleteDialog.group?.name || "")}
+                </strong>
+                " cannot be deleted because it contains CVs.
+              </Typography>
+
+              <Alert
+                severity="info"
+                sx={{
+                  backgroundColor: "rgba(37, 99, 235, 0.1)",
+                  border: `1px solid ${BRAND_COLORS.primary.blue}`,
+                  "& .MuiAlert-icon": {
+                    color: BRAND_COLORS.primary.blue,
+                  },
+                }}
+              >
+                <Typography variant="body2">
+                  <strong>To delete this group:</strong>
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  1. Navigate to the Resume Collection section
+                  <br />
+                  2. Filter by this group name
+                  <br />
+                  3. Remove or move all CVs to another group
+                  <br />
+                  4. Return here to delete the empty group
+                </Typography>
+              </Alert>
+
+              <Typography variant="body2" color="text.secondary">
+                This prevents accidental data loss and ensures your CVs are
+                safely managed.
+              </Typography>
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 3 }}>
+            <Button
+              onClick={closeCannotDeleteDialog}
+              variant="contained"
+              sx={{
+                backgroundColor: BRAND_COLORS.primary.blue,
+                "&:hover": { backgroundColor: BRAND_COLORS.primary.blueDark },
+                minWidth: "100px",
+                fontWeight: 600,
+              }}
+            >
+              Got It
             </Button>
           </DialogActions>
         </Dialog>

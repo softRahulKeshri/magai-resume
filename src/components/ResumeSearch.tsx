@@ -16,9 +16,11 @@ import {
   IconButton,
   Tooltip,
   Skeleton,
+  Select,
+  MenuItem,
+  FormControl,
 } from "@mui/material";
 import {
-  Search,
   Person,
   SearchOff,
   Clear,
@@ -27,11 +29,13 @@ import {
   FilterList,
   CheckCircle,
   Visibility,
+  Group as GroupIcon,
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 
 // Internal imports
 import { API_CONFIG } from "../theme/constants";
+import { useGroups } from "../hooks/useGroups";
 
 // Dark theme color palette for the entire application
 const AppColors = {
@@ -118,7 +122,7 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
     },
   },
   "& .MuiInputBase-input": {
-    padding: theme.spacing(2),
+    padding: theme.spacing(2, 2, 2, 1.5),
     color: AppColors.text.primary,
     "&::placeholder": {
       color: AppColors.text.secondary,
@@ -154,6 +158,45 @@ const SearchButton = styled(Button)(({ theme }) => ({
   },
 }));
 
+const GroupSelectContainer = styled(FormControl)(({ theme }) => ({
+  minWidth: 180,
+  "& .MuiOutlinedInput-root": {
+    height: 46,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    border: "none",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.03)",
+    },
+    "&.Mui-focused": {
+      backgroundColor: "rgba(255, 255, 255, 0.05)",
+      boxShadow: "none",
+    },
+    "& fieldset": {
+      border: "none",
+    },
+  },
+  "& .MuiInputLabel-root": {
+    display: "none", // Hide label for inline layout
+  },
+  "& .MuiSelect-select": {
+    color: AppColors.text.primary,
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing(1),
+    fontSize: "0.95rem",
+    padding: theme.spacing(1, 1.5),
+    borderRight: `1px solid ${AppColors.border.light}`,
+    "&:focus": {
+      backgroundColor: "transparent",
+    },
+  },
+  "& .MuiSelect-icon": {
+    color: AppColors.text.secondary,
+  },
+}));
+
 const MatchScoreChip = styled(Chip)(({ theme }) => ({
   backgroundColor: AppColors.success.main,
   color: AppColors.success.contrast,
@@ -164,6 +207,136 @@ const MatchScoreChip = styled(Chip)(({ theme }) => ({
     padding: theme.spacing(0, 1.5),
   },
 }));
+
+// Enhanced Score Badge Component
+const ScoreBadge = styled(Box)<{ score: number }>(({ theme, score }) => {
+  const getScoreColor = (score: number) => {
+    if (score >= 0.8)
+      return {
+        bg: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+        text: "#ffffff",
+        shadow: "0 4px 16px rgba(16, 185, 129, 0.4)",
+      };
+    if (score >= 0.6)
+      return {
+        bg: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+        text: "#ffffff",
+        shadow: "0 4px 16px rgba(59, 130, 246, 0.4)",
+      };
+    if (score >= 0.4)
+      return {
+        bg: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+        text: "#ffffff",
+        shadow: "0 4px 16px rgba(245, 158, 11, 0.4)",
+      };
+    return {
+      bg: "linear-gradient(135deg, #64748b 0%, #475569 100%)",
+      text: "#ffffff",
+      shadow: "0 4px 16px rgba(100, 116, 139, 0.4)",
+    };
+  };
+
+  const colors = getScoreColor(score);
+
+  return {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: "85px",
+    height: "40px",
+    background: colors.bg,
+    color: colors.text,
+    borderRadius: "12px",
+    fontWeight: 700,
+    fontSize: "0.95rem",
+    padding: theme.spacing(0.75, 2),
+    boxShadow: colors.shadow,
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    position: "relative",
+    overflow: "hidden",
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: "-100%",
+      width: "100%",
+      height: "100%",
+      background:
+        "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+      transition: "left 0.6s ease",
+    },
+    "&:hover::before": {
+      left: "100%",
+    },
+  };
+});
+
+const ScoreLabel = styled(Typography)(({ theme }) => ({
+  fontSize: "0.7rem",
+  fontWeight: 600,
+  color: AppColors.text.secondary,
+  textTransform: "uppercase",
+  letterSpacing: "0.5px",
+  marginBottom: theme.spacing(0.5),
+}));
+
+// Enhanced Result Card styling
+const ResultCard = styled(Card)<{ score?: number }>(({ theme, score = 0 }) => {
+  const getScoreAccent = (score: number) => {
+    if (score >= 0.8) return "#10b981"; // Green for excellent matches
+    if (score >= 0.6) return "#3b82f6"; // Blue for good matches
+    if (score >= 0.4) return "#f59e0b"; // Orange for fair matches
+    return "#64748b"; // Gray for lower matches
+  };
+
+  const getCardGlow = (score: number) => {
+    const accent = getScoreAccent(score);
+    return `0 0 0 1px ${accent}15, 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 16px ${accent}20`;
+  };
+
+  const getHoverGlow = (score: number) => {
+    const accent = getScoreAccent(score);
+    return `0 0 0 1px ${accent}25, 0 16px 48px rgba(0, 0, 0, 0.5), 0 4px 24px ${accent}30`;
+  };
+
+  return {
+    borderRadius: 12,
+    background: "linear-gradient(145deg, #1e293b 0%, #0f172a 100%)",
+    boxShadow: getCardGlow(score),
+    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+    position: "relative",
+    overflow: "hidden",
+    border: "none",
+    "&:hover": {
+      transform: "translateY(-6px)",
+      boxShadow: getHoverGlow(score),
+    },
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: "3px",
+      background: `linear-gradient(90deg, ${getScoreAccent(
+        score
+      )} 0%, ${getScoreAccent(score)}80 100%)`,
+      borderRadius: "12px 12px 0 0",
+    },
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background:
+        "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
+      borderRadius: 12,
+      pointerEvents: "none",
+    },
+  };
+});
 
 const StyledAlert = styled(Alert)(({ theme }) => ({
   borderRadius: theme.spacing(1.5),
@@ -274,6 +447,10 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
   const [searchResults, setSearchResults] = useState<CandidateResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState("");
+
+  // Groups management
+  const { groups, loading: groupsLoading, error: groupsError } = useGroups();
 
   // Helper function to clean up filename for display
   const getDisplayFilename = (originalFilename: string): string => {
@@ -340,150 +517,153 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
   };
 
   // Helper function to parse candidate information from raw text
-  const parseCandidateFromText = (chunk: RawChunkResult): CandidateResult => {
-    const text = chunk.text;
+  const parseCandidateFromText = useCallback(
+    (chunk: RawChunkResult): CandidateResult => {
+      const text = chunk.text;
 
-    // Extract email using regex
-    const emailMatch = text.match(
-      /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
-    );
-    const email = emailMatch ? emailMatch[0] : undefined;
+      // Extract email using regex
+      const emailMatch = text.match(
+        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
+      );
+      const email = emailMatch ? emailMatch[0] : undefined;
 
-    // Extract phone using regex (various formats)
-    const phoneMatch = text.match(
-      /(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}|\+?[0-9]{10,15}/
-    );
-    const phone = phoneMatch ? phoneMatch[0] : undefined;
+      // Extract phone using regex (various formats)
+      const phoneMatch = text.match(
+        /(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}|\+?[0-9]{10,15}/
+      );
+      const phone = phoneMatch ? phoneMatch[0] : undefined;
 
-    // Extract location (look for city, state patterns)
-    const locationMatch = text.match(
-      /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),?\s*([A-Z]{2}|[A-Z][a-z]+)/
-    );
-    const location = locationMatch
-      ? `${locationMatch[1]}, ${locationMatch[2]}`
-      : undefined;
+      // Extract location (look for city, state patterns)
+      const locationMatch = text.match(
+        /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),?\s*([A-Z]{2}|[A-Z][a-z]+)/
+      );
+      const location = locationMatch
+        ? `${locationMatch[1]}, ${locationMatch[2]}`
+        : undefined;
 
-    // Extract name (usually appears at the beginning or after contact info)
-    const lines = text.split("\n").filter((line) => line.trim());
-    let name = "Unknown Candidate";
+      // Extract name (usually appears at the beginning or after contact info)
+      const lines = text.split("\n").filter((line) => line.trim());
+      let name = "Unknown Candidate";
 
-    // Look for name patterns - typically first line or after contact info
-    for (const line of lines.slice(0, 5)) {
-      const trimmedLine = line.trim();
-      // Skip lines with common resume sections
-      if (
-        trimmedLine &&
-        !trimmedLine.includes("@") &&
-        !trimmedLine.match(/^\d/) &&
-        !trimmedLine.toUpperCase().includes("EDUCATION") &&
-        !trimmedLine.toUpperCase().includes("EXPERIENCE") &&
-        !trimmedLine.toUpperCase().includes("SKILLS") &&
-        !trimmedLine.includes("linkedin") &&
-        trimmedLine.length > 3 &&
-        trimmedLine.length < 50
-      ) {
-        // Check if it looks like a name (contains letters and possibly spaces)
-        if (/^[a-zA-Z\s.]+$/.test(trimmedLine)) {
-          name = trimmedLine;
+      // Look for name patterns - typically first line or after contact info
+      for (const line of lines.slice(0, 5)) {
+        const trimmedLine = line.trim();
+        // Skip lines with common resume sections
+        if (
+          trimmedLine &&
+          !trimmedLine.includes("@") &&
+          !trimmedLine.match(/^\d/) &&
+          !trimmedLine.toUpperCase().includes("EDUCATION") &&
+          !trimmedLine.toUpperCase().includes("EXPERIENCE") &&
+          !trimmedLine.toUpperCase().includes("SKILLS") &&
+          !trimmedLine.includes("linkedin") &&
+          trimmedLine.length > 3 &&
+          trimmedLine.length < 50
+        ) {
+          // Check if it looks like a name (contains letters and possibly spaces)
+          if (/^[a-zA-Z\s.]+$/.test(trimmedLine)) {
+            name = trimmedLine;
+            break;
+          }
+        }
+      }
+
+      // Extract skills - look for common tech skills
+      const skillsText = text.toLowerCase();
+      const commonSkills = [
+        "react",
+        "javascript",
+        "python",
+        "java",
+        "node",
+        "nodejs",
+        "angular",
+        "vue",
+        "typescript",
+        "html",
+        "css",
+        "sql",
+        "mongodb",
+        "postgresql",
+        "mysql",
+        "aws",
+        "docker",
+        "kubernetes",
+        "git",
+        "linux",
+        "tensorflow",
+        "pytorch",
+        "machine learning",
+        "data science",
+        "artificial intelligence",
+        "ai",
+        "streamlit",
+        "flask",
+        "django",
+        "express",
+        "spring",
+        "bootstrap",
+        "tailwind",
+        "sass",
+        "graphql",
+        "rest api",
+        "microservices",
+        "devops",
+        "ci/cd",
+        "jenkins",
+        "github",
+        "gitlab",
+        "figma",
+        "photoshop",
+      ];
+
+      const foundSkills = commonSkills.filter((skill) =>
+        skillsText.includes(skill.toLowerCase())
+      );
+
+      // Extract current role/position
+      const roleKeywords = [
+        "developer",
+        "engineer",
+        "manager",
+        "analyst",
+        "scientist",
+        "architect",
+        "consultant",
+      ];
+      let currentRole = undefined;
+
+      for (const line of lines) {
+        const lowerLine = line.toLowerCase();
+        if (roleKeywords.some((keyword) => lowerLine.includes(keyword))) {
+          currentRole = line.trim();
           break;
         }
       }
-    }
 
-    // Extract skills - look for common tech skills
-    const skillsText = text.toLowerCase();
-    const commonSkills = [
-      "react",
-      "javascript",
-      "python",
-      "java",
-      "node",
-      "nodejs",
-      "angular",
-      "vue",
-      "typescript",
-      "html",
-      "css",
-      "sql",
-      "mongodb",
-      "postgresql",
-      "mysql",
-      "aws",
-      "docker",
-      "kubernetes",
-      "git",
-      "linux",
-      "tensorflow",
-      "pytorch",
-      "machine learning",
-      "data science",
-      "artificial intelligence",
-      "ai",
-      "streamlit",
-      "flask",
-      "django",
-      "express",
-      "spring",
-      "bootstrap",
-      "tailwind",
-      "sass",
-      "graphql",
-      "rest api",
-      "microservices",
-      "devops",
-      "ci/cd",
-      "jenkins",
-      "github",
-      "gitlab",
-      "figma",
-      "photoshop",
-    ];
+      // Use the original source_file name as stored on the server
+      // Don't modify the filename as it needs to match the server's file storage
+      const filename = chunk.source_file;
 
-    const foundSkills = commonSkills.filter((skill) =>
-      skillsText.includes(skill.toLowerCase())
-    );
+      // Extract highlights
+      const highlights = extractHighlights(text);
 
-    // Extract current role/position
-    const roleKeywords = [
-      "developer",
-      "engineer",
-      "manager",
-      "analyst",
-      "scientist",
-      "architect",
-      "consultant",
-    ];
-    let currentRole = undefined;
-
-    for (const line of lines) {
-      const lowerLine = line.toLowerCase();
-      if (roleKeywords.some((keyword) => lowerLine.includes(keyword))) {
-        currentRole = line.trim();
-        break;
-      }
-    }
-
-    // Use the original source_file name as stored on the server
-    // Don't modify the filename as it needs to match the server's file storage
-    const filename = chunk.source_file;
-
-    // Extract highlights
-    const highlights = extractHighlights(text);
-
-    return {
-      id: chunk.id,
-      name,
-      email,
-      phone,
-      location,
-      currentRole,
-      skills: foundSkills.length > 0 ? foundSkills : undefined,
-      matchScore: chunk.score ? Math.min(chunk.score / 2, 1) : undefined, // Normalize score
-      filename,
-      rawText: text,
-      highlights,
-    };
-  };
+      return {
+        id: chunk.id,
+        name,
+        email,
+        phone,
+        location,
+        currentRole,
+        skills: foundSkills.length > 0 ? foundSkills : undefined,
+        matchScore: chunk.score ? Math.min(chunk.score / 2, 1) : undefined, // Normalize score
+        filename,
+        rawText: text,
+        highlights,
+      };
+    },
+    []
+  );
 
   // API search handler with POST method
   const handleSearch = useCallback(async () => {
@@ -494,15 +674,18 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
     setHasSearched(true);
 
     try {
+      // Prepare the request body
+      const requestBody: any = {
+        query: searchQuery.trim(),
+        group: selectedGroup && selectedGroup !== "" ? selectedGroup : null,
+      };
+
       const response = await fetch(`${API_CONFIG.baseURL}/search_api`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          query: searchQuery.trim(),
-          limit: 50,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -553,8 +736,15 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
           return acc;
         }, [] as CandidateResult[]);
 
-        setSearchResults(uniqueCandidates);
-        onSearchResults(uniqueCandidates);
+        // Sort candidates by match score in descending order
+        const sortedCandidates = uniqueCandidates.sort((a, b) => {
+          const scoreA = a.matchScore || 0;
+          const scoreB = b.matchScore || 0;
+          return scoreB - scoreA; // Descending order
+        });
+
+        setSearchResults(sortedCandidates);
+        onSearchResults(sortedCandidates);
       } else {
         setSearchResults([]);
         onSearchResults([]);
@@ -571,11 +761,12 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
     } finally {
       setIsSearching(false);
     }
-  }, [searchQuery, onSearchResults]);
+  }, [searchQuery, selectedGroup, onSearchResults, parseCandidateFromText]);
 
   // Clear search
   const clearSearch = useCallback(() => {
     setSearchQuery("");
+    setSelectedGroup("");
     setSearchResults([]);
     setHasSearched(false);
     setError(null);
@@ -646,23 +837,57 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
               scientist".
             </Typography>
 
-            {/* Enhanced Search Input */}
+            {/* Enhanced Search Input with Integrated Group Filter */}
             <SearchContainer>
-              <Search
-                sx={{
-                  color: AppColors.text.secondary,
-                  ml: 2,
-                  fontSize: "1.4rem",
-                }}
-              />
+              {/* Group Selection - Integrated */}
+              <GroupSelectContainer variant="outlined" sx={{ ml: 2 }}>
+                <Select
+                  value={selectedGroup}
+                  onChange={(e) => setSelectedGroup(e.target.value)}
+                  disabled={groupsLoading}
+                  displayEmpty
+                >
+                  <MenuItem value="">
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <AutoAwesome
+                        sx={{ fontSize: "16px", color: AppColors.primary.main }}
+                      />
+                      <Typography sx={{ fontSize: "0.95rem" }}>
+                        All Groups
+                      </Typography>
+                    </Box>
+                  </MenuItem>
+                  {groups.map((group) => (
+                    <MenuItem key={group.id} value={group.name}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <GroupIcon
+                          sx={{
+                            fontSize: "16px",
+                            color: AppColors.text.secondary,
+                          }}
+                        />
+                        <Typography sx={{ fontSize: "0.95rem" }}>
+                          {group.name}
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </GroupSelectContainer>
+
               <StyledTextField
                 fullWidth
-                placeholder="Search for candidates by skills, experience, or role..."
+                placeholder={`Search for candidates by skills, experience, or role${
+                  selectedGroup ? ` in ${selectedGroup}` : " across all groups"
+                }...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
                 variant="outlined"
               />
+
               {searchQuery && (
                 <Tooltip title="Clear search">
                   <IconButton
@@ -680,6 +905,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                   </IconButton>
                 </Tooltip>
               )}
+
               <SearchButton
                 onClick={handleSearch}
                 disabled={isSearching || !searchQuery.trim()}
@@ -698,7 +924,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
         </HeroSection>
 
         {/* Error Display */}
-        <Fade in={!!error}>
+        <Fade in={!!(error || groupsError)}>
           <Box>
             {error && (
               <StyledAlert
@@ -707,6 +933,11 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                 onClose={() => setError(null)}
               >
                 {error}
+              </StyledAlert>
+            )}
+            {groupsError && (
+              <StyledAlert severity="warning" sx={{ mb: 3 }}>
+                Failed to load groups: {groupsError}. Searching in all groups.
               </StyledAlert>
             )}
           </Box>
@@ -738,7 +969,6 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                   <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     <Skeleton variant="circular" width={24} height={24} />
                     <Skeleton variant="text" width={200} height={32} />
-                    <Skeleton variant="rounded" width={80} height={24} />
                   </Box>
                   <Skeleton variant="rounded" width={120} height={36} />
                 </Box>
@@ -795,11 +1025,40 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                           }}
                         >
                           Search Results
+                          {selectedGroup && (
+                            <Typography
+                              component="span"
+                              variant="h6"
+                              sx={{
+                                ml: 1,
+                                fontWeight: 500,
+                                color: AppColors.text.secondary,
+                                fontSize: "1rem",
+                              }}
+                            >
+                              in "{selectedGroup}"
+                            </Typography>
+                          )}
                         </Typography>
                         <MatchScoreChip
                           label={`${searchResults.length} matches`}
                           size="small"
                         />
+                        {selectedGroup && (
+                          <Chip
+                            icon={<GroupIcon sx={{ fontSize: "14px" }} />}
+                            label={selectedGroup}
+                            size="small"
+                            sx={{
+                              backgroundColor: AppColors.primary.light,
+                              color: AppColors.primary.contrast,
+                              fontWeight: 500,
+                              "& .MuiChip-icon": {
+                                color: AppColors.primary.contrast,
+                              },
+                            }}
+                          />
+                        )}
                       </Box>
                       <Button
                         onClick={clearSearch}
@@ -820,7 +1079,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                     </Box>
 
                     <Box
-                      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+                      sx={{ display: "flex", flexDirection: "column", gap: 3 }}
                     >
                       {searchResults.map((candidate, index) => (
                         <Zoom
@@ -828,371 +1087,633 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                           timeout={300 + index * 100}
                           key={candidate.id || index}
                         >
-                          <Card
-                            sx={{
-                              borderRadius: 2,
-                              border: `1px solid ${AppColors.border.light}`,
-                              backgroundColor: "#ffffff",
-                              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                              transition: "all 0.3s ease",
-                              "&:hover": {
-                                transform: "translateY(-2px)",
-                                boxShadow: "0 8px 25px rgba(0, 0, 0, 0.15)",
-                              },
-                            }}
-                          >
-                            <CardContent sx={{ p: 3 }}>
-                              {/* Header with person icon and filename */}
+                          <ResultCard score={candidate.matchScore || 0}>
+                            <CardContent sx={{ p: 0 }}>
+                              {/* Enhanced Header with Score */}
                               <Box
                                 sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 2,
-                                  mb: 3,
+                                  background:
+                                    "linear-gradient(135deg, rgba(248, 250, 252, 0.06) 0%, rgba(241, 245, 249, 0.02) 100%)",
+                                  backdropFilter: "blur(20px)",
+                                  p: 4,
+                                  borderRadius: "12px 12px 0 0",
+                                  position: "relative",
+                                  borderBottom:
+                                    "1px solid rgba(203, 213, 225, 0.08)",
                                 }}
                               >
-                                <Person
+                                {/* Score Badge - Top Right */}
+                                <Box
                                   sx={{
-                                    fontSize: "1.5rem",
-                                    color: "#64748b",
-                                  }}
-                                />
-                                <Typography
-                                  variant="h6"
-                                  sx={{
-                                    fontWeight: 600,
-                                    color: "#334155",
-                                    fontSize: "1.1rem",
+                                    position: "absolute",
+                                    top: 20,
+                                    right: 20,
+                                    textAlign: "center",
                                   }}
                                 >
-                                  Candidate from file:{" "}
-                                  {getDisplayFilename(candidate.filename || "")}
-                                </Typography>
-                              </Box>
+                                  <ScoreLabel
+                                    sx={{
+                                      color: AppColors.text.secondary,
+                                      fontSize: "0.75rem",
+                                      mb: 1,
+                                    }}
+                                  >
+                                    Match Score
+                                  </ScoreLabel>
+                                  <ScoreBadge score={candidate.matchScore || 0}>
+                                    {(
+                                      (candidate.matchScore || 0) * 100
+                                    ).toFixed(0)}
+                                    %
+                                  </ScoreBadge>
+                                </Box>
 
-                              {/* Key highlights with checkmarks */}
-                              <Box sx={{ mb: 3 }}>
-                                {candidate.highlights &&
-                                candidate.highlights.length > 0 ? (
-                                  candidate.highlights.map(
-                                    (highlight, highlightIndex) => (
-                                      <Box
-                                        key={highlightIndex}
-                                        sx={{
-                                          display: "flex",
-                                          alignItems: "flex-start",
-                                          gap: 1.5,
-                                          mb: 1.5,
-                                        }}
-                                      >
-                                        <CheckCircle
-                                          sx={{
-                                            color: "#10b981",
-                                            fontSize: "16px",
-                                            flexShrink: 0,
-                                            mt: 0.2,
-                                          }}
-                                        />
-                                        <Typography
-                                          variant="body2"
-                                          sx={{
-                                            color: "#64748b",
-                                            lineHeight: 1.5,
-                                          }}
-                                        >
-                                          {highlight}
-                                        </Typography>
-                                      </Box>
-                                    )
-                                  )
-                                ) : (
-                                  // Fallback to skills and role if no highlights
-                                  <>
-                                    {candidate.skills &&
-                                      candidate.skills.length > 0 && (
-                                        <Box
-                                          sx={{
-                                            display: "flex",
-                                            alignItems: "flex-start",
-                                            gap: 1.5,
-                                            mb: 1.5,
-                                          }}
-                                        >
-                                          <CheckCircle
-                                            sx={{
-                                              color: "#10b981",
-                                              fontSize: "16px",
-                                              flexShrink: 0,
-                                              mt: 0.2,
-                                            }}
-                                          />
-                                          <Typography
-                                            variant="body2"
-                                            sx={{
-                                              color: "#64748b",
-                                              lineHeight: 1.5,
-                                            }}
-                                          >
-                                            Skilled in{" "}
-                                            {candidate.skills
-                                              .slice(0, 5)
-                                              .join(", ")}
-                                            {candidate.skills.length > 5 &&
-                                              ` and ${
-                                                candidate.skills.length - 5
-                                              } more technologies`}
-                                          </Typography>
-                                        </Box>
-                                      )}
-
-                                    {candidate.currentRole && (
-                                      <Box
-                                        sx={{
-                                          display: "flex",
-                                          alignItems: "flex-start",
-                                          gap: 1.5,
-                                          mb: 1.5,
-                                        }}
-                                      >
-                                        <CheckCircle
-                                          sx={{
-                                            color: "#10b981",
-                                            fontSize: "16px",
-                                            flexShrink: 0,
-                                            mt: 0.2,
-                                          }}
-                                        />
-                                        <Typography
-                                          variant="body2"
-                                          sx={{
-                                            color: "#64748b",
-                                            lineHeight: 1.5,
-                                          }}
-                                        >
-                                          {candidate.currentRole}
-                                        </Typography>
-                                      </Box>
-                                    )}
-
-                                    {(!candidate.skills ||
-                                      candidate.skills.length === 0) &&
-                                      !candidate.currentRole &&
-                                      candidate.rawText && (
-                                        <Box
-                                          sx={{
-                                            display: "flex",
-                                            alignItems: "flex-start",
-                                            gap: 1.5,
-                                            mb: 1.5,
-                                          }}
-                                        >
-                                          <CheckCircle
-                                            sx={{
-                                              color: "#10b981",
-                                              fontSize: "16px",
-                                              flexShrink: 0,
-                                              mt: 0.2,
-                                            }}
-                                          />
-                                          <Typography
-                                            variant="body2"
-                                            sx={{
-                                              color: "#64748b",
-                                              lineHeight: 1.5,
-                                            }}
-                                          >
-                                            {candidate.rawText.substring(
-                                              0,
-                                              120
-                                            )}
-                                            ...
-                                          </Typography>
-                                        </Box>
-                                      )}
-                                  </>
-                                )}
-                              </Box>
-
-                              {/* Action Buttons */}
-                              <Box sx={{ display: "flex", gap: 1 }}>
-                                <Button
-                                  variant="contained"
-                                  startIcon={
-                                    <Visibility sx={{ fontSize: "16px" }} />
-                                  }
+                                {/* Candidate Info */}
+                                <Box
                                   sx={{
-                                    backgroundColor: "#10b981",
-                                    color: "white",
-                                    textTransform: "none",
-                                    fontWeight: 600,
-                                    borderRadius: 2,
-                                    px: 2.5,
-                                    py: 1,
-                                    fontSize: "0.9rem",
-                                    cursor: "pointer !important",
-                                    "&:hover": {
-                                      backgroundColor: "#059669",
-                                      cursor: "pointer !important",
-                                    },
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 3,
+                                    mr: 14, // Make room for score badge
                                   }}
-                                  onClick={() => {
-                                    try {
-                                      // Use original filename for API calls (not display version)
-                                      const originalFilename =
-                                        candidate.filename || candidate.id;
+                                >
+                                  <Box
+                                    sx={{
+                                      width: 56,
+                                      height: 56,
+                                      borderRadius: "12px",
+                                      background:
+                                        "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      boxShadow:
+                                        "0 8px 24px rgba(59, 130, 246, 0.3)",
+                                      border:
+                                        "2px solid rgba(59, 130, 246, 0.2)",
+                                      position: "relative",
+                                      "&::after": {
+                                        content: '""',
+                                        position: "absolute",
+                                        inset: 0,
+                                        borderRadius: "10px",
+                                        background:
+                                          "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%)",
+                                      },
+                                    }}
+                                  >
+                                    <Person
+                                      sx={{
+                                        fontSize: "2rem",
+                                        color: "white",
+                                        position: "relative",
+                                        zIndex: 1,
+                                      }}
+                                    />
+                                  </Box>
+                                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                                    <Typography
+                                      variant="h5"
+                                      sx={{
+                                        fontWeight: 700,
+                                        color: AppColors.text.primary,
+                                        fontSize: "1.3rem",
+                                        mb: 1,
+                                        wordBreak: "break-word",
+                                        lineHeight: 1.3,
+                                      }}
+                                    >
+                                      {getDisplayFilename(
+                                        candidate.filename || ""
+                                      )}
+                                    </Typography>
+                                    <Typography
+                                      variant="body1"
+                                      sx={{
+                                        color: AppColors.text.secondary,
+                                        fontSize: "1rem",
+                                        fontWeight: 500,
+                                        opacity: 0.8,
+                                      }}
+                                    >
+                                      Candidate Profile
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </Box>
 
-                                      if (!originalFilename) {
+                              {/* Content Section */}
+                              <Box sx={{ p: 4 }}>
+                                {/* Key highlights with enhanced styling */}
+                                <Box sx={{ mb: 4 }}>
+                                  {candidate.highlights &&
+                                  candidate.highlights.length > 0 ? (
+                                    candidate.highlights.map(
+                                      (highlight, highlightIndex) => (
+                                        <Box
+                                          key={highlightIndex}
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "flex-start",
+                                            gap: 2.5,
+                                            mb: 3,
+                                            p: 3,
+                                            backgroundColor:
+                                              "rgba(248, 250, 252, 0.04)",
+                                            borderRadius: 2,
+                                            border:
+                                              "1px solid rgba(203, 213, 225, 0.08)",
+                                            transition: "all 0.3s ease",
+                                            "&:hover": {
+                                              backgroundColor:
+                                                "rgba(248, 250, 252, 0.07)",
+                                              borderColor:
+                                                "rgba(203, 213, 225, 0.15)",
+                                              transform: "translateX(8px)",
+                                              boxShadow:
+                                                "0 4px 16px rgba(0, 0, 0, 0.1)",
+                                            },
+                                          }}
+                                        >
+                                          <Box
+                                            sx={{
+                                              width: 24,
+                                              height: 24,
+                                              borderRadius: "50%",
+                                              backgroundColor: "#10b981",
+                                              display: "flex",
+                                              alignItems: "center",
+                                              justifyContent: "center",
+                                              flexShrink: 0,
+                                              mt: 0.2,
+                                              boxShadow:
+                                                "0 2px 8px rgba(16, 185, 129, 0.3)",
+                                            }}
+                                          >
+                                            <CheckCircle
+                                              sx={{
+                                                color: "white",
+                                                fontSize: "14px",
+                                              }}
+                                            />
+                                          </Box>
+                                          <Typography
+                                            variant="body1"
+                                            sx={{
+                                              color: AppColors.text.primary,
+                                              lineHeight: 1.6,
+                                              fontSize: "1rem",
+                                              fontWeight: 500,
+                                            }}
+                                          >
+                                            {highlight}
+                                          </Typography>
+                                        </Box>
+                                      )
+                                    )
+                                  ) : (
+                                    // Fallback to skills and role if no highlights
+                                    <>
+                                      {candidate.skills &&
+                                        candidate.skills.length > 0 && (
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "flex-start",
+                                              gap: 2.5,
+                                              mb: 3,
+                                              p: 3,
+                                              backgroundColor:
+                                                "rgba(248, 250, 252, 0.04)",
+                                              borderRadius: 2,
+                                              border:
+                                                "1px solid rgba(203, 213, 225, 0.08)",
+                                              transition: "all 0.3s ease",
+                                              "&:hover": {
+                                                backgroundColor:
+                                                  "rgba(248, 250, 252, 0.07)",
+                                                borderColor:
+                                                  "rgba(203, 213, 225, 0.15)",
+                                                transform: "translateX(8px)",
+                                                boxShadow:
+                                                  "0 4px 16px rgba(0, 0, 0, 0.1)",
+                                              },
+                                            }}
+                                          >
+                                            <Box
+                                              sx={{
+                                                width: 24,
+                                                height: 24,
+                                                borderRadius: "50%",
+                                                backgroundColor: "#10b981",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                flexShrink: 0,
+                                                mt: 0.2,
+                                                boxShadow:
+                                                  "0 2px 8px rgba(16, 185, 129, 0.3)",
+                                              }}
+                                            >
+                                              <CheckCircle
+                                                sx={{
+                                                  color: "white",
+                                                  fontSize: "14px",
+                                                }}
+                                              />
+                                            </Box>
+                                            <Typography
+                                              variant="body1"
+                                              sx={{
+                                                color: AppColors.text.primary,
+                                                lineHeight: 1.6,
+                                                fontSize: "1rem",
+                                                fontWeight: 500,
+                                              }}
+                                            >
+                                              Skilled in{" "}
+                                              {candidate.skills
+                                                .slice(0, 5)
+                                                .join(", ")}
+                                              {candidate.skills.length > 5 &&
+                                                ` and ${
+                                                  candidate.skills.length - 5
+                                                } more technologies`}
+                                            </Typography>
+                                          </Box>
+                                        )}
+
+                                      {candidate.currentRole && (
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "flex-start",
+                                            gap: 2.5,
+                                            mb: 3,
+                                            p: 3,
+                                            backgroundColor:
+                                              "rgba(248, 250, 252, 0.04)",
+                                            borderRadius: 2,
+                                            border:
+                                              "1px solid rgba(203, 213, 225, 0.08)",
+                                            transition: "all 0.3s ease",
+                                            "&:hover": {
+                                              backgroundColor:
+                                                "rgba(248, 250, 252, 0.07)",
+                                              borderColor:
+                                                "rgba(203, 213, 225, 0.15)",
+                                              transform: "translateX(8px)",
+                                              boxShadow:
+                                                "0 4px 16px rgba(0, 0, 0, 0.1)",
+                                            },
+                                          }}
+                                        >
+                                          <Box
+                                            sx={{
+                                              width: 24,
+                                              height: 24,
+                                              borderRadius: "50%",
+                                              backgroundColor: "#10b981",
+                                              display: "flex",
+                                              alignItems: "center",
+                                              justifyContent: "center",
+                                              flexShrink: 0,
+                                              mt: 0.2,
+                                              boxShadow:
+                                                "0 2px 8px rgba(16, 185, 129, 0.3)",
+                                            }}
+                                          >
+                                            <CheckCircle
+                                              sx={{
+                                                color: "white",
+                                                fontSize: "14px",
+                                              }}
+                                            />
+                                          </Box>
+                                          <Typography
+                                            variant="body1"
+                                            sx={{
+                                              color: AppColors.text.primary,
+                                              lineHeight: 1.6,
+                                              fontSize: "1rem",
+                                              fontWeight: 500,
+                                            }}
+                                          >
+                                            {candidate.currentRole}
+                                          </Typography>
+                                        </Box>
+                                      )}
+
+                                      {(!candidate.skills ||
+                                        candidate.skills.length === 0) &&
+                                        !candidate.currentRole &&
+                                        candidate.rawText && (
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "flex-start",
+                                              gap: 2.5,
+                                              mb: 3,
+                                              p: 3,
+                                              backgroundColor:
+                                                "rgba(248, 250, 252, 0.04)",
+                                              borderRadius: 2,
+                                              border:
+                                                "1px solid rgba(203, 213, 225, 0.08)",
+                                              transition: "all 0.3s ease",
+                                              "&:hover": {
+                                                backgroundColor:
+                                                  "rgba(248, 250, 252, 0.07)",
+                                                borderColor:
+                                                  "rgba(203, 213, 225, 0.15)",
+                                                transform: "translateX(8px)",
+                                                boxShadow:
+                                                  "0 4px 16px rgba(0, 0, 0, 0.1)",
+                                              },
+                                            }}
+                                          >
+                                            <Box
+                                              sx={{
+                                                width: 24,
+                                                height: 24,
+                                                borderRadius: "50%",
+                                                backgroundColor: "#10b981",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                flexShrink: 0,
+                                                mt: 0.2,
+                                                boxShadow:
+                                                  "0 2px 8px rgba(16, 185, 129, 0.3)",
+                                              }}
+                                            >
+                                              <CheckCircle
+                                                sx={{
+                                                  color: "white",
+                                                  fontSize: "14px",
+                                                }}
+                                              />
+                                            </Box>
+                                            <Typography
+                                              variant="body1"
+                                              sx={{
+                                                color: AppColors.text.primary,
+                                                lineHeight: 1.6,
+                                                fontSize: "1rem",
+                                                fontWeight: 500,
+                                              }}
+                                            >
+                                              {candidate.rawText.substring(
+                                                0,
+                                                120
+                                              )}
+                                              ...
+                                            </Typography>
+                                          </Box>
+                                        )}
+                                    </>
+                                  )}
+                                </Box>
+
+                                {/* Enhanced Action Buttons */}
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    gap: 3,
+                                    pt: 3,
+                                    borderTop:
+                                      "1px solid rgba(203, 213, 225, 0.08)",
+                                  }}
+                                >
+                                  <Button
+                                    variant="contained"
+                                    startIcon={
+                                      <Visibility sx={{ fontSize: "20px" }} />
+                                    }
+                                    sx={{
+                                      background:
+                                        "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                                      color: "white",
+                                      textTransform: "none",
+                                      fontWeight: 600,
+                                      borderRadius: 2,
+                                      px: 4,
+                                      py: 2,
+                                      fontSize: "1rem",
+                                      boxShadow:
+                                        "0 6px 20px rgba(59, 130, 246, 0.4)",
+                                      border:
+                                        "1px solid rgba(59, 130, 246, 0.3)",
+                                      cursor: "pointer !important",
+                                      position: "relative",
+                                      overflow: "hidden",
+                                      "&::before": {
+                                        content: '""',
+                                        position: "absolute",
+                                        top: 0,
+                                        left: "-100%",
+                                        width: "100%",
+                                        height: "100%",
+                                        background:
+                                          "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+                                        transition: "left 0.6s ease",
+                                      },
+                                      "&:hover": {
+                                        background:
+                                          "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                                        cursor: "pointer !important",
+                                        boxShadow:
+                                          "0 8px 28px rgba(59, 130, 246, 0.6)",
+                                        transform: "translateY(-3px)",
+                                      },
+                                      "&:hover::before": {
+                                        left: "100%",
+                                      },
+                                    }}
+                                    onClick={() => {
+                                      try {
+                                        // Use original filename for API calls (not display version)
+                                        const originalFilename =
+                                          candidate.filename || candidate.id;
+
+                                        if (!originalFilename) {
+                                          console.error(
+                                            "No filename available for viewing"
+                                          );
+                                          alert(
+                                            "Unable to view CV: Filename not available"
+                                          );
+                                          return;
+                                        }
+
+                                        const viewUrl = `${API_CONFIG.baseURL}/uploads/${originalFilename}`;
+                                        console.log(
+                                          "Opening CV viewer with URL:",
+                                          viewUrl
+                                        );
+                                        window.open(viewUrl, "_blank");
+                                      } catch (error) {
                                         console.error(
-                                          "No filename available for viewing"
+                                          "Error viewing CV:",
+                                          error
                                         );
                                         alert(
-                                          "Unable to view CV: Filename not available"
+                                          "Failed to open CV viewer. Please try again."
                                         );
-                                        return;
                                       }
+                                    }}
+                                  >
+                                    View CV
+                                  </Button>
 
-                                      const viewUrl = `${API_CONFIG.baseURL}/uploads/${originalFilename}`;
-                                      console.log(
-                                        "Opening CV viewer with URL:",
-                                        viewUrl
-                                      );
-                                      window.open(viewUrl, "_blank");
-                                    } catch (error) {
-                                      console.error("Error viewing CV:", error);
-                                      alert(
-                                        "Failed to open CV viewer. Please try again."
-                                      );
+                                  <Button
+                                    variant="outlined"
+                                    startIcon={
+                                      <Box
+                                        component="span"
+                                        sx={{ fontSize: "20px" }}
+                                      >
+                                        📥
+                                      </Box>
                                     }
-                                  }}
-                                >
-                                  View CV
-                                </Button>
-
-                                <Button
-                                  variant="outlined"
-                                  startIcon={
-                                    <Box
-                                      component="span"
-                                      sx={{ fontSize: "16px" }}
-                                    >
-                                      📥
-                                    </Box>
-                                  }
-                                  sx={{
-                                    borderColor: "#10b981",
-                                    color: "#10b981",
-                                    textTransform: "none",
-                                    fontWeight: 600,
-                                    borderRadius: 2,
-                                    px: 2.5,
-                                    py: 1,
-                                    fontSize: "0.9rem",
-                                    cursor: "pointer !important",
-                                    "&:hover": {
-                                      backgroundColor: "#10b981",
-                                      color: "white",
+                                    sx={{
+                                      borderColor: "#10b981",
+                                      color: "#10b981",
+                                      textTransform: "none",
+                                      fontWeight: 600,
+                                      borderRadius: 2,
+                                      px: 4,
+                                      py: 2,
+                                      fontSize: "1rem",
+                                      borderWidth: "2px",
                                       cursor: "pointer !important",
-                                    },
-                                  }}
-                                  onClick={async () => {
-                                    try {
-                                      // Use original source_file name for API calls (not display version)
-                                      // This matches the actual filename stored on the server
-                                      const originalFilename =
-                                        candidate.filename || candidate.id;
+                                      background: "rgba(16, 185, 129, 0.08)",
+                                      position: "relative",
+                                      overflow: "hidden",
+                                      "&::before": {
+                                        content: '""',
+                                        position: "absolute",
+                                        top: 0,
+                                        left: "-100%",
+                                        width: "100%",
+                                        height: "100%",
+                                        background:
+                                          "linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.1), transparent)",
+                                        transition: "left 0.6s ease",
+                                      },
+                                      "&:hover": {
+                                        backgroundColor: "#10b981",
+                                        color: "white",
+                                        cursor: "pointer !important",
+                                        borderColor: "#10b981",
+                                        transform: "translateY(-3px)",
+                                        boxShadow:
+                                          "0 8px 28px rgba(16, 185, 129, 0.4)",
+                                      },
+                                      "&:hover::before": {
+                                        left: "100%",
+                                      },
+                                    }}
+                                    onClick={async () => {
+                                      try {
+                                        // Use original source_file name for API calls (not display version)
+                                        // This matches the actual filename stored on the server
+                                        const originalFilename =
+                                          candidate.filename || candidate.id;
 
-                                      if (!originalFilename) {
-                                        throw new Error(
-                                          "Filename not available for download"
-                                        );
-                                      }
-
-                                      console.log(
-                                        "Attempting to download file:",
-                                        originalFilename
-                                      );
-                                      console.log(
-                                        "Download URL:",
-                                        `${API_CONFIG.baseURL}/uploads/${originalFilename}`
-                                      );
-
-                                      // Fetch the file for download
-                                      const response = await fetch(
-                                        `${API_CONFIG.baseURL}/uploads/${originalFilename}`,
-                                        {
-                                          method: "GET",
-                                          headers: {
-                                            Accept:
-                                              "application/pdf,application/octet-stream,*/*",
-                                          },
+                                        if (!originalFilename) {
+                                          throw new Error(
+                                            "Filename not available for download"
+                                          );
                                         }
-                                      );
-
-                                      console.log(
-                                        "Download response status:",
-                                        response.status
-                                      );
-
-                                      if (response.ok) {
-                                        // Get the file as a blob
-                                        const blob = await response.blob();
-                                        const url =
-                                          window.URL.createObjectURL(blob);
-
-                                        // Create a temporary link element and trigger download
-                                        const link =
-                                          document.createElement("a");
-                                        link.href = url;
-                                        // Use original filename for download (no modifications)
-                                        link.download = originalFilename;
-                                        // Ensure the link is not visible
-                                        link.style.display = "none";
-                                        document.body.appendChild(link);
-                                        link.click();
-
-                                        // Clean up
-                                        document.body.removeChild(link);
-                                        window.URL.revokeObjectURL(url);
 
                                         console.log(
-                                          "Download initiated successfully"
+                                          "Attempting to download file:",
+                                          originalFilename
                                         );
-                                      } else {
-                                        // Log detailed error information
-                                        const errorText = await response
-                                          .text()
-                                          .catch(() => "Unknown error");
-                                        console.error("Download failed:", {
-                                          status: response.status,
-                                          statusText: response.statusText,
-                                          url: response.url,
-                                          errorBody: errorText,
-                                        });
-                                        throw new Error(
-                                          `Download failed: ${response.status} ${response.statusText}`
+                                        console.log(
+                                          "Download URL:",
+                                          `${API_CONFIG.baseURL}/uploads/${originalFilename}`
+                                        );
+
+                                        // Fetch the file for download
+                                        const response = await fetch(
+                                          `${API_CONFIG.baseURL}/uploads/${originalFilename}`,
+                                          {
+                                            method: "GET",
+                                            headers: {
+                                              Accept:
+                                                "application/pdf,application/octet-stream,*/*",
+                                            },
+                                          }
+                                        );
+
+                                        console.log(
+                                          "Download response status:",
+                                          response.status
+                                        );
+
+                                        if (response.ok) {
+                                          // Get the file as a blob
+                                          const blob = await response.blob();
+                                          const url =
+                                            window.URL.createObjectURL(blob);
+
+                                          // Create a temporary link element and trigger download
+                                          const link =
+                                            document.createElement("a");
+                                          link.href = url;
+                                          // Use original filename for download (no modifications)
+                                          link.download = originalFilename;
+                                          // Ensure the link is not visible
+                                          link.style.display = "none";
+                                          document.body.appendChild(link);
+                                          link.click();
+
+                                          // Clean up
+                                          document.body.removeChild(link);
+                                          window.URL.revokeObjectURL(url);
+
+                                          console.log(
+                                            "Download initiated successfully"
+                                          );
+                                        } else {
+                                          // Log detailed error information
+                                          const errorText = await response
+                                            .text()
+                                            .catch(() => "Unknown error");
+                                          console.error("Download failed:", {
+                                            status: response.status,
+                                            statusText: response.statusText,
+                                            url: response.url,
+                                            errorBody: errorText,
+                                          });
+                                          throw new Error(
+                                            `Download failed: ${response.status} ${response.statusText}`
+                                          );
+                                        }
+                                      } catch (error) {
+                                        console.error(
+                                          "Error downloading CV:",
+                                          error
+                                        );
+                                        // Enhanced error message with debugging info
+                                        const errorMessage =
+                                          error instanceof Error
+                                            ? error.message
+                                            : "Unknown error occurred";
+                                        alert(
+                                          `Failed to download CV: ${errorMessage}\n\nPlease check the browser console for more details.`
                                         );
                                       }
-                                    } catch (error) {
-                                      console.error(
-                                        "Error downloading CV:",
-                                        error
-                                      );
-                                      // Enhanced error message with debugging info
-                                      const errorMessage =
-                                        error instanceof Error
-                                          ? error.message
-                                          : "Unknown error occurred";
-                                      alert(
-                                        `Failed to download CV: ${errorMessage}\n\nPlease check the browser console for more details.`
-                                      );
-                                    }
-                                  }}
-                                >
-                                  Download
-                                </Button>
+                                    }}
+                                  >
+                                    Download
+                                  </Button>
+                                </Box>
                               </Box>
                             </CardContent>
-                          </Card>
+                          </ResultCard>
                         </Zoom>
                       ))}
                     </Box>
@@ -1329,7 +1850,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                       justifyContent: "center",
                     }}
                   >
-                    <Search sx={{ fontSize: "3rem" }} />
+                    <TrendingUp sx={{ fontSize: "3rem" }} />
                   </Box>
 
                   <Typography
@@ -1354,6 +1875,20 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                   >
                     Enter your search criteria above to find matching candidates
                     from our comprehensive resume database.
+                    {selectedGroup && (
+                      <>
+                        <br />
+                        <Typography
+                          component="span"
+                          sx={{
+                            color: AppColors.primary.light,
+                            fontWeight: 600,
+                          }}
+                        >
+                          Currently searching in: {selectedGroup}
+                        </Typography>
+                      </>
+                    )}
                   </Typography>
 
                   <Box

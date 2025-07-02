@@ -5,22 +5,6 @@
  * Why: Frontend will only handle file uploads, extraction happens on backend
  */
 
-export interface Skills {
-  all: string[];
-  frontend: string[];
-  backend: string[];
-  database: string[];
-  cloud: string[];
-  mobile: string[];
-  tools: string[];
-}
-
-export interface WorkExperience {
-  companies: string[];
-  roles: string[];
-  rawText?: string[];
-}
-
 export interface Resume {
   id: number;
   filename: string;
@@ -31,6 +15,7 @@ export interface Resume {
   fileType: string;
   uploadedAt: string;
   status: "uploaded" | "processing" | "completed" | "failed";
+  group?: string; // Group/category the resume belongs to
 }
 
 export interface UploadResult {
@@ -45,12 +30,6 @@ export interface UploadResult {
   }>;
 }
 
-export interface SearchResult {
-  query: string;
-  results: Resume[];
-  total: number;
-}
-
 export interface UploadProgress {
   filesProcessed: number;
   totalFiles: number;
@@ -63,22 +42,6 @@ export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
   message?: string;
-}
-
-export interface SearchFilters {
-  filename?: string;
-  dateRange?: {
-    start: string;
-    end: string;
-  };
-  status?: "uploaded" | "processing" | "completed" | "failed";
-}
-
-export interface DatabaseStats {
-  totalResumes: number;
-  uploadedToday: number;
-  processingCount: number;
-  latestUpload: string;
 }
 
 // Group-related types for organizing CVs

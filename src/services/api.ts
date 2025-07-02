@@ -62,7 +62,23 @@ class ApiService {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // Try to extract the actual error message from the response body
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          // Look for common error message fields
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          } else if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch (parseError) {
+          // If we can't parse the response body, keep the original error message
+          console.warn("Could not parse error response body:", parseError);
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -89,9 +105,10 @@ class ApiService {
 
   /**
    * Fetch all resumes from the CVs endpoint
-   * GET /cvs
+   * POST /cvs
+   * @param groupName - Optional group name to filter resumes by specific group
    */
-  async getResumes(): Promise<Resume[]> {
+  async getResumes(groupName?: string): Promise<Resume[]> {
     try {
       const url = `${this.baseURL}/cvs`;
       console.log(`🌐 API Service: Fetching resumes from: ${url}`);
@@ -99,8 +116,16 @@ class ApiService {
         `🔧 API Config: baseURL=${this.baseURL}, timeout=${this.timeout}ms`
       );
 
+      // Prepare payload: empty object for all CVs, or object with group name for specific group
+      const payload = groupName ? { group: groupName } : {};
+      console.log(`📦 API Payload:`, payload);
+
       const response = await this.fetchWithRetry<any>(url, {
-        method: "GET",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
       console.log(`📡 API Response received:`, response);
@@ -113,11 +138,14 @@ class ApiService {
       const transformedResumes: Resume[] = resumesArray.map((resume: any) => ({
         id: resume.id || 0,
         filename: resume.original_filename || "Unknown file",
+        original_filename: resume.original_filename || undefined,
+        stored_filename: resume.stored_filename || undefined,
         filepath: resume.filepath || resume.stored_filename || "",
         fileSize: this.estimateFileSize(resume.original_filename || ""), // Estimate since not provided
         fileType: this.extractFileType(resume.original_filename || ""),
         uploadedAt: resume.upload_time || new Date().toISOString(),
         status: "completed" as const, // Default to completed since no status field
+        group: resume.group || undefined, // Include group field from API response
       }));
 
       console.log(
@@ -189,32 +217,6 @@ class ApiService {
         return "failed";
       default:
         return "completed";
-    }
-  }
-
-  /**
-   * Search resumes with query
-   * This can be extended when backend supports search
-   */
-  async searchResumes(query: string): Promise<Resume[]> {
-    try {
-      // For now, get all resumes and filter on frontend
-      // This can be optimized when backend supports search endpoint
-      const allResumes = await this.getResumes();
-
-      if (!query.trim()) {
-        return allResumes;
-      }
-
-      const searchQuery = query.toLowerCase();
-      return allResumes.filter(
-        (resume) =>
-          resume.filename.toLowerCase().includes(searchQuery) ||
-          resume.fileType.toLowerCase().includes(searchQuery)
-      );
-    } catch (error) {
-      console.error("Error searching resumes:", error);
-      return [];
     }
   }
 
@@ -372,16 +374,14 @@ class ApiService {
 
   /**
    * Upload CVs to a specific group
-   * POST /upload_cv with group_id parameter
+   * POST /upload_cv with group name in FormData
    */
-  async uploadCVsToGroup(formData: FormData, groupId: number): Promise<any> {
+  async uploadCVsToGroup(formData: FormData): Promise<any> {
     try {
-      // Add group_id to the form data
-      formData.append("group_id", groupId.toString());
-
       const url = `${this.baseURL}/upload_cv`;
+      const groupName = formData.get("group") as string;
       console.log(
-        `📤 API Service: Uploading CVs to group ${groupId} at: ${url}`
+        `📤 API Service: Uploading CVs to group "${groupName}" at: ${url}`
       );
 
       // Use XMLHttpRequest for upload progress (same as original implementation)
@@ -423,7 +423,7 @@ class ApiService {
             };
 
             console.log(
-              `✅ Upload to group ${groupId} successful:`,
+              `✅ Upload to group "${groupName}" successful:`,
               uploadResult
             );
             resolve(uploadResult);
