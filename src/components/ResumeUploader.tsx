@@ -810,9 +810,11 @@ const ResumeUploader = ({
                           py: 2,
                           mx: 1,
                           my: 0.5,
-                          borderRadius: 1,
+                          borderRadius: "8px",
+                          transition: "all 0.2s ease",
                           "&:hover": {
                             backgroundColor: "#EFF5FF",
+                            transform: "translateY(-1px)",
                           },
                         }}
                       >
@@ -1688,9 +1690,12 @@ const ResumeUploader = ({
                 fontSize: "0.95rem",
                 textTransform: "none",
                 fontWeight: 500,
+                borderRadius: "18px",
+                transition: "all 0.2s ease",
                 "&:hover": {
                   backgroundColor: "#F5F5F5",
                   borderColor: "#BFD6FF",
+                  transform: "translateY(-1px)",
                 },
                 "&:disabled": {
                   backgroundColor: "#F5F5F5",
@@ -1718,9 +1723,11 @@ const ResumeUploader = ({
                 fontSize: "0.95rem",
                 textTransform: "none",
                 fontWeight: 500,
-                borderRadius: "6px",
+                borderRadius: "18px",
+                transition: "all 0.2s ease",
                 "&:hover": {
                   backgroundColor: "#1E50A8",
+                  transform: "translateY(-1px)",
                 },
                 "&:disabled": {
                   backgroundColor: "#F5F5F5",
