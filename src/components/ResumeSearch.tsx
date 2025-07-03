@@ -19,6 +19,7 @@ import {
   Select,
   MenuItem,
   FormControl,
+  InputLabel,
 } from "@mui/material";
 import {
   Person,
@@ -29,7 +30,7 @@ import {
   FilterList,
   CheckCircle,
   Visibility,
-  Group as GroupIcon,
+  Folder as FolderIcon,
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 
@@ -86,14 +87,15 @@ const HeroSection = styled(Paper)(({ theme }) => ({
 
 const SearchContainer = styled(Box)(({ theme }) => ({
   display: "flex",
-  alignItems: "center",
+  alignItems: "flex-start",
   gap: theme.spacing(1),
   backgroundColor: AppColors.background.paper,
   borderRadius: theme.spacing(3),
-  padding: theme.spacing(0.5),
+  padding: theme.spacing(1),
   boxShadow: "0 4px 20px rgba(0, 0, 0, 0.25)",
   border: `2px solid ${AppColors.border.light}`,
   transition: "all 0.3s ease",
+  minHeight: "140px",
   "&:hover": {
     borderColor: AppColors.primary.light,
     boxShadow: "0 6px 25px rgba(59, 130, 246, 0.2)",
@@ -111,6 +113,8 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
     backgroundColor: "transparent",
     fontSize: "1.1rem",
     color: AppColors.text.primary,
+    minHeight: "120px",
+    alignItems: "flex-start",
     "& fieldset": {
       border: "none",
     },
@@ -124,6 +128,7 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   "& .MuiInputBase-input": {
     padding: theme.spacing(2, 2, 2, 1.5),
     color: AppColors.text.primary,
+    minHeight: "80px !important",
     "&::placeholder": {
       color: AppColors.text.secondary,
       opacity: 1,
@@ -132,68 +137,105 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
 }));
 
 const SearchButton = styled(Button)(({ theme }) => ({
-  minWidth: 130,
-  height: 50,
-  borderRadius: theme.spacing(2.5),
+  minWidth: 180,
+  height: 56,
+  borderRadius: 10,
   fontSize: "1rem",
-  fontWeight: 600,
-  backgroundColor: AppColors.primary.main,
-  color: AppColors.primary.contrast,
+  fontWeight: 700,
+  backgroundColor: "#ffffff",
+  color: "#1e293b",
   textTransform: "none",
-  boxShadow: `0 4px 16px rgba(59, 130, 246, 0.3)`,
+  boxShadow: `0 4px 16px rgba(0, 0, 0, 0.12)`,
   transition: "all 0.2s ease",
   cursor: "pointer !important",
+  position: "relative",
+  overflow: "hidden",
+  border: "2px solid #ffffff",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 8,
+  padding: "0 24px",
+  whiteSpace: "nowrap",
+  "& .MuiButton-startIcon": {
+    marginRight: 8,
+    marginLeft: 0,
+    display: "flex",
+    alignItems: "center",
+  },
+  "&::before": {
+    display: "none",
+  },
   "&:hover": {
-    backgroundColor: AppColors.primary.dark,
-    boxShadow: `0 6px 20px rgba(59, 130, 246, 0.4)`,
-    transform: "translateY(-1px)",
-    cursor: "pointer !important",
+    backgroundColor: "#f8fafc",
+    color: "#0f172a",
+    boxShadow: `0 6px 20px rgba(0, 0, 0, 0.18)`,
+    borderColor: "#f8fafc",
   },
   "&:disabled": {
-    backgroundColor: AppColors.text.disabled,
-    color: AppColors.background.paper,
-    transform: "none",
-    boxShadow: "none",
-    cursor: "not-allowed !important",
+    backgroundColor: "#94a3b8",
+    color: "#475569",
+    borderColor: "#94a3b8",
+  },
+  [theme.breakpoints.down("sm")]: {
+    width: "100%",
+  },
+}));
+
+const ControlsSection = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: theme.spacing(3),
+  marginTop: theme.spacing(3),
+  padding: theme.spacing(2, 0),
+  flexWrap: "wrap",
+  [theme.breakpoints.down("sm")]: {
+    flexDirection: "column",
+    gap: theme.spacing(2),
+    alignItems: "stretch",
   },
 }));
 
 const GroupSelectContainer = styled(FormControl)(({ theme }) => ({
-  minWidth: 180,
+  minWidth: 200,
   "& .MuiOutlinedInput-root": {
-    height: 46,
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    border: "none",
+    backgroundColor: "#ffffff",
+    borderRadius: 4,
+    border: `2px solid #e2e8f0`,
     transition: "all 0.2s ease",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
     "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.03)",
+      backgroundColor: "#f1f5f9",
+      borderColor: "#cbd5e1",
     },
     "&.Mui-focused": {
-      backgroundColor: "rgba(255, 255, 255, 0.05)",
-      boxShadow: "none",
+      backgroundColor: "#f1f5f9",
+      borderColor: "#3b82f6",
+      boxShadow: `0 0 0 2px #3b82f633`,
     },
     "& fieldset": {
       border: "none",
     },
   },
   "& .MuiInputLabel-root": {
-    display: "none", // Hide label for inline layout
+    display: "none",
   },
   "& .MuiSelect-select": {
-    color: AppColors.text.primary,
+    color: "#1e293b",
     display: "flex",
     alignItems: "center",
     gap: theme.spacing(1),
     fontSize: "0.95rem",
-    padding: theme.spacing(1, 1.5),
-    borderRight: `1px solid ${AppColors.border.light}`,
-    "&:focus": {
-      backgroundColor: "transparent",
-    },
+    fontWeight: 600,
+    padding: theme.spacing(1.5, 2),
+    minHeight: "24px",
   },
   "& .MuiSelect-icon": {
-    color: AppColors.text.secondary,
+    color: "#64748b",
+  },
+  [theme.breakpoints.down("sm")]: {
+    width: "100%",
   },
 }));
 
@@ -610,10 +652,10 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
   // Helper function to get search suggestions based on selected group
   const getGroupBasedSuggestions = (groupName: string): string[] => {
     const defaultSuggestions = [
-      "React Developer",
-      "Python Engineer",
-      "Data Scientist",
-      "Full Stack Developer",
+      "React Developer with 3+ years experience",
+      "Senior Python Engineer with ML background",
+      "Data Scientist with statistics expertise",
+      "Full Stack Developer with cloud experience",
     ];
 
     if (!groupName) return defaultSuggestions;
@@ -980,6 +1022,13 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) return;
 
+    if (searchQuery.trim().length < 5) {
+      setError(
+        "Please enter at least 5 characters for your search query or job description."
+      );
+      return;
+    }
+
     setIsSearching(true);
     setError(null);
     setHasSearched(true);
@@ -1170,67 +1219,39 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                 fontSize: { xs: "1rem", md: "1.1rem" },
               }}
             >
-              Find the perfect candidates with AI-powered search.
+              Find the perfect candidates with AI-powered search. Search by
+              keywords or paste a complete job description.
             </Typography>
 
-            {/* Enhanced Search Input with Integrated Group Filter */}
+            {/* Clean Search Input Area */}
             <SearchContainer>
-              {/* Group Selection - Integrated */}
-              <GroupSelectContainer variant="outlined" sx={{ ml: 2 }}>
-                <Select
-                  value={selectedGroup}
-                  onChange={(e) => setSelectedGroup(e.target.value)}
-                  disabled={groupsLoading}
-                  displayEmpty
-                >
-                  <MenuItem value="">
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <AutoAwesome
-                        sx={{ fontSize: "16px", color: AppColors.primary.main }}
-                      />
-                      <Typography sx={{ fontSize: "0.95rem" }}>
-                        All Groups
-                      </Typography>
-                    </Box>
-                  </MenuItem>
-                  {groups.map((group) => (
-                    <MenuItem key={group.id} value={group.name}>
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <GroupIcon
-                          sx={{
-                            fontSize: "16px",
-                            color: AppColors.text.secondary,
-                          }}
-                        />
-                        <Typography sx={{ fontSize: "0.95rem" }}>
-                          {group.name}
-                        </Typography>
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </GroupSelectContainer>
-
               <StyledTextField
                 fullWidth
-                placeholder={`Search candidates${
+                multiline
+                minRows={3}
+                maxRows={6}
+                placeholder={`Enter search terms or paste a job description to find matching candidates${
                   selectedGroup ? ` in ${selectedGroup}` : ""
-                }...`}
+                }...
+
+Examples:
+• "React developer with 3+ years experience"
+• "Senior Python engineer with machine learning background"
+• Paste a complete job description here`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={handleKeyPress}
                 variant="outlined"
               />
 
               {searchQuery && (
-                <Tooltip title="Clear search">
+                <Tooltip title="Clear search query">
                   <IconButton
                     onClick={() => setSearchQuery("")}
                     sx={{
                       color: AppColors.text.secondary,
                       cursor: "pointer !important",
+                      alignSelf: "flex-start",
+                      mt: 1,
                       "&:hover": {
                         cursor: "pointer !important",
                         backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -1241,21 +1262,189 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                   </IconButton>
                 </Tooltip>
               )}
+            </SearchContainer>
+
+            {/* Controls Section - Group Selection & Search Button */}
+            <ControlsSection>
+              <Box sx={{ 
+                display: "flex", 
+                alignItems: "center", 
+                gap: 2,
+                flexWrap: "wrap",
+                flex: 1,
+                minWidth: 0 
+              }}>
+                <GroupSelectContainer variant="outlined">
+                  <Select
+                    value={selectedGroup}
+                    onChange={(e) => setSelectedGroup(e.target.value)}
+                    disabled={groupsLoading}
+                    displayEmpty
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          backgroundColor: "#ffffff",
+                          border: `1px solid #e2e8f0`,
+                          borderRadius: 2,
+                          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.15)",
+                          mt: 1,
+                          padding: "8px",
+                          "& .MuiList-root": {
+                            padding: "4px",
+                          },
+                          "& .MuiMenuItem-root": {
+                            borderRadius: 1,
+                            margin: "2px 0",
+                            padding: "8px 16px",
+                          },
+                        },
+                      },
+                    }}
+                  >
+                    <MenuItem
+                      value=""
+                      sx={{
+                        backgroundColor: "#ffffff",
+                        color: "#1e293b",
+                        fontSize: "0.95rem",
+                        fontWeight: 600,
+                        padding: "12px 16px",
+                        margin: "2px 0",
+                        borderRadius: "10px",
+                        minHeight: "44px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                          backgroundColor: "#f1f5f9",
+                          color: "#0f172a",
+                          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+                        },
+                        "&.Mui-selected": {
+                          backgroundColor: "#e0f2fe",
+                          color: "#0369a1",
+                          boxShadow: "0 2px 8px rgba(14, 165, 233, 0.12)",
+                          "&:hover": {
+                            backgroundColor: "#bae6fd",
+                            color: "#0c4a6e",
+                            boxShadow:
+                              "0 4px 12px rgba(14, 165, 233, 0.18)",
+                          },
+                        },
+                      }}
+                    >
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <AutoAwesome
+                          sx={{
+                            fontSize: "16px",
+                            color: "#3b82f6",
+                          }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: "0.95rem",
+                            color: "#1e293b",
+                            fontWeight: 600,
+                          }}
+                        >
+                          All Groups
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                    {groups.map((group) => (
+                      <MenuItem
+                        key={group.id}
+                        value={group.name}
+                        sx={{
+                          backgroundColor: "#ffffff",
+                          color: "#1e293b",
+                          fontSize: "0.95rem",
+                          fontWeight: 600,
+                          padding: "12px 16px",
+                          margin: "2px 0",
+                          borderRadius: "10px",
+                          minHeight: "44px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            backgroundColor: "#f1f5f9",
+                            color: "#0f172a",
+                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+                          },
+                          "&.Mui-selected": {
+                            backgroundColor: "#e0f2fe",
+                            color: "#0369a1",
+                            boxShadow: "0 2px 8px rgba(14, 165, 233, 0.12)",
+                            "&:hover": {
+                              backgroundColor: "#bae6fd",
+                              color: "#0c4a6e",
+                              boxShadow: "0 4px 12px rgba(14, 165, 233, 0.18)",
+                            },
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <FolderIcon
+                            sx={{
+                              fontSize: "16px",
+                              color: "#64748b",
+                            }}
+                          />
+                          <Typography
+                            sx={{
+                              fontSize: "0.95rem",
+                              color: "#1e293b",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {group.name}
+                          </Typography>
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </GroupSelectContainer>
+
+                {selectedGroup && (
+                  <Chip
+                    icon={<FolderIcon sx={{ fontSize: "14px" }} />}
+                    label={`Searching in: ${selectedGroup}`}
+                    size="small"
+                    variant="filled"
+                    sx={{
+                      backgroundColor: "#ffffff",
+                      borderColor: "#ffffff",
+                      color: "#1e293b",
+                      fontWeight: 600,
+                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                      "& .MuiChip-icon": {
+                        color: "#64748b",
+                      },
+                      whiteSpace: "nowrap",
+                    }}
+                  />
+                )}
+              </Box>
 
               <SearchButton
                 onClick={handleSearch}
-                disabled={isSearching || !searchQuery.trim()}
-                startIcon={
-                  isSearching ? (
-                    <CircularProgress size={18} color="inherit" />
-                  ) : (
-                    <TrendingUp />
-                  )
-                }
+                disabled={isSearching || !searchQuery.trim() || searchQuery.trim().length < 5}
+                startIcon={isSearching ? <CircularProgress size={20} color="inherit" /> : <TrendingUp />}
               >
-                {isSearching ? "Searching..." : "Search"}
+                {isSearching
+                  ? "Searching..."
+                  : searchQuery.trim().length < 5
+                  ? `${5 - searchQuery.trim().length} more chars`
+                  : "Search Candidates"}
               </SearchButton>
-            </SearchContainer>
+            </ControlsSection>
           </Box>
         </HeroSection>
 
@@ -1423,7 +1612,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                         />
                         {selectedGroup && (
                           <Chip
-                            icon={<GroupIcon sx={{ fontSize: "14px" }} />}
+                            icon={<FolderIcon sx={{ fontSize: "14px" }} />}
                             label={selectedGroup}
                             size="small"
                             sx={{
@@ -2450,7 +2639,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                         </Typography>
                       </>
                     ) : (
-                      "Search for candidates by skills, role, or experience."
+                      "Search for candidates by skills, role, experience, or paste a complete job description to find the best matches."
                     )}
                   </Typography>
 
