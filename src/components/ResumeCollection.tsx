@@ -2444,11 +2444,17 @@ const ResumeCollection = ({
                 display: "grid",
                 gridTemplateColumns: {
                   xs: "1fr",
-                  sm: "repeat(auto-fit, minmax(380px, 1fr))",
-                  lg: "repeat(3, 1fr)",
+                  sm: "repeat(auto-fill, minmax(360px, 1fr))",
+                  md: "repeat(auto-fill, minmax(380px, 1fr))",
+                  lg: "repeat(auto-fill, minmax(400px, 1fr))",
+                  xl: "repeat(3, 1fr)",
                 },
-                gap: 4,
+                gap: { xs: 3, sm: 4 },
+                width: "100%",
+                maxWidth: "1400px",
+                mx: "auto",
                 position: "relative",
+                alignItems: "stretch",
                 "&::before": {
                   content: '""',
                   position: "absolute",
@@ -2462,6 +2468,10 @@ const ResumeCollection = ({
                     0.5
                   )} 50%, transparent 100%)`,
                   zIndex: 0,
+                },
+                "& > *": {
+                  height: "100%",
+                  minHeight: "100%",
                 },
               }}
             >
