@@ -90,9 +90,7 @@ export const TYPOGRAPHY = {
 
 // API Configuration
 export const API_CONFIG = {
-  baseURL:
-    process.env.REACT_APP_API_URL ||
-    "http://localhost:5001/api",
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5001/api",
   timeout: 30000,
   retryAttempts: 3,
   retryDelay: 1000,

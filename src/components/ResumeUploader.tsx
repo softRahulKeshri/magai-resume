@@ -510,8 +510,7 @@ const ResumeUploader = ({
         justifyContent: "center",
         px: 3,
         py: files.length > 8 ? 2 : 4,
-        background:
-          "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)",
+        background: "linear-gradient(135deg, #FFFFFF 0%, #EFF5FF 100%)",
       }}
     >
       <Box sx={{ maxWidth: 800, width: "100%" }}>
@@ -543,7 +542,7 @@ const ResumeUploader = ({
               sx={{
                 height: 56,
                 width: "auto",
-                filter: "drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))",
+                filter: "drop-shadow(0 4px 12px rgba(48, 119, 243, 0.2))",
               }}
             />
             <Box
@@ -552,7 +551,7 @@ const ResumeUploader = ({
                 width: "2px",
                 background: "linear-gradient(45deg, #3077F3, #41E6F8)",
                 borderRadius: "1px",
-                opacity: 0.6,
+                opacity: 0.8,
               }}
             />
             <Box>
@@ -560,12 +559,9 @@ const ResumeUploader = ({
                 variant="h3"
                 sx={{
                   fontWeight: 700,
-                  color: "white",
+                  color: "#2E3141",
                   lineHeight: 1.1,
                   fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
-                  background: "linear-gradient(45deg, #ffffff, #f8fafc)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
                   letterSpacing: "-0.02em",
                 }}
               >
@@ -574,14 +570,14 @@ const ResumeUploader = ({
               <Typography
                 variant="h6"
                 sx={{
-                  color: "rgba(255, 255, 255, 0.7)",
+                  color: "#6D6F7A",
                   fontWeight: 400,
                   mt: 0.5,
                   fontSize: "1.1rem",
                   letterSpacing: "0.01em",
                 }}
               >
-                AI-Powered Talent Discovery Plateform
+                AI-Powered Talent Discovery Platform
               </Typography>
             </Box>
           </Box>
@@ -607,21 +603,18 @@ const ResumeUploader = ({
         <Card
           sx={{
             mb: 3,
-            backgroundColor: "rgba(255, 255, 255, 0.02)",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
+            backgroundColor: "#FFFFFF",
+            border: "1px solid #E3EDFF",
             borderRadius: 1.25,
             overflow: "hidden",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+            boxShadow: "0 8px 32px rgba(48, 119, 243, 0.1)",
           }}
         >
           <CardContent sx={{ p: 4 }}>
             {groupsLoading ? (
               <Box display="flex" alignItems="center" gap={2}>
-                <CircularProgress size={20} />
-                <Typography color="text.secondary">
-                  Loading groups...
-                </Typography>
+                <CircularProgress size={20} sx={{ color: "#3077F3" }} />
+                <Typography color="#6D6F7A">Loading groups...</Typography>
               </Box>
             ) : groupsError ? (
               <Alert severity="error" sx={{ mb: 2 }}>
@@ -638,7 +631,7 @@ const ResumeUploader = ({
                   sx={{
                     fontWeight: 600,
                     mb: 2,
-                    color: "white",
+                    color: "#2E3141",
                     display: "flex",
                     alignItems: "center",
                     gap: 2,
@@ -657,7 +650,7 @@ const ResumeUploader = ({
                 <Typography
                   variant="body2"
                   sx={{
-                    color: "rgba(255, 255, 255, 0.7)",
+                    color: "#6D6F7A",
                     mb: 3,
                     fontSize: "0.9rem",
                   }}
@@ -671,22 +664,22 @@ const ResumeUploader = ({
                       flexGrow: 1,
                       "& .MuiOutlinedInput-root": {
                         borderRadius: 1,
-                        backgroundColor: "rgba(255, 255, 255, 0.03)",
+                        backgroundColor: "#FFFFFF",
                         "& fieldset": {
-                          borderColor: "rgba(255, 255, 255, 0.2)",
+                          borderColor: "#E3EDFF",
                         },
                         "&:hover fieldset": {
-                          borderColor: "rgba(255, 255, 255, 0.3)",
+                          borderColor: "#BFD6FF",
                         },
                         "&.Mui-focused fieldset": {
                           borderColor: "#3077F3",
                         },
                       },
                       "& .MuiInputLabel-root": {
-                        color: "rgba(255, 255, 255, 0.7)",
+                        color: "#6D6F7A",
                       },
                       "& .MuiSelect-select": {
-                        color: "white",
+                        color: "#2E3141",
                       },
                     }}
                   >
@@ -700,7 +693,7 @@ const ResumeUploader = ({
                       label="Select Group"
                       onChange={handleGroupChange}
                       renderValue={() => (
-                        <Typography sx={{ color: "white" }}>
+                        <Typography sx={{ color: "#2E3141" }}>
                           {selectedGroup
                             ? capitalizeGroupName(selectedGroup.name)
                             : ""}
@@ -709,11 +702,11 @@ const ResumeUploader = ({
                       MenuProps={{
                         PaperProps: {
                           sx: {
-                            backgroundColor: "rgba(15, 23, 42, 0.95)",
-                            backdropFilter: "blur(10px)",
-                            border: "1px solid rgba(255, 255, 255, 0.1)",
+                            backgroundColor: "#FFFFFF",
+                            border: "1px solid #E3EDFF",
                             borderRadius: 1,
                             mt: 1,
+                            boxShadow: "0 4px 20px rgba(48, 119, 243, 0.1)",
                             "& .MuiList-root": {
                               padding: "8px",
                             },
@@ -729,19 +722,19 @@ const ResumeUploader = ({
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
-                            color: "white",
+                            color: "#2E3141",
                             px: 3,
                             py: 2,
                             mx: 1,
                             my: 0.5,
                             borderRadius: 1,
                             "&:hover": {
-                              backgroundColor: "rgba(255, 255, 255, 0.08)",
+                              backgroundColor: "#EFF5FF",
                             },
                             "&.Mui-selected": {
-                              backgroundColor: "rgba(48, 119, 243, 0.15)",
+                              backgroundColor: "#E3EDFF",
                               "&:hover": {
-                                backgroundColor: "rgba(48, 119, 243, 0.2)",
+                                backgroundColor: "#BFD6FF",
                               },
                             },
                           }}
@@ -749,7 +742,7 @@ const ResumeUploader = ({
                           <Box sx={{ flexGrow: 1 }}>
                             <Typography
                               sx={{
-                                color: "white",
+                                color: "#2E3141",
                                 fontWeight: 500,
                                 mb: group.description ? 0.5 : 0,
                               }}
@@ -760,7 +753,7 @@ const ResumeUploader = ({
                               <Typography
                                 variant="caption"
                                 sx={{
-                                  color: "rgba(255, 255, 255, 0.6)",
+                                  color: "#6D6F7A",
                                   fontSize: "0.75rem",
                                   lineHeight: 1.2,
                                 }}
@@ -778,13 +771,13 @@ const ResumeUploader = ({
                             disabled={deletingGroup}
                             sx={{
                               ml: 2,
-                              color: "rgba(255, 255, 255, 0.5)",
+                              color: "#82838D",
                               "&:hover": {
-                                color: BRAND_COLORS.accent.red,
+                                color: "#ef4444",
                                 backgroundColor: "rgba(239, 68, 68, 0.1)",
                               },
                               "&:disabled": {
-                                color: BRAND_COLORS.neutral.whiteAlpha[30],
+                                color: "#D5D6D9",
                               },
                             }}
                           >
@@ -792,7 +785,7 @@ const ResumeUploader = ({
                               <CircularProgress
                                 size={16}
                                 sx={{
-                                  color: BRAND_COLORS.neutral.whiteAlpha[50],
+                                  color: "#82838D",
                                 }}
                               />
                             ) : (
@@ -803,7 +796,7 @@ const ResumeUploader = ({
                       ))}
                       <Divider
                         sx={{
-                          borderColor: "rgba(255, 255, 255, 0.1)",
+                          borderColor: "#E3EDFF",
                           mx: 1,
                           my: 1,
                         }}
@@ -819,7 +812,7 @@ const ResumeUploader = ({
                           my: 0.5,
                           borderRadius: 1,
                           "&:hover": {
-                            backgroundColor: "rgba(48, 119, 243, 0.1)",
+                            backgroundColor: "#EFF5FF",
                           },
                         }}
                       >
@@ -839,15 +832,15 @@ const ResumeUploader = ({
                 severity="success"
                 sx={{
                   mt: 3,
-                  backgroundColor: "#22c55e",
-                  border: "1px solid #16a34a",
+                  backgroundColor: "#EFF5FF",
+                  border: "1px solid #3077F3",
                   borderRadius: 1.25,
                   alignItems: "center",
                   "& .MuiAlert-icon": {
-                    color: "white",
+                    color: "#3077F3",
                   },
                   "& .MuiAlert-message": {
-                    color: "white",
+                    color: "#2E3141",
                     fontWeight: 500,
                     width: "100%",
                   },
@@ -861,7 +854,7 @@ const ResumeUploader = ({
                     flexWrap: "wrap",
                   }}
                 >
-                  <Typography component="span" sx={{ color: "white" }}>
+                  <Typography component="span" sx={{ color: "#2E3141" }}>
                     Perfect! Your CVs will be organized and uploaded to
                   </Typography>
                   <Box
@@ -871,22 +864,22 @@ const ResumeUploader = ({
                       gap: 0.5,
                       px: 1.5,
                       py: 0.5,
-                      backgroundColor: "rgba(255, 255, 255, 0.2)",
+                      backgroundColor: "#E3EDFF",
                       borderRadius: 1,
-                      border: "1px solid rgba(255, 255, 255, 0.3)",
+                      border: "1px solid #BFD6FF",
                     }}
                   >
                     <FolderOpen
                       sx={{
                         fontSize: "1.1rem",
-                        color: "white",
+                        color: "#3077F3",
                       }}
                     />
                     <Typography
                       component="span"
                       sx={{
                         fontWeight: 700,
-                        color: "white",
+                        color: "#3077F3",
                         fontSize: "0.95rem",
                       }}
                     >
@@ -898,7 +891,7 @@ const ResumeUploader = ({
                   <Typography
                     variant="caption"
                     sx={{
-                      color: "rgba(255, 255, 255, 0.9)",
+                      color: "#6D6F7A",
                       mt: 1,
                       display: "block",
                       fontStyle: "italic",
@@ -919,14 +912,14 @@ const ResumeUploader = ({
             icon={<Warning />}
             sx={{
               mb: 3,
-              backgroundColor: "rgba(255, 193, 7, 0.1)",
-              border: "1px solid rgba(255, 193, 7, 0.3)",
+              backgroundColor: "#FFF7ED",
+              border: "1px solid #FDA052",
               borderRadius: 1.25,
               "& .MuiAlert-icon": {
-                color: "#ffc107",
+                color: "#FDA052",
               },
               "& .MuiAlert-message": {
-                color: "white",
+                color: "#2E3141",
                 fontWeight: 500,
               },
             }}
@@ -947,46 +940,45 @@ const ResumeUploader = ({
             border: 3,
             borderStyle: "dashed",
             borderColor: !selectedGroup
-              ? "rgba(255, 255, 255, 0.2)"
+              ? "#D5D6D9"
               : uploadStatus === "success"
-              ? "#22c55e"
+              ? "#16a34a"
               : uploadStatus === "error"
               ? "#ef4444"
               : "#3077F3",
             backgroundColor: !selectedGroup
-              ? "rgba(255, 255, 255, 0.01)"
+              ? "#F5F5F5"
               : uploadStatus === "success"
-              ? "rgba(34, 197, 94, 0.05)"
+              ? "#dcfce7"
               : uploadStatus === "error"
-              ? "rgba(239, 68, 68, 0.05)"
-              : "rgba(48, 119, 243, 0.05)",
-            minHeight: "400px",
+              ? "#FEF2F2"
+              : "#EFF5FF",
+            minHeight: "300px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
             borderRadius: 1.25,
-            opacity: !selectedGroup ? 0.5 : isUploading ? 0.7 : 1,
+            opacity: !selectedGroup ? 0.7 : isUploading ? 0.8 : 1,
             transition: "all 0.3s ease",
-            backdropFilter: "blur(5px)",
             "&:hover": {
               borderColor: !selectedGroup
-                ? "rgba(255, 255, 255, 0.2)"
+                ? "#D5D6D9"
                 : uploadStatus === "success"
-                ? "#16a34a"
+                ? "#15803d"
                 : uploadStatus === "error"
                 ? "#dc2626"
-                : "#41E6F8",
+                : "#1E50A8",
               backgroundColor: !selectedGroup
-                ? "rgba(255, 255, 255, 0.01)"
+                ? "#F5F5F5"
                 : uploadStatus === "success"
-                ? "rgba(34, 197, 94, 0.08)"
+                ? "#bbf7d0"
                 : uploadStatus === "error"
-                ? "rgba(239, 68, 68, 0.08)"
-                : "rgba(48, 119, 243, 0.08)",
+                ? "#FEE2E2"
+                : "#E3EDFF",
               transform: selectedGroup ? "translateY(-2px)" : "none",
               boxShadow: selectedGroup
-                ? "0 8px 32px rgba(0, 0, 0, 0.2)"
+                ? "0 8px 32px rgba(48, 119, 243, 0.1)"
                 : "none",
             },
           }}
@@ -997,31 +989,29 @@ const ResumeUploader = ({
           {uploadStatus === "success" ? (
             <CloudDone
               sx={{
-                fontSize: "5rem",
-                color: "#22c55e",
-                mb: 3,
+                fontSize: "4rem",
+                color: "#15803d",
+                mb: 2,
                 filter: "drop-shadow(0 4px 12px rgba(34, 197, 94, 0.3))",
               }}
             />
           ) : uploadStatus === "error" ? (
             <ErrorOutline
               sx={{
-                fontSize: "5rem",
+                fontSize: "4rem",
                 color: "#ef4444",
-                mb: 3,
-                filter: "drop-shadow(0 4px 12px rgba(239, 68, 68, 0.3))",
+                mb: 2,
+                filter: "drop-shadow(0 4px 12px rgba(239, 68, 68, 0.2))",
               }}
             />
           ) : (
             <InsertDriveFile
               sx={{
-                fontSize: "5rem",
-                color: !selectedGroup
-                  ? "rgba(255, 255, 255, 0.3)"
-                  : "rgba(255, 255, 255, 0.6)",
-                mb: 3,
+                fontSize: "4rem",
+                color: !selectedGroup ? "#82838D" : "#3077F3",
+                mb: 2,
                 filter: selectedGroup
-                  ? "drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2))"
+                  ? "drop-shadow(0 4px 12px rgba(48, 119, 243, 0.2))"
                   : "none",
               }}
             />
@@ -1033,14 +1023,14 @@ const ResumeUploader = ({
             fontWeight={600}
             sx={{
               color: !selectedGroup
-                ? "rgba(255, 255, 255, 0.5)"
+                ? "#82838D"
                 : uploadStatus === "success"
-                ? "#22c55e"
+                ? "#15803d"
                 : uploadStatus === "error"
                 ? "#ef4444"
-                : "white",
+                : "#2E3141",
               mb: 1,
-              fontSize: { xs: "1.5rem", sm: "2rem", md: "2.5rem" },
+              fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
             }}
           >
             {uploadStatus === "success"
@@ -1053,103 +1043,126 @@ const ResumeUploader = ({
           <Typography
             variant="body1"
             sx={{
-              mb: 3,
-              fontSize: "1.1rem",
-              color: !selectedGroup
-                ? "rgba(255, 255, 255, 0.5)"
-                : uploadStatus === "success"
-                ? "rgba(34, 197, 94, 0.8)"
-                : uploadStatus === "error"
-                ? "rgba(239, 68, 68, 0.8)"
-                : "rgba(255, 255, 255, 0.7)",
-              fontWeight: 400,
+              color: "#6D6F7A",
+              fontSize: "1rem",
             }}
           >
             {uploadStatus === "success"
-              ? "Your CVs have been processed successfully"
+              ? "Your files have been successfully uploaded!"
               : uploadStatus === "error"
               ? "Please try again or check your files"
-              : "or click to browse files"}
+              : "or use the buttons below to upload"}
           </Typography>
-
-          {/* Browse Files Button - Disabled when no group selected */}
-          {uploadStatus !== "success" && (
-            <Button
-              variant="contained"
-              size="large"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (selectedGroup) {
-                  open();
-                }
-              }}
-              disabled={isUploading || !selectedGroup}
-              startIcon={<InsertDriveFile />}
-              sx={{
-                background: !selectedGroup
-                  ? "rgba(255, 255, 255, 0.1)"
-                  : uploadStatus === "error"
-                  ? "linear-gradient(45deg, #ef4444, #dc2626)"
-                  : "linear-gradient(45deg, #3077F3, #41E6F8)",
-                color: "white",
-                px: 4,
-                py: 1.5,
-                fontSize: "1rem",
-                fontWeight: 600,
-                textTransform: "none",
-                borderRadius: 1,
-                cursor: !selectedGroup
-                  ? "not-allowed !important"
-                  : "pointer !important",
-                boxShadow: selectedGroup
-                  ? "0 4px 16px rgba(48, 119, 243, 0.3)"
-                  : "none",
-                "&:hover": {
-                  background: !selectedGroup
-                    ? "rgba(255, 255, 255, 0.1)"
-                    : uploadStatus === "error"
-                    ? "linear-gradient(45deg, #dc2626, #b91c1c)"
-                    : "linear-gradient(45deg, #2563eb, #3b82f6)",
-                  transform: selectedGroup ? "translateY(-1px)" : "none",
-                  boxShadow: selectedGroup
-                    ? "0 6px 20px rgba(48, 119, 243, 0.4)"
-                    : "none",
-                  cursor: !selectedGroup
-                    ? "not-allowed !important"
-                    : "pointer !important",
-                },
-                "&:disabled": {
-                  background: "rgba(255, 255, 255, 0.1)",
-                  color: "rgba(255, 255, 255, 0.5)",
-                  cursor: "not-allowed !important",
-                },
-              }}
-            >
-              Browse Files
-            </Button>
-          )}
         </Box>
 
         {/* File Format Info */}
         {selectedGroup && (
           <Alert
             severity="info"
-            icon={<Info />}
+            icon={<Info sx={{ fontSize: "24px" }} />}
             sx={{
               mt: 2,
-              backgroundColor: "rgba(48, 119, 243, 0.1)",
-              border: "1px solid rgba(48, 119, 243, 0.3)",
-              borderRadius: 1.25,
+              backgroundColor: "#EFF5FF",
+              border: "1px solid #3077F3",
+              borderRadius: "12px",
+              p: 2,
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
               "& .MuiAlert-icon": {
                 color: "#3077F3",
+                opacity: 1,
+                padding: 0,
+                mr: 0,
               },
               "& .MuiAlert-message": {
-                color: "white",
-                fontWeight: 500,
+                padding: 0,
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 1,
               },
             }}
           >
-            Supported formats: PDF and DOCX • Maximum size: 10MB per file
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                width: "100%",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography
+                  component="span"
+                  sx={{
+                    color: "#2E3141",
+                    fontWeight: 500,
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  Supported formats:
+                </Typography>
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <Chip
+                    label="PDF"
+                    size="small"
+                    sx={{
+                      backgroundColor: "#E3EDFF",
+                      color: "#3077F3",
+                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                      height: "24px",
+                      borderRadius: "6px",
+                    }}
+                  />
+                  <Chip
+                    label="DOCX"
+                    size="small"
+                    sx={{
+                      backgroundColor: "#E3EDFF",
+                      color: "#3077F3",
+                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                      height: "24px",
+                      borderRadius: "6px",
+                    }}
+                  />
+                </Box>
+              </Box>
+              <Box
+                sx={{
+                  width: "2px",
+                  height: "24px",
+                  backgroundColor: "#BFD6FF",
+                  mx: 1,
+                }}
+              />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography
+                  component="span"
+                  sx={{
+                    color: "#2E3141",
+                    fontWeight: 500,
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  Maximum size:
+                </Typography>
+                <Chip
+                  label="10MB per file"
+                  size="small"
+                  sx={{
+                    backgroundColor: "#E3EDFF",
+                    color: "#3077F3",
+                    fontWeight: 600,
+                    fontSize: "0.85rem",
+                    height: "24px",
+                    borderRadius: "6px",
+                  }}
+                />
+              </Box>
+            </Box>
           </Alert>
         )}
 
@@ -1164,46 +1177,56 @@ const ResumeUploader = ({
           </Box>
         )}
 
-        {/* File List with Status Icons */}
+        {/* File List */}
         {files.length > 0 && (
           <Card
             sx={{
-              mt: 2,
-              backgroundColor: "background.paper",
-              border: `1px solid ${BRAND_COLORS.neutral.whiteAlpha[10]}`,
+              mt: 3,
+              backgroundColor: "#FFFFFF",
+              border: "1px solid #E3EDFF",
+              borderRadius: 1.25,
+              overflow: "hidden",
+              boxShadow: "0 8px 32px rgba(48, 119, 243, 0.1)",
             }}
           >
-            <CardContent sx={{ p: 3, "&:last-child": { pb: 3 } }}>
+            <CardContent sx={{ p: 0 }}>
               <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={2}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  px: 3,
+                  py: 2,
+                  borderBottom: "1px solid #E3EDFF",
+                }}
               >
                 <Typography
                   variant="h6"
                   sx={{
-                    color: "text.primary",
-                    fontWeight: 500,
+                    fontWeight: 600,
+                    color: "#2E3141",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
                   }}
                 >
                   Selected Files ({files.length})
+                  {isUploading && (
+                    <CircularProgress
+                      size={16}
+                      sx={{ ml: 1, color: "#3077F3" }}
+                    />
+                  )}
                 </Typography>
                 <Button
-                  onClick={clearAllFiles}
-                  disabled={isUploading}
                   size="small"
+                  onClick={() => setFiles([])}
                   startIcon={<Delete />}
                   sx={{
-                    color: "text.secondary",
-                    cursor: "pointer !important",
+                    color: "#6D6F7A",
                     "&:hover": {
-                      color: BRAND_COLORS.accent.redLight,
-                      backgroundColor: "rgba(248, 113, 113, 0.1)",
-                      cursor: "pointer !important",
-                    },
-                    "&:disabled": {
-                      cursor: "not-allowed !important",
+                      color: "#ef4444",
+                      backgroundColor: "#FEE2E2",
                     },
                   }}
                 >
@@ -1214,159 +1237,117 @@ const ResumeUploader = ({
               <List
                 sx={{
                   py: 0,
-                  maxHeight: files.length > 8 ? "min(400px, 40vh)" : "auto",
-                  overflowY: files.length > 8 ? "auto" : "visible",
-                  // Custom scrollbar styling for better UX
+                  maxHeight: files.length > 10 ? "400px" : "auto",
+                  overflowY: files.length > 10 ? "auto" : "visible",
                   "&::-webkit-scrollbar": {
                     width: "8px",
                   },
                   "&::-webkit-scrollbar-track": {
-                    backgroundColor: BRAND_COLORS.neutral.whiteAlpha[10],
+                    backgroundColor: "#F5F5F5",
                     borderRadius: "4px",
                   },
                   "&::-webkit-scrollbar-thumb": {
-                    backgroundColor: BRAND_COLORS.primary.blue,
+                    backgroundColor: "#3077F3",
                     borderRadius: "4px",
                     "&:hover": {
-                      backgroundColor: BRAND_COLORS.primary.blueDark,
+                      backgroundColor: "#1E50A8",
                     },
                   },
-                  // Firefox scrollbar styling
                   scrollbarWidth: "thin",
-                  scrollbarColor: `${BRAND_COLORS.primary.blue} ${BRAND_COLORS.neutral.whiteAlpha[10]}`,
+                  scrollbarColor: "#3077F3 #F5F5F5",
                 }}
               >
-                {files.map((file) => (
+                {files.map((file, index) => (
                   <ListItem
                     key={file.id}
                     sx={{
-                      px: 2,
-                      py: 1,
+                      py: 2,
+                      px: 3,
+                      borderBottom:
+                        index < files.length - 1 ? "1px solid #E3EDFF" : "none",
                       backgroundColor:
                         file.status === "complete"
-                          ? "rgba(34, 197, 94, 0.05)"
+                          ? "#F0FDF4"
                           : file.status === "error"
-                          ? "rgba(239, 68, 68, 0.05)"
-                          : BRAND_COLORS.neutral.whiteAlpha[5],
-                      color: "text.primary",
-                      borderRadius: 1,
-                      mb: 1,
-                      border:
-                        file.status === "complete"
-                          ? "1px solid rgba(34, 197, 94, 0.2)"
-                          : file.status === "error"
-                          ? "1px solid rgba(239, 68, 68, 0.2)"
-                          : "none",
-                      "&:last-child": { mb: 0 },
+                          ? "#FEF2F2"
+                          : "transparent",
+                      transition: "background-color 0.3s ease",
                     }}
                   >
-                    <ListItemIcon>{getStatusIcon(file.status)}</ListItemIcon>
+                    <ListItemIcon sx={{ minWidth: 40 }}>
+                      {getStatusIcon(file.status)}
+                    </ListItemIcon>
                     <ListItemText
                       primary={
                         <Typography
                           sx={{
-                            color:
-                              file.status === "complete"
-                                ? "#22c55e"
-                                : file.status === "error"
-                                ? "#ef4444"
-                                : "text.primary",
                             fontWeight: 500,
+                            color: "#2E3141",
+                            fontSize: "0.95rem",
                           }}
                         >
                           {file.name}
                         </Typography>
                       }
                       secondary={
-                        <Box>
-                          <Typography
-                            sx={{
-                              color: "text.secondary",
-                              fontSize: "0.875rem",
-                            }}
-                          >
-                            {(file.size / (1024 * 1024)).toFixed(2)} MB
-                          </Typography>
-                          {file.status === "ready" && (
-                            <Typography
-                              sx={{
-                                color: "text.secondary",
-                                fontSize: "0.75rem",
-                                fontWeight: 500,
-                              }}
-                            >
-                              Ready to upload
-                            </Typography>
-                          )}
-                          {file.status === "complete" && (
-                            <Typography
-                              sx={{
-                                color: "#22c55e",
-                                fontSize: "0.75rem",
-                                fontWeight: 500,
-                              }}
-                            >
-                              Successfully uploaded
-                            </Typography>
-                          )}
-                          {file.status === "error" && file.error && (
-                            <Typography
-                              sx={{
-                                color: "#ef4444",
-                                fontSize: "0.75rem",
-                                fontWeight: 500,
-                              }}
-                            >
-                              {file.error}
-                            </Typography>
-                          )}
-                          {file.status === "processing" && (
-                            <Typography
-                              sx={{
-                                color: BRAND_COLORS.primary.blue,
-                                fontSize: "0.75rem",
-                                fontWeight: 500,
-                              }}
-                            >
-                              Processing...
-                            </Typography>
-                          )}
-                          {file.status === "uploading" && (
-                            <Typography
-                              sx={{
-                                color: BRAND_COLORS.primary.blue,
-                                fontSize: "0.75rem",
-                                fontWeight: 500,
-                              }}
-                            >
-                              Uploading...
-                            </Typography>
-                          )}
-                        </Box>
-                      }
-                    />
-                    {file.status !== "uploading" &&
-                      file.status !== "processing" && (
-                        <IconButton
-                          onClick={() => removeFile(file.id)}
-                          disabled={isUploading}
-                          size="small"
+                        <Typography
+                          variant="caption"
                           sx={{
-                            color: "text.secondary",
-                            cursor: "pointer !important",
-                            "&:hover": {
-                              color: BRAND_COLORS.accent.redLight,
-                              backgroundColor: "rgba(248, 113, 113, 0.1)",
-                              cursor: "pointer !important",
-                            },
-                            "&:disabled": {
-                              cursor: "not-allowed !important",
-                            },
+                            color: "#6D6F7A",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
                           }}
                         >
-                          <Delete />
-                        </IconButton>
-                      )}
+                          {(file.size / (1024 * 1024)).toFixed(2)} MB
+                          {file.status === "uploading" && (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                                ml: 1,
+                              }}
+                            >
+                              <LinearProgress
+                                variant="determinate"
+                                value={file.progress}
+                                sx={{
+                                  width: 60,
+                                  height: 4,
+                                  borderRadius: 2,
+                                  backgroundColor: "#E3EDFF",
+                                  "& .MuiLinearProgress-bar": {
+                                    backgroundColor: "#3077F3",
+                                  },
+                                }}
+                              />
+                              <Typography
+                                variant="caption"
+                                sx={{ color: "#3077F3" }}
+                              >
+                                {file.progress}%
+                              </Typography>
+                            </Box>
+                          )}
+                        </Typography>
+                      }
+                    />
+                    <IconButton
+                      size="small"
+                      onClick={() =>
+                        setFiles((prev) => prev.filter((f) => f.id !== file.id))
+                      }
+                      sx={{
+                        color: "#6D6F7A",
+                        "&:hover": {
+                          color: "#ef4444",
+                          backgroundColor: "#FEE2E2",
+                        },
+                      }}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
                   </ListItem>
                 ))}
               </List>
@@ -1376,53 +1357,68 @@ const ResumeUploader = ({
 
         {/* Upload Progress */}
         {isUploading && (
-          <Card sx={{ mt: 2 }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Upload Progress
-              </Typography>
-              <Box mb={2}>
-                <Typography variant="body2" color="text.secondary">
-                  {uploadProgress.currentFile}
+          <Card
+            sx={{
+              mt: 3,
+              backgroundColor: "#FFFFFF",
+              border: "1px solid #E3EDFF",
+              borderRadius: 1.25,
+              overflow: "hidden",
+              boxShadow: "0 8px 32px rgba(48, 119, 243, 0.1)",
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ mb: 2 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    color: "#2E3141",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    mb: 1,
+                  }}
+                >
+                  Upload Progress
+                  <CircularProgress size={16} sx={{ color: "#3077F3" }} />
                 </Typography>
                 <Typography
                   variant="body2"
-                  color="text.secondary"
-                  sx={{ mt: 0.5 }}
+                  sx={{ color: "#6D6F7A", fontWeight: 500 }}
                 >
-                  {uploadProgress.percentage < 100
-                    ? `Processing ${uploadProgress.totalFiles} file${
-                        uploadProgress.totalFiles > 1 ? "s" : ""
-                      }...`
-                    : "Upload completed!"}
+                  Processing {uploadProgress.filesProcessed} of{" "}
+                  {uploadProgress.totalFiles} files...
                 </Typography>
               </Box>
-              <LinearProgress
-                variant="determinate"
-                value={uploadProgress.percentage}
-                sx={{
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: BRAND_COLORS.neutral.whiteAlpha[10],
-                  "& .MuiLinearProgress-bar": {
-                    backgroundColor: BRAND_COLORS.primary.blue,
-                  },
-                }}
-              />
-              <Typography
-                variant="body2"
-                align="center"
-                mt={1}
-                sx={{
-                  fontWeight: 600,
-                  color:
-                    uploadProgress.percentage === 100
-                      ? BRAND_COLORS.primary.blue
-                      : "text.secondary",
-                }}
-              >
-                {uploadProgress.percentage}%
-              </Typography>
+
+              <Box sx={{ width: "100%" }}>
+                <LinearProgress
+                  variant="determinate"
+                  value={uploadProgress.percentage}
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: "#E3EDFF",
+                    mb: 1,
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#3077F3",
+                      borderRadius: 4,
+                    },
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "#3077F3",
+                    fontWeight: 600,
+                    display: "block",
+                    textAlign: "right",
+                  }}
+                >
+                  {uploadProgress.percentage}%
+                </Typography>
+              </Box>
             </CardContent>
           </Card>
         )}
@@ -1436,10 +1432,7 @@ const ResumeUploader = ({
                 uploadResults.failed > 0
                   ? "2px solid #ef4444"
                   : "2px solid #22c55e",
-              backgroundColor:
-                uploadResults.failed > 0
-                  ? "rgba(239, 68, 68, 0.02)"
-                  : "rgba(34, 197, 94, 0.02)",
+              backgroundColor: uploadResults.failed > 0 ? "#FEF2F2" : "#F0FDF4",
             }}
           >
             <CardContent>
@@ -1492,7 +1485,7 @@ const ResumeUploader = ({
               <Typography
                 variant="body2"
                 sx={{
-                  color: uploadResults.failed > 0 ? "#ef4444" : "#22c55e",
+                  color: uploadResults.failed > 0 ? "#dc2626" : "#16a34a",
                   fontWeight: 500,
                 }}
               >
@@ -1512,48 +1505,69 @@ const ResumeUploader = ({
           </Card>
         )}
 
-        {/* Upload Button */}
-        <Box mt={4} textAlign="center">
+        {/* Upload Button - Always visible */}
+        <Box
+          sx={{
+            mt: 4,
+            display: "flex",
+            justifyContent: "center",
+            gap: 2,
+            position: "sticky",
+            bottom: 0,
+            backgroundColor: "white",
+            py: 2,
+            zIndex: 2,
+            boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.05)",
+          }}
+        >
           <Button
-            variant="contained"
-            size="large"
+            onClick={open}
+            variant="outlined"
+            startIcon={<FileUpload />}
+            disabled={isUploading}
+            sx={{
+              px: 4,
+              py: 1.5,
+              borderColor: "#3077F3",
+              color: "#3077F3",
+              "&:hover": {
+                borderColor: "#1E50A8",
+                backgroundColor: "#EFF5FF",
+              },
+              "&.Mui-disabled": {
+                borderColor: "#D1D5DB",
+                color: "#6B7280",
+              },
+            }}
+          >
+            Browse Files
+          </Button>
+
+          <Button
             onClick={uploadFiles}
-            disabled={
-              files.length === 0 ||
-              isUploading ||
-              !selectedGroup ||
-              uploadStatus === "success" ||
-              uploadStatus === "error"
-            }
+            variant="contained"
+            disabled={!selectedGroup || isUploading || files.length === 0}
             startIcon={
               isUploading ? (
                 <CircularProgress size={20} color="inherit" />
               ) : (
-                <FileUpload />
+                <CloudDone />
               )
             }
             sx={{
-              backgroundColor: BRAND_COLORS.primary.blue,
-              color: "white",
-              px: 6,
-              py: 2,
-              fontSize: "1.1rem",
-              fontWeight: 600,
-              textTransform: "none",
-              borderRadius: 2,
-              minWidth: 250,
-              cursor: "pointer !important",
+              px: 4,
+              py: 1.5,
+              backgroundColor: "#3077F3",
               "&:hover": {
-                backgroundColor: BRAND_COLORS.primary.blueDark,
-                cursor: "pointer !important",
+                backgroundColor: "#1E50A8",
               },
-              "&:disabled": {
-                backgroundColor: BRAND_COLORS.neutral.whiteAlpha[30],
-                cursor: "not-allowed !important",
+              "&.Mui-disabled": {
+                backgroundColor: "#D1D5DB",
+                color: "#6B7280",
               },
             }}
           >
-            {isUploading ? "Uploading CVs..." : "Upload CVs"}
+            {isUploading ? "Uploading..." : "Upload CVs"}
           </Button>
         </Box>
 
@@ -1568,11 +1582,47 @@ const ResumeUploader = ({
               overflow: "visible",
               width: "400px",
               maxWidth: "400px",
+              backgroundColor: "#FFFFFF",
+              boxShadow: "0 8px 32px rgba(48, 119, 243, 0.1)",
+              border: "1px solid #E3EDFF",
+              borderRadius: "12px",
+              p: 1,
             },
           }}
         >
-          <DialogTitle sx={{ fontWeight: 600 }}>Add New Group</DialogTitle>
-          <DialogContent sx={{ overflow: "visible" }}>
+          <DialogTitle
+            sx={{
+              fontWeight: 600,
+              color: "#2E3141",
+              p: 3,
+              pb: 2,
+              fontSize: "1.5rem",
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
+            <Box
+              sx={{
+                width: 4,
+                height: 24,
+                backgroundColor: "#3077F3",
+                borderRadius: "2px",
+              }}
+            />
+            Add New Group
+          </DialogTitle>
+          <DialogContent sx={{ overflow: "visible", p: 3, pt: 2 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "#6D6F7A",
+                mb: 2,
+                fontSize: "0.9rem",
+              }}
+            >
+              Create a new group to organize your CVs
+            </Typography>
             <TextField
               autoFocus
               margin="dense"
@@ -1585,14 +1635,69 @@ const ResumeUploader = ({
               onChange={(e) => setNewGroupName(e.target.value)}
               placeholder="Enter group name"
               disabled={addingGroup}
-              sx={{ mb: 2 }}
+              sx={{
+                mt: 1,
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: "8px",
+                  "& fieldset": {
+                    borderColor: "#E3EDFF",
+                    borderWidth: "1.5px",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#BFD6FF",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#3077F3",
+                    borderWidth: "1.5px",
+                  },
+                  "& input": {
+                    padding: "14px 16px",
+                    fontSize: "1rem",
+                    color: "#2E3141",
+                    "&::placeholder": {
+                      color: "#82838D",
+                      opacity: 1,
+                    },
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  color: "#6D6F7A",
+                  fontSize: "0.95rem",
+                  "&.Mui-focused": {
+                    color: "#3077F3",
+                  },
+                },
+                "& .MuiInputBase-input": {
+                  color: "#2E3141",
+                },
+              }}
             />
           </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 3 }}>
+          <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
             <Button
               onClick={() => setOpenAddGroupDialog(false)}
-              color="inherit"
+              variant="outlined"
               disabled={addingGroup}
+              sx={{
+                color: "#6D6F7A",
+                borderColor: "#E3EDFF",
+                backgroundColor: "#FFFFFF",
+                px: 3,
+                py: 1,
+                fontSize: "0.95rem",
+                textTransform: "none",
+                fontWeight: 500,
+                "&:hover": {
+                  backgroundColor: "#F5F5F5",
+                  borderColor: "#BFD6FF",
+                },
+                "&:disabled": {
+                  backgroundColor: "#F5F5F5",
+                  borderColor: "#E3EDFF",
+                  color: "#82838D",
+                },
+              }}
             >
               Cancel
             </Button>
@@ -1606,12 +1711,26 @@ const ResumeUploader = ({
                 ) : null
               }
               sx={{
-                backgroundColor: BRAND_COLORS.primary.blue,
-                "&:hover": { backgroundColor: BRAND_COLORS.primary.blueDark },
+                backgroundColor: "#3077F3",
+                color: "white",
+                px: 3,
+                py: 1,
+                fontSize: "0.95rem",
+                textTransform: "none",
+                fontWeight: 500,
+                borderRadius: "6px",
+                "&:hover": {
+                  backgroundColor: "#1E50A8",
+                },
+                "&:disabled": {
+                  backgroundColor: "#F5F5F5",
+                  color: "#82838D",
+                },
                 minWidth: "80px",
+                boxShadow: "none",
               }}
             >
-              {addingGroup ? "Adding..." : "Add"}
+              {addingGroup ? "Adding..." : "Add Group"}
             </Button>
           </DialogActions>
         </Dialog>
@@ -1622,12 +1741,19 @@ const ResumeUploader = ({
           onClose={deletingGroup ? undefined : closeDeleteDialog}
           maxWidth="sm"
           fullWidth
+          PaperProps={{
+            sx: {
+              backgroundColor: "#FFFFFF",
+              boxShadow: "0 8px 32px rgba(48, 119, 243, 0.1)",
+              border: "1px solid #E3EDFF",
+            },
+          }}
         >
-          <DialogTitle sx={{ fontWeight: 600, color: BRAND_COLORS.accent.red }}>
+          <DialogTitle sx={{ fontWeight: 600, color: "#ef4444" }}>
             Delete Group
           </DialogTitle>
           <DialogContent>
-            <Typography>
+            <Typography sx={{ color: "#2E3141" }}>
               Are you sure you want to delete the group "
               <strong>{deleteGroupDialog.group?.name}</strong>"? This action
               cannot be undone.
@@ -1638,6 +1764,12 @@ const ResumeUploader = ({
               onClick={closeDeleteDialog}
               color="inherit"
               disabled={deletingGroup}
+              sx={{
+                color: "#6D6F7A",
+                "&:hover": {
+                  backgroundColor: "#F5F5F5",
+                },
+              }}
             >
               Cancel
             </Button>
@@ -1655,12 +1787,14 @@ const ResumeUploader = ({
                 ) : null
               }
               sx={{
-                backgroundColor: BRAND_COLORS.accent.red,
-                "&:hover": { backgroundColor: BRAND_COLORS.accent.redDark },
+                backgroundColor: "#ef4444",
+                "&:hover": { backgroundColor: "#dc2626" },
                 "&:disabled": {
-                  backgroundColor: BRAND_COLORS.neutral.whiteAlpha[30],
+                  backgroundColor: "#F5F5F5",
+                  color: "#82838D",
                 },
                 minWidth: "100px",
+                color: "white",
               }}
             >
               {deletingGroup ? "Deleting..." : "Delete"}
@@ -1677,28 +1811,31 @@ const ResumeUploader = ({
           PaperProps={{
             sx: {
               borderRadius: 3,
-              border: `2px solid ${BRAND_COLORS.primary.blue}`,
+              border: "2px solid #3077F3",
+              backgroundColor: "#FFFFFF",
+              boxShadow: "0 8px 32px rgba(48, 119, 243, 0.1)",
             },
           }}
         >
           <DialogTitle
             sx={{
               fontWeight: 600,
-              color: BRAND_COLORS.primary.blue,
+              color: "#3077F3",
               display: "flex",
               alignItems: "center",
               gap: 2,
               pb: 2,
             }}
           >
-            <Warning
-              sx={{ fontSize: "2rem", color: BRAND_COLORS.primary.blue }}
-            />
+            <Warning sx={{ fontSize: "2rem", color: "#3077F3" }} />
             Cannot Delete Group
           </DialogTitle>
           <DialogContent sx={{ pb: 2 }}>
             <Stack spacing={2}>
-              <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              <Typography
+                variant="body1"
+                sx={{ fontWeight: 500, color: "#2E3141" }}
+              >
                 The group "
                 <strong>
                   {capitalizeGroupName(cannotDeleteDialog.group?.name || "")}
@@ -1709,17 +1846,20 @@ const ResumeUploader = ({
               <Alert
                 severity="info"
                 sx={{
-                  backgroundColor: "rgba(37, 99, 235, 0.1)",
-                  border: `1px solid ${BRAND_COLORS.primary.blue}`,
+                  backgroundColor: "#EFF5FF",
+                  border: "1px solid #3077F3",
                   "& .MuiAlert-icon": {
-                    color: BRAND_COLORS.primary.blue,
+                    color: "#3077F3",
+                  },
+                  "& .MuiAlert-message": {
+                    color: "#2E3141",
                   },
                 }}
               >
-                <Typography variant="body2">
+                <Typography variant="body2" sx={{ color: "#2E3141" }}>
                   <strong>To delete this group:</strong>
                 </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
+                <Typography variant="body2" sx={{ mt: 1, color: "#2E3141" }}>
                   1. Navigate to the Resume Collection section
                   <br />
                   2. Filter by this group name
@@ -1730,7 +1870,7 @@ const ResumeUploader = ({
                 </Typography>
               </Alert>
 
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" sx={{ color: "#6D6F7A" }}>
                 This prevents accidental data loss and ensures your CVs are
                 safely managed.
               </Typography>
@@ -1741,10 +1881,11 @@ const ResumeUploader = ({
               onClick={closeCannotDeleteDialog}
               variant="contained"
               sx={{
-                backgroundColor: BRAND_COLORS.primary.blue,
-                "&:hover": { backgroundColor: BRAND_COLORS.primary.blueDark },
+                backgroundColor: "#3077F3",
+                "&:hover": { backgroundColor: "#1E50A8" },
                 minWidth: "100px",
                 fontWeight: 600,
+                color: "white",
               }}
             >
               Got It
@@ -1762,7 +1903,22 @@ const ResumeUploader = ({
           <Alert
             onClose={() => setSnackbarOpen(false)}
             severity={snackbarSeverity}
-            sx={{ width: "100%" }}
+            sx={{
+              backgroundColor:
+                snackbarSeverity === "success" ? "#F0FDF4" : "#FEF2F2",
+              border: `1px solid ${
+                snackbarSeverity === "success" ? "#22c55e" : "#ef4444"
+              }`,
+              "& .MuiAlert-icon": {
+                color: snackbarSeverity === "success" ? "#22c55e" : "#ef4444",
+              },
+              "& .MuiAlert-message": {
+                color: "#2E3141",
+              },
+              "& .MuiAlert-action": {
+                color: "#6D6F7A",
+              },
+            }}
           >
             {snackbarMessage}
           </Alert>
