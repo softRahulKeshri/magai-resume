@@ -76,7 +76,46 @@ const ResumeUploader = ({
 }: ResumeUploaderProps) => {
   // Helper function to capitalize group names consistently
   const capitalizeGroupName = useCallback((name: string) => {
-    return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    if (!name) return name;
+
+    // Handle common acronyms and technical terms
+    const acronyms = [
+      "AI",
+      "ML",
+      "UI",
+      "UX",
+      "API",
+      "SDK",
+      "AWS",
+      "GCP",
+      "HR",
+      "IT",
+      "QA",
+      "DevOps",
+      "iOS",
+      "Android",
+    ];
+
+    // Split by common separators and process each part
+    return name
+      .split(/([\/\-\s_|,&]+)/) // Split by separators but keep them
+      .map((part, index) => {
+        if (index % 2 === 1) {
+          // This is a separator, add spaces around it for better readability
+          return part.includes("/") ? " / " : part;
+        }
+
+        // Check if the part is a known acronym
+        const upperPart = part.toUpperCase();
+        if (acronyms.includes(upperPart)) {
+          return upperPart;
+        }
+
+        // Handle normal words - capitalize first letter
+        return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+      })
+      .join("")
+      .trim();
   }, []);
   // File management state
   const [files, setFiles] = useState<FileWithProgress[]>([]);
@@ -542,7 +581,7 @@ const ResumeUploader = ({
                   letterSpacing: "0.01em",
                 }}
               >
-                Intelligent Resume Management Platform
+                AI-Powered Talent Discovery Plateform
               </Typography>
             </Box>
           </Box>
@@ -598,7 +637,7 @@ const ResumeUploader = ({
                   gutterBottom
                   sx={{
                     fontWeight: 600,
-                    mb: 3,
+                    mb: 2,
                     color: "white",
                     display: "flex",
                     alignItems: "center",
@@ -614,6 +653,16 @@ const ResumeUploader = ({
                     }}
                   />
                   Select Group
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "rgba(255, 255, 255, 0.7)",
+                    mb: 3,
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  Select your target group for CV uploads
                 </Typography>
                 <Stack direction="row" spacing={2} alignItems="center">
                   <FormControl
@@ -642,13 +691,13 @@ const ResumeUploader = ({
                     }}
                   >
                     <InputLabel id="group-select-label">
-                      Select your target group for CV uploads
+                      Select Group
                     </InputLabel>
                     <Select
                       labelId="group-select-label"
                       id="group-select"
                       value={selectedGroup?.id.toString() || ""}
-                      label="Select your target group for CV uploads"
+                      label="Select Group"
                       onChange={handleGroupChange}
                       renderValue={() => (
                         <Typography sx={{ color: "white" }}>
@@ -790,14 +839,12 @@ const ResumeUploader = ({
                 severity="success"
                 sx={{
                   mt: 3,
-                  backgroundColor: "rgba(34, 197, 94, 0.1)",
-                  border: "1px solid rgba(34, 197, 94, 0.3)",
+                  backgroundColor: "#22c55e",
+                  border: "1px solid #16a34a",
                   borderRadius: 1.25,
                   alignItems: "center",
                   "& .MuiAlert-icon": {
-                    color: "#22c55e",
-                    alignSelf: "flex-start",
-                    mt: 0.1,
+                    color: "white",
                   },
                   "& .MuiAlert-message": {
                     color: "white",
@@ -814,7 +861,7 @@ const ResumeUploader = ({
                     flexWrap: "wrap",
                   }}
                 >
-                  <Typography component="span">
+                  <Typography component="span" sx={{ color: "white" }}>
                     Perfect! Your CVs will be organized and uploaded to
                   </Typography>
                   <Box
@@ -824,22 +871,22 @@ const ResumeUploader = ({
                       gap: 0.5,
                       px: 1.5,
                       py: 0.5,
-                      backgroundColor: "rgba(34, 197, 94, 0.2)",
+                      backgroundColor: "rgba(255, 255, 255, 0.2)",
                       borderRadius: 1,
-                      border: "1px solid rgba(34, 197, 94, 0.4)",
+                      border: "1px solid rgba(255, 255, 255, 0.3)",
                     }}
                   >
                     <FolderOpen
                       sx={{
                         fontSize: "1.1rem",
-                        color: "#22c55e",
+                        color: "white",
                       }}
                     />
                     <Typography
                       component="span"
                       sx={{
                         fontWeight: 700,
-                        color: "#22c55e",
+                        color: "white",
                         fontSize: "0.95rem",
                       }}
                     >
@@ -851,7 +898,7 @@ const ResumeUploader = ({
                   <Typography
                     variant="caption"
                     sx={{
-                      color: "rgba(255, 255, 255, 0.8)",
+                      color: "rgba(255, 255, 255, 0.9)",
                       mt: 1,
                       display: "block",
                       fontStyle: "italic",
@@ -884,8 +931,7 @@ const ResumeUploader = ({
               },
             }}
           >
-            Please select a target group from the dropdown above to organize and
-            upload your CVs
+            Please select a group to organize and upload your CVs
           </Alert>
         )}
 
@@ -1239,9 +1285,7 @@ const ResumeUploader = ({
                               fontSize: "0.875rem",
                             }}
                           >
-                            {file.size > 0
-                              ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
-                              : "0.00 MB"}
+                            {(file.size / (1024 * 1024)).toFixed(2)} MB
                           </Typography>
                           {file.status === "ready" && (
                             <Typography
@@ -1474,7 +1518,13 @@ const ResumeUploader = ({
             variant="contained"
             size="large"
             onClick={uploadFiles}
-            disabled={files.length === 0 || isUploading || !selectedGroup}
+            disabled={
+              files.length === 0 ||
+              isUploading ||
+              !selectedGroup ||
+              uploadStatus === "success" ||
+              uploadStatus === "error"
+            }
             startIcon={
               isUploading ? (
                 <CircularProgress size={20} color="inherit" />

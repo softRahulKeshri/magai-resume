@@ -89,20 +89,22 @@ const SearchContainer = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "flex-start",
   gap: theme.spacing(1),
-  backgroundColor: AppColors.background.paper,
-  borderRadius: theme.spacing(3),
-  padding: theme.spacing(1),
-  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.25)",
-  border: `2px solid ${AppColors.border.light}`,
+  backgroundColor: "rgba(255, 255, 255, 0.05)",
+  borderRadius: theme.spacing(2),
+  padding: theme.spacing(1.5),
+  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
+  border: `1px solid rgba(255, 255, 255, 0.1)`,
   transition: "all 0.3s ease",
   minHeight: "140px",
+  backdropFilter: "blur(10px)",
   "&:hover": {
-    borderColor: AppColors.primary.light,
-    boxShadow: "0 6px 25px rgba(59, 130, 246, 0.2)",
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    boxShadow: "0 12px 40px rgba(0, 0, 0, 0.3)",
+    transform: "translateY(-2px)",
   },
   "&:focus-within": {
     borderColor: AppColors.primary.main,
-    boxShadow: `0 0 0 3px rgba(59, 130, 246, 0.2)`,
+    boxShadow: `0 0 0 2px ${AppColors.primary.main}40`,
   },
 }));
 
@@ -138,44 +140,49 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
 
 const SearchButton = styled(Button)(({ theme }) => ({
   minWidth: 180,
-  height: 56,
-  borderRadius: 10,
-  fontSize: "1rem",
-  fontWeight: 700,
-  backgroundColor: "#ffffff",
-  color: "#1e293b",
+  height: 48,
+  borderRadius: theme.spacing(1.5),
+  fontSize: "0.95rem",
+  fontWeight: 600,
+  background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+  color: "#ffffff",
   textTransform: "none",
-  boxShadow: `0 4px 16px rgba(0, 0, 0, 0.12)`,
-  transition: "all 0.2s ease",
+  boxShadow: "0 8px 24px rgba(59, 130, 246, 0.25)",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
   cursor: "pointer !important",
   position: "relative",
   overflow: "hidden",
-  border: "2px solid #ffffff",
+  border: "1px solid rgba(59, 130, 246, 0.3)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   gap: 8,
   padding: "0 24px",
   whiteSpace: "nowrap",
-  "& .MuiButton-startIcon": {
-    marginRight: 8,
-    marginLeft: 0,
-    display: "flex",
-    alignItems: "center",
-  },
+  backdropFilter: "blur(10px)",
   "&::before": {
-    display: "none",
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: "-100%",
+    width: "100%",
+    height: "100%",
+    background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+    transition: "left 0.5s ease",
   },
   "&:hover": {
-    backgroundColor: "#f8fafc",
-    color: "#0f172a",
-    boxShadow: `0 6px 20px rgba(0, 0, 0, 0.18)`,
-    borderColor: "#f8fafc",
+    transform: "translateY(-2px)",
+    boxShadow: "0 12px 32px rgba(59, 130, 246, 0.35)",
+    background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+  },
+  "&:hover::before": {
+    left: "100%",
   },
   "&:disabled": {
-    backgroundColor: "#94a3b8",
-    color: "#475569",
-    borderColor: "#94a3b8",
+    background: "linear-gradient(135deg, #64748b 0%, #475569 100%)",
+    borderColor: "rgba(100, 116, 139, 0.3)",
+    color: "rgba(255, 255, 255, 0.5)",
+    boxShadow: "none",
   },
   [theme.breakpoints.down("sm")]: {
     width: "100%",
@@ -188,8 +195,13 @@ const ControlsSection = styled(Box)(({ theme }) => ({
   justifyContent: "space-between",
   gap: theme.spacing(3),
   marginTop: theme.spacing(3),
-  padding: theme.spacing(2, 0),
+  padding: theme.spacing(2),
   flexWrap: "wrap",
+  backgroundColor: "rgba(255, 255, 255, 0.03)",
+  borderRadius: theme.spacing(2),
+  backdropFilter: "blur(10px)",
+  border: "1px solid rgba(255, 255, 255, 0.1)",
+  boxShadow: "0 4px 24px rgba(0, 0, 0, 0.2)",
   [theme.breakpoints.down("sm")]: {
     flexDirection: "column",
     gap: theme.spacing(2),
@@ -200,19 +212,20 @@ const ControlsSection = styled(Box)(({ theme }) => ({
 const GroupSelectContainer = styled(FormControl)(({ theme }) => ({
   minWidth: 200,
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "#ffffff",
-    borderRadius: 4,
-    border: `2px solid #e2e8f0`,
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderRadius: theme.spacing(1.5),
+    border: `1px solid rgba(255, 255, 255, 0.1)`,
     transition: "all 0.2s ease",
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+    backdropFilter: "blur(10px)",
     "&:hover": {
-      backgroundColor: "#f1f5f9",
-      borderColor: "#cbd5e1",
+      backgroundColor: "rgba(255, 255, 255, 0.08)",
+      borderColor: "rgba(255, 255, 255, 0.2)",
+      transform: "translateY(-1px)",
     },
     "&.Mui-focused": {
-      backgroundColor: "#f1f5f9",
-      borderColor: "#3b82f6",
-      boxShadow: `0 0 0 2px #3b82f633`,
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      borderColor: AppColors.primary.main,
+      boxShadow: `0 0 0 2px ${AppColors.primary.main}40`,
     },
     "& fieldset": {
       border: "none",
@@ -222,7 +235,7 @@ const GroupSelectContainer = styled(FormControl)(({ theme }) => ({
     display: "none",
   },
   "& .MuiSelect-select": {
-    color: "#1e293b",
+    color: "#ffffff",
     display: "flex",
     alignItems: "center",
     gap: theme.spacing(1),
@@ -230,9 +243,12 @@ const GroupSelectContainer = styled(FormControl)(({ theme }) => ({
     fontWeight: 600,
     padding: theme.spacing(1.5, 2),
     minHeight: "24px",
+    "&:hover": {
+      backgroundColor: "transparent",
+    },
   },
   "& .MuiSelect-icon": {
-    color: "#64748b",
+    color: "rgba(255, 255, 255, 0.7)",
   },
   [theme.breakpoints.down("sm")]: {
     width: "100%",
@@ -1282,128 +1298,52 @@ Examples:
                     displayEmpty
                     MenuProps={{
                       PaperProps: {
-                        sx: {
-                          backgroundColor: "#ffffff",
-                          border: `1px solid #e2e8f0`,
-                          borderRadius: 2,
-                          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.15)",
+                        sx: (theme) => ({
+                          backgroundColor: "rgba(15, 23, 42, 0.98)",
+                          backdropFilter: "blur(10px)",
+                          border: "1px solid rgba(255, 255, 255, 0.1)",
+                          borderRadius: theme.spacing(1.5),
+                          boxShadow: "0 16px 40px rgba(0, 0, 0, 0.3)",
                           mt: 1,
-                          padding: "8px",
+                          padding: theme.spacing(1),
                           "& .MuiList-root": {
-                            padding: "4px",
+                            padding: theme.spacing(0.5),
                           },
                           "& .MuiMenuItem-root": {
-                            borderRadius: 1,
-                            margin: "2px 0",
-                            padding: "8px 16px",
+                            borderRadius: theme.spacing(1),
+                            margin: theme.spacing(0.5, 0),
+                            padding: theme.spacing(1.5, 2),
+                            color: "#ffffff",
+                            fontSize: "0.95rem",
+                            fontWeight: 500,
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                              backgroundColor: "rgba(59, 130, 246, 0.15)",
+                            },
+                            "&.Mui-selected": {
+                              backgroundColor: "rgba(59, 130, 246, 0.2)",
+                              "&:hover": {
+                                backgroundColor: "rgba(59, 130, 246, 0.25)",
+                              },
+                            },
                           },
-                        },
+                        }),
                       },
                     }}
                   >
-                    <MenuItem
-                      value=""
-                      sx={{
-                        backgroundColor: "#ffffff",
-                        color: "#1e293b",
-                        fontSize: "0.95rem",
-                        fontWeight: 600,
-                        padding: "12px 16px",
-                        margin: "2px 0",
-                        borderRadius: "10px",
-                        minHeight: "44px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        transition: "all 0.2s ease",
-                        "&:hover": {
-                          backgroundColor: "#f1f5f9",
-                          color: "#0f172a",
-                          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-                        },
-                        "&.Mui-selected": {
-                          backgroundColor: "#e0f2fe",
-                          color: "#0369a1",
-                          boxShadow: "0 2px 8px rgba(14, 165, 233, 0.12)",
-                          "&:hover": {
-                            backgroundColor: "#bae6fd",
-                            color: "#0c4a6e",
-                            boxShadow:
-                              "0 4px 12px rgba(14, 165, 233, 0.18)",
-                          },
-                        },
-                      }}
-                    >
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <AutoAwesome
-                          sx={{
-                            fontSize: "16px",
-                            color: "#3b82f6",
-                          }}
-                        />
-                        <Typography
-                          sx={{
-                            fontSize: "0.95rem",
-                            color: "#1e293b",
-                            fontWeight: 600,
-                          }}
-                        >
+                    <MenuItem value="">
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <AutoAwesome sx={{ fontSize: "18px", color: "#3b82f6" }} />
+                        <Typography sx={{ fontSize: "0.95rem", color: "#ffffff", fontWeight: 600 }}>
                           All Groups
                         </Typography>
                       </Box>
                     </MenuItem>
                     {groups.map((group) => (
-                      <MenuItem
-                        key={group.id}
-                        value={group.name}
-                        sx={{
-                          backgroundColor: "#ffffff",
-                          color: "#1e293b",
-                          fontSize: "0.95rem",
-                          fontWeight: 600,
-                          padding: "12px 16px",
-                          margin: "2px 0",
-                          borderRadius: "10px",
-                          minHeight: "44px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
-                          transition: "all 0.2s ease",
-                          "&:hover": {
-                            backgroundColor: "#f1f5f9",
-                            color: "#0f172a",
-                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-                          },
-                          "&.Mui-selected": {
-                            backgroundColor: "#e0f2fe",
-                            color: "#0369a1",
-                            boxShadow: "0 2px 8px rgba(14, 165, 233, 0.12)",
-                            "&:hover": {
-                              backgroundColor: "#bae6fd",
-                              color: "#0c4a6e",
-                              boxShadow: "0 4px 12px rgba(14, 165, 233, 0.18)",
-                            },
-                          },
-                        }}
-                      >
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
-                          <FolderIcon
-                            sx={{
-                              fontSize: "16px",
-                              color: "#64748b",
-                            }}
-                          />
-                          <Typography
-                            sx={{
-                              fontSize: "0.95rem",
-                              color: "#1e293b",
-                              fontWeight: 600,
-                            }}
-                          >
+                      <MenuItem key={group.id} value={group.name}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <FolderIcon sx={{ fontSize: "18px", color: "rgba(255, 255, 255, 0.7)" }} />
+                          <Typography sx={{ fontSize: "0.95rem", color: "#ffffff", fontWeight: 500 }}>
                             {group.name}
                           </Typography>
                         </Box>
@@ -1417,15 +1357,20 @@ Examples:
                     icon={<FolderIcon sx={{ fontSize: "14px" }} />}
                     label={`Searching in: ${selectedGroup}`}
                     size="small"
-                    variant="filled"
                     sx={{
-                      backgroundColor: "#ffffff",
-                      borderColor: "#ffffff",
-                      color: "#1e293b",
-                      fontWeight: 600,
-                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      backdropFilter: "blur(10px)",
+                      border: "1px solid rgba(255, 255, 255, 0.2)",
+                      color: "#ffffff",
+                      fontWeight: 500,
+                      borderRadius: "8px",
+                      padding: "4px",
+                      height: "28px",
                       "& .MuiChip-icon": {
-                        color: "#64748b",
+                        color: "rgba(255, 255, 255, 0.7)",
+                      },
+                      "& .MuiChip-label": {
+                        padding: "0 8px",
                       },
                       whiteSpace: "nowrap",
                     }}
