@@ -208,31 +208,35 @@ const MatchScoreChip = styled(Chip)(({ theme }) => ({
   },
 }));
 
-// Enhanced Score Badge Component
+// Premium Score Badge Component
 const ScoreBadge = styled(Box)<{ score: number }>(({ theme, score }) => {
   const getScoreColor = (score: number) => {
-    if (score >= 0.8)
+    if (score >= 8)
       return {
         bg: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
         text: "#ffffff",
-        shadow: "0 4px 16px rgba(16, 185, 129, 0.4)",
+        shadow: "0 8px 32px rgba(16, 185, 129, 0.4)",
+        border: "rgba(16, 185, 129, 0.3)",
       };
-    if (score >= 0.6)
+    if (score >= 6)
       return {
         bg: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
         text: "#ffffff",
-        shadow: "0 4px 16px rgba(59, 130, 246, 0.4)",
+        shadow: "0 8px 32px rgba(59, 130, 246, 0.4)",
+        border: "rgba(59, 130, 246, 0.3)",
       };
-    if (score >= 0.4)
+    if (score >= 4)
       return {
         bg: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
         text: "#ffffff",
-        shadow: "0 4px 16px rgba(245, 158, 11, 0.4)",
+        shadow: "0 8px 32px rgba(245, 158, 11, 0.4)",
+        border: "rgba(245, 158, 11, 0.3)",
       };
     return {
       bg: "linear-gradient(135deg, #64748b 0%, #475569 100%)",
       text: "#ffffff",
-      shadow: "0 4px 16px rgba(100, 116, 139, 0.4)",
+      shadow: "0 8px 32px rgba(100, 116, 139, 0.4)",
+      border: "rgba(100, 116, 139, 0.3)",
     };
   };
 
@@ -242,18 +246,22 @@ const ScoreBadge = styled(Box)<{ score: number }>(({ theme, score }) => {
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    minWidth: "85px",
-    height: "40px",
+    minWidth: "100px",
+    height: "48px",
     background: colors.bg,
     color: colors.text,
-    borderRadius: "12px",
-    fontWeight: 700,
-    fontSize: "0.95rem",
-    padding: theme.spacing(0.75, 2),
+    borderRadius: "16px",
+    fontWeight: 800,
+    fontSize: "1.1rem",
+    padding: theme.spacing(1, 2.5),
     boxShadow: colors.shadow,
-    border: "1px solid rgba(255, 255, 255, 0.1)",
+    border: `2px solid ${colors.border}`,
     position: "relative",
     overflow: "hidden",
+    backdropFilter: "blur(20px)",
+    fontFamily: '"SF Pro Display", -apple-system, system-ui, sans-serif',
+    letterSpacing: "-0.02em",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     "&::before": {
       content: '""',
       position: "absolute",
@@ -262,11 +270,115 @@ const ScoreBadge = styled(Box)<{ score: number }>(({ theme, score }) => {
       width: "100%",
       height: "100%",
       background:
-        "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
-      transition: "left 0.6s ease",
+        "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+      transition: "left 0.8s ease",
+    },
+    "&:hover": {
+      transform: "translateY(-2px)",
+      boxShadow: `${colors.shadow.replace("0.4", "0.6")}`,
     },
     "&:hover::before": {
       left: "100%",
+    },
+  };
+});
+
+// Elegant Score Metrics Section
+const ScoreMetricsSection = styled(Box)(({ theme }) => ({
+  background:
+    "linear-gradient(145deg, rgba(248, 250, 252, 0.06) 0%, rgba(241, 245, 249, 0.03) 100%)",
+  backdropFilter: "blur(20px)",
+  borderRadius: 16,
+  padding: theme.spacing(3),
+  border: "1px solid rgba(203, 213, 225, 0.12)",
+  marginBottom: theme.spacing(3),
+  position: "relative",
+  overflow: "hidden",
+  "&::before": {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "2px",
+    background: "linear-gradient(90deg, #3b82f6 0%, #10b981 100%)",
+    borderRadius: "16px 16px 0 0",
+  },
+}));
+
+const ScoreMetricsGrid = styled(Box)(({ theme }) => ({
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+  gap: theme.spacing(2),
+  marginTop: theme.spacing(2),
+}));
+
+const ScoreMetricItem = styled(Box)<{ score: number }>(({ theme, score }) => {
+  const getScoreColor = (score: number) => {
+    if (score >= 8) return "#10b981";
+    if (score >= 6) return "#3b82f6";
+    if (score >= 4) return "#f59e0b";
+    return "#64748b";
+  };
+
+  const color = getScoreColor(score);
+
+  return {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: theme.spacing(2, 1.5),
+    backgroundColor: "rgba(248, 250, 252, 0.04)",
+    borderRadius: 12,
+    border: `1px solid ${color}20`,
+    transition: "all 0.3s ease",
+    position: "relative",
+    "&:hover": {
+      backgroundColor: `${color}08`,
+      borderColor: `${color}40`,
+      transform: "translateY(-2px)",
+      boxShadow: `0 4px 20px ${color}20`,
+    },
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: "2px",
+      background: color,
+      borderRadius: "12px 12px 0 0",
+    },
+    "& .metric-label": {
+      fontSize: "0.8rem",
+      fontWeight: 600,
+      color: AppColors.text.secondary,
+      textTransform: "uppercase",
+      letterSpacing: "0.5px",
+      marginBottom: theme.spacing(1),
+      textAlign: "center",
+    },
+    "& .metric-value": {
+      fontSize: "1.5rem",
+      fontWeight: 800,
+      color: color,
+      fontFamily: '"SF Pro Display", -apple-system, system-ui, sans-serif',
+      lineHeight: 1,
+    },
+    "& .metric-bar": {
+      width: "100%",
+      height: 4,
+      backgroundColor: "rgba(100, 116, 139, 0.15)",
+      borderRadius: 2,
+      marginTop: theme.spacing(1.5),
+      overflow: "hidden",
+      "& .metric-fill": {
+        height: "100%",
+        backgroundColor: color,
+        borderRadius: 2,
+        width: `${(score / 10) * 100}%`,
+        transition: "width 0.6s ease",
+      },
     },
   };
 });
@@ -283,9 +395,9 @@ const ScoreLabel = styled(Typography)(({ theme }) => ({
 // Enhanced Result Card styling
 const ResultCard = styled(Card)<{ score?: number }>(({ theme, score = 0 }) => {
   const getScoreAccent = (score: number) => {
-    if (score >= 0.8) return "#10b981"; // Green for excellent matches
-    if (score >= 0.6) return "#3b82f6"; // Blue for good matches
-    if (score >= 0.4) return "#f59e0b"; // Orange for fair matches
+    if (score >= 8) return "#10b981"; // Green for excellent matches
+    if (score >= 6) return "#3b82f6"; // Blue for good matches
+    if (score >= 4) return "#f59e0b"; // Orange for fair matches
     return "#64748b"; // Gray for lower matches
   };
 
@@ -355,10 +467,28 @@ interface RawChunkResult {
   score: number;
   source_file: string;
   text: string;
+  group?: string;
+}
+
+interface CandidateDetail {
+  candidate_name: string;
+  details: string;
+  file_name: string;
+}
+
+interface ScoreCard {
+  clarity_score: number;
+  experience_score: number;
+  loyality_score: number;
+  reputation_score: number;
 }
 
 interface SearchApiResponse {
-  answer: string;
+  answer: {
+    candidate_details: CandidateDetail[];
+    score_card: ScoreCard;
+    summary: string;
+  };
   results: RawChunkResult[];
 }
 
@@ -376,6 +506,14 @@ interface CandidateResult {
   filename?: string;
   rawText?: string;
   highlights?: string[];
+  // New score fields
+  clarityScore?: number;
+  experienceScore?: number;
+  loyaltyScore?: number;
+  reputationScore?: number;
+  averageScore?: number;
+  details?: string;
+  group?: string;
 }
 
 // Props interface
@@ -448,6 +586,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedGroup, setSelectedGroup] = useState("");
+  const [searchSummary, setSearchSummary] = useState<string | null>(null);
 
   // Groups management
   const { groups, loading: groupsLoading, error: groupsError } = useGroups();
@@ -466,6 +605,178 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
     }
 
     return cleaned;
+  };
+
+  // Helper function to get search suggestions based on selected group
+  const getGroupBasedSuggestions = (groupName: string): string[] => {
+    const defaultSuggestions = [
+      "React Developer",
+      "Python Engineer",
+      "Data Scientist",
+      "Full Stack Developer",
+    ];
+
+    if (!groupName) return defaultSuggestions;
+
+    const lowerGroupName = groupName.toLowerCase();
+
+    // Technology/Engineering groups
+    if (
+      lowerGroupName.includes("tech") ||
+      lowerGroupName.includes("engineering") ||
+      lowerGroupName.includes("software") ||
+      lowerGroupName.includes("dev")
+    ) {
+      return [
+        "React Developer",
+        "Python Engineer",
+        "Full Stack Developer",
+        "Mobile Developer",
+      ];
+    }
+
+    // Data/Analytics groups
+    if (
+      lowerGroupName.includes("data") ||
+      lowerGroupName.includes("analytics") ||
+      lowerGroupName.includes("ml") ||
+      lowerGroupName.includes("ai")
+    ) {
+      return [
+        "Data Scientist",
+        "Machine Learning Engineer",
+        "Data Analyst",
+        "Python Developer",
+      ];
+    }
+
+    // Marketing groups
+    if (
+      lowerGroupName.includes("marketing") ||
+      lowerGroupName.includes("digital")
+    ) {
+      return [
+        "Digital Marketing Specialist",
+        "Content Creator",
+        "SEO Specialist",
+        "Social Media Manager",
+      ];
+    }
+
+    // Sales groups
+    if (
+      lowerGroupName.includes("sales") ||
+      lowerGroupName.includes("business")
+    ) {
+      return [
+        "Sales Representative",
+        "Account Manager",
+        "Business Development",
+        "Customer Success",
+      ];
+    }
+
+    // Design groups
+    if (
+      lowerGroupName.includes("design") ||
+      lowerGroupName.includes("creative") ||
+      lowerGroupName.includes("ui") ||
+      lowerGroupName.includes("ux")
+    ) {
+      return [
+        "UI/UX Designer",
+        "Graphic Designer",
+        "Product Designer",
+        "Creative Director",
+      ];
+    }
+
+    // Finance groups
+    if (
+      lowerGroupName.includes("finance") ||
+      lowerGroupName.includes("accounting")
+    ) {
+      return [
+        "Financial Analyst",
+        "Accountant",
+        "Investment Analyst",
+        "Risk Manager",
+      ];
+    }
+
+    // HR/People groups
+    if (
+      lowerGroupName.includes("hr") ||
+      lowerGroupName.includes("people") ||
+      lowerGroupName.includes("human")
+    ) {
+      return [
+        "HR Specialist",
+        "Recruiter",
+        "People Operations",
+        "Training Manager",
+      ];
+    }
+
+    // Operations groups
+    if (
+      lowerGroupName.includes("operations") ||
+      lowerGroupName.includes("ops")
+    ) {
+      return [
+        "Operations Manager",
+        "Project Manager",
+        "Supply Chain",
+        "Process Improvement",
+      ];
+    }
+
+    // Healthcare groups
+    if (
+      lowerGroupName.includes("health") ||
+      lowerGroupName.includes("medical") ||
+      lowerGroupName.includes("nurse") ||
+      lowerGroupName.includes("doctor")
+    ) {
+      return [
+        "Registered Nurse",
+        "Medical Assistant",
+        "Healthcare Administrator",
+        "Clinical Researcher",
+      ];
+    }
+
+    // Education groups
+    if (
+      lowerGroupName.includes("education") ||
+      lowerGroupName.includes("teacher") ||
+      lowerGroupName.includes("academic")
+    ) {
+      return [
+        "Teacher",
+        "Educational Coordinator",
+        "Academic Advisor",
+        "Training Specialist",
+      ];
+    }
+
+    // Legal groups
+    if (lowerGroupName.includes("legal") || lowerGroupName.includes("law")) {
+      return [
+        "Legal Advisor",
+        "Paralegal",
+        "Compliance Officer",
+        "Contract Specialist",
+      ];
+    }
+
+    // Default fallback with some variety
+    return [
+      "Senior Professional",
+      "Team Lead",
+      "Subject Matter Expert",
+      "5+ years experience",
+    ];
   };
 
   // Helper function to extract meaningful highlights from resume text
@@ -696,57 +1007,83 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
 
       const data: SearchApiResponse = await response.json();
 
-      // Check if the answer contains "sorry" which indicates no matches
-      if (data.answer && data.answer.toLowerCase().includes("sorry")) {
-        setSearchResults([]);
-        onSearchResults([]);
-      } else if (data.results && data.results.length > 0) {
-        // Parse raw chunks into candidate objects
-        const candidates = data.results.map((chunk) =>
-          parseCandidateFromText(chunk)
+      // Check if we have candidate details in the answer
+      if (
+        data.answer &&
+        data.answer.candidate_details &&
+        data.answer.candidate_details.length > 0
+      ) {
+        const candidateDetails = data.answer.candidate_details;
+        const scoreCard = data.answer.score_card;
+
+        // Calculate average score from all score categories
+        // Formula: (Clarity + Experience + Loyalty + Reputation) ÷ 4
+        // Each score is rated 1-10, so average will also be 1-10
+        const calculateAverageScore = (scores: ScoreCard) => {
+          const total =
+            scores.clarity_score +
+            scores.experience_score +
+            scores.loyality_score +
+            scores.reputation_score;
+          return total / 4;
+        };
+
+        const averageScore = calculateAverageScore(scoreCard);
+
+        // Create candidate objects from the structured response
+        const candidates: CandidateResult[] = candidateDetails.map(
+          (detail, index) => {
+            // Find corresponding chunk for additional text data
+            const matchingChunk = data.results.find(
+              (chunk) => chunk.source_file === detail.file_name
+            );
+
+            const parsedCandidate = matchingChunk
+              ? parseCandidateFromText(matchingChunk)
+              : null;
+
+            return {
+              id: matchingChunk?.id || `candidate-${index}`,
+              name: detail.candidate_name,
+              filename: detail.file_name,
+              details: detail.details,
+              // Include all individual scores
+              clarityScore: scoreCard.clarity_score,
+              experienceScore: scoreCard.experience_score,
+              loyaltyScore: scoreCard.loyality_score,
+              reputationScore: scoreCard.reputation_score,
+              averageScore: averageScore,
+              // Include chunk-based match score if available
+              matchScore: matchingChunk?.score || averageScore / 10,
+              // Include parsed data if available
+              email: parsedCandidate?.email,
+              phone: parsedCandidate?.phone,
+              location: parsedCandidate?.location,
+              currentRole: parsedCandidate?.currentRole,
+              skills: parsedCandidate?.skills,
+              rawText: matchingChunk?.text,
+              highlights: detail.details
+                .split("*")
+                .filter((item) => item.trim())
+                .map((item) => item.trim().replace(/^,\s*/, "")),
+              group: matchingChunk?.group,
+            };
+          }
         );
 
-        // Group by source file to avoid duplicates
-        const uniqueCandidates = candidates.reduce((acc, candidate) => {
-          const existingIndex = acc.findIndex(
-            (c) => c.filename === candidate.filename
-          );
-          if (existingIndex >= 0) {
-            // Merge skills and keep the one with better match score
-            const existing = acc[existingIndex];
-            const mergedSkills = [
-              ...(existing.skills || []),
-              ...(candidate.skills || []),
-            ];
-            const uniqueSkills = Array.from(new Set(mergedSkills));
-
-            if (
-              !candidate.matchScore ||
-              (existing.matchScore &&
-                existing.matchScore >= candidate.matchScore)
-            ) {
-              existing.skills = uniqueSkills;
-            } else {
-              candidate.skills = uniqueSkills;
-              acc[existingIndex] = candidate;
-            }
-          } else {
-            acc.push(candidate);
-          }
-          return acc;
-        }, [] as CandidateResult[]);
-
-        // Sort candidates by match score in descending order
-        const sortedCandidates = uniqueCandidates.sort((a, b) => {
-          const scoreA = a.matchScore || 0;
-          const scoreB = b.matchScore || 0;
+        // Sort candidates by average score in descending order
+        const sortedCandidates = candidates.sort((a, b) => {
+          const scoreA = a.averageScore || 0;
+          const scoreB = b.averageScore || 0;
           return scoreB - scoreA; // Descending order
         });
 
         setSearchResults(sortedCandidates);
+        setSearchSummary(data.answer.summary);
         onSearchResults(sortedCandidates);
       } else {
         setSearchResults([]);
+        setSearchSummary(null);
         onSearchResults([]);
       }
     } catch (error) {
@@ -757,6 +1094,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
           : "Search failed. Please try again."
       );
       setSearchResults([]);
+      setSearchSummary(null);
       onSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -770,6 +1108,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
     setSearchResults([]);
     setHasSearched(false);
     setError(null);
+    setSearchSummary(null);
     onSearchResults([]);
   }, [onSearchResults]);
 
@@ -831,10 +1170,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                 fontSize: { xs: "1rem", md: "1.1rem" },
               }}
             >
-              Discover the perfect candidates with intelligent semantic search.
-              <br />
-              Try queries like "React developer with 5+ years" or "Python data
-              scientist".
+              Find the perfect candidates with AI-powered search.
             </Typography>
 
             {/* Enhanced Search Input with Integrated Group Filter */}
@@ -879,8 +1215,8 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
 
               <StyledTextField
                 fullWidth
-                placeholder={`Search for candidates by skills, experience, or role${
-                  selectedGroup ? ` in ${selectedGroup}` : " across all groups"
+                placeholder={`Search candidates${
+                  selectedGroup ? ` in ${selectedGroup}` : ""
                 }...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -998,6 +1334,45 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
               <CardContent sx={{ p: 4 }}>
                 {searchResults.length > 0 ? (
                   <>
+                    {/* Search Summary Section */}
+                    {searchSummary && (
+                      <Box
+                        sx={{
+                          mb: 4,
+                          p: 3,
+                          backgroundColor: "rgba(59, 130, 246, 0.08)",
+                          borderRadius: 2,
+                          border: `1px solid ${AppColors.primary.main}40`,
+                          borderLeft: `4px solid ${AppColors.primary.main}`,
+                        }}
+                      >
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            color: AppColors.primary.light,
+                            fontWeight: 600,
+                            mb: 2,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          <AutoAwesome sx={{ fontSize: "1.2rem" }} />
+                          Summary
+                        </Typography>
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            color: AppColors.text.primary,
+                            lineHeight: 1.7,
+                            fontSize: "1rem",
+                          }}
+                        >
+                          {searchSummary}
+                        </Typography>
+                      </Box>
+                    )}
+
                     <Box
                       sx={{
                         display: "flex",
@@ -1041,7 +1416,9 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                           )}
                         </Typography>
                         <MatchScoreChip
-                          label={`${searchResults.length} matches`}
+                          label={`${searchResults.length} candidate${
+                            searchResults.length === 1 ? "" : "s"
+                          } found`}
                           size="small"
                         />
                         {selectedGroup && (
@@ -1087,7 +1464,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                           timeout={300 + index * 100}
                           key={candidate.id || index}
                         >
-                          <ResultCard score={candidate.matchScore || 0}>
+                          <ResultCard score={candidate.averageScore || 0}>
                             <CardContent sx={{ p: 0 }}>
                               {/* Enhanced Header with Score */}
                               <Box
@@ -1102,7 +1479,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                     "1px solid rgba(203, 213, 225, 0.08)",
                                 }}
                               >
-                                {/* Score Badge - Top Right */}
+                                {/* Compact Score Display - Top Right */}
                                 <Box
                                   sx={{
                                     position: "absolute",
@@ -1116,15 +1493,27 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                       color: AppColors.text.secondary,
                                       fontSize: "0.75rem",
                                       mb: 1,
+                                      fontWeight: 600,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "1px",
                                     }}
                                   >
-                                    Match Score
+                                    Overall Score
                                   </ScoreLabel>
-                                  <ScoreBadge score={candidate.matchScore || 0}>
-                                    {(
-                                      (candidate.matchScore || 0) * 100
-                                    ).toFixed(0)}
-                                    %
+                                  <ScoreBadge
+                                    score={candidate.averageScore || 0}
+                                  >
+                                    {(candidate.averageScore || 0).toFixed(1)}
+                                    <Typography
+                                      component="span"
+                                      sx={{
+                                        fontSize: "0.8rem",
+                                        opacity: 0.8,
+                                        ml: 0.3,
+                                      }}
+                                    >
+                                      /10
+                                    </Typography>
                                   </ScoreBadge>
                                 </Box>
 
@@ -1173,29 +1562,38 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                   </Box>
                                   <Box sx={{ flex: 1, minWidth: 0 }}>
                                     <Typography
-                                      variant="h5"
+                                      variant="h4"
                                       sx={{
-                                        fontWeight: 700,
+                                        fontWeight: 800,
                                         color: AppColors.text.primary,
-                                        fontSize: "1.3rem",
+                                        fontSize: "1.5rem",
                                         mb: 1,
                                         wordBreak: "break-word",
-                                        lineHeight: 1.3,
+                                        lineHeight: 1.2,
+                                        fontFamily:
+                                          '"SF Pro Display", -apple-system, system-ui, sans-serif',
+                                        letterSpacing: "-0.02em",
                                       }}
                                     >
-                                      {getDisplayFilename(
-                                        candidate.filename || ""
-                                      )}
+                                      {candidate.name ||
+                                        getDisplayFilename(
+                                          candidate.filename || ""
+                                        )}
                                     </Typography>
                                     <Typography
                                       variant="body1"
                                       sx={{
                                         color: AppColors.text.secondary,
-                                        fontSize: "1rem",
-                                        fontWeight: 500,
-                                        opacity: 0.8,
+                                        fontSize: "1.1rem",
+                                        fontWeight: 600,
+                                        opacity: 0.9,
+                                        letterSpacing: "0.5px",
+                                        textTransform: "uppercase",
                                       }}
                                     >
+                                      {candidate.group
+                                        ? `${candidate.group} • `
+                                        : ""}
                                       Candidate Profile
                                     </Typography>
                                   </Box>
@@ -1204,73 +1602,250 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
 
                               {/* Content Section */}
                               <Box sx={{ p: 4 }}>
-                                {/* Key highlights with enhanced styling */}
-                                <Box sx={{ mb: 4 }}>
+                                {/* Performance Metrics Section */}
+                                <ScoreMetricsSection>
+                                  <Typography
+                                    variant="h6"
+                                    sx={{
+                                      color: AppColors.text.primary,
+                                      fontWeight: 700,
+                                      fontSize: "1.1rem",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 1.5,
+                                      mb: 1,
+                                    }}
+                                  >
+                                    <TrendingUp
+                                      sx={{
+                                        fontSize: "1.2rem",
+                                        color: AppColors.primary.main,
+                                      }}
+                                    />
+                                    Performance Metrics
+                                  </Typography>
+
+                                  <ScoreMetricsGrid>
+                                    <ScoreMetricItem
+                                      score={candidate.clarityScore || 0}
+                                    >
+                                      <Typography className="metric-label">
+                                        Clarity
+                                      </Typography>
+                                      <Typography className="metric-value">
+                                        {candidate.clarityScore || 0}
+                                      </Typography>
+                                      <Box className="metric-bar">
+                                        <Box className="metric-fill" />
+                                      </Box>
+                                    </ScoreMetricItem>
+
+                                    <ScoreMetricItem
+                                      score={candidate.experienceScore || 0}
+                                    >
+                                      <Typography className="metric-label">
+                                        Experience
+                                      </Typography>
+                                      <Typography className="metric-value">
+                                        {candidate.experienceScore || 0}
+                                      </Typography>
+                                      <Box className="metric-bar">
+                                        <Box className="metric-fill" />
+                                      </Box>
+                                    </ScoreMetricItem>
+
+                                    <ScoreMetricItem
+                                      score={candidate.loyaltyScore || 0}
+                                    >
+                                      <Typography className="metric-label">
+                                        Loyalty
+                                      </Typography>
+                                      <Typography className="metric-value">
+                                        {candidate.loyaltyScore || 0}
+                                      </Typography>
+                                      <Box className="metric-bar">
+                                        <Box className="metric-fill" />
+                                      </Box>
+                                    </ScoreMetricItem>
+
+                                    <ScoreMetricItem
+                                      score={candidate.reputationScore || 0}
+                                    >
+                                      <Typography className="metric-label">
+                                        Reputation
+                                      </Typography>
+                                      <Typography className="metric-value">
+                                        {candidate.reputationScore || 0}
+                                      </Typography>
+                                      <Box className="metric-bar">
+                                        <Box className="metric-fill" />
+                                      </Box>
+                                    </ScoreMetricItem>
+                                  </ScoreMetricsGrid>
+                                </ScoreMetricsSection>
+
+                                {/* Premium highlights section */}
+                                <Box sx={{ mb: 3 }}>
+                                  <Typography
+                                    variant="h6"
+                                    sx={{
+                                      color: AppColors.text.primary,
+                                      fontWeight: 700,
+                                      mb: 3,
+                                      fontSize: "1.2rem",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 1.5,
+                                    }}
+                                  >
+                                    <CheckCircle
+                                      sx={{
+                                        fontSize: "1.3rem",
+                                        color: "#10b981",
+                                      }}
+                                    />
+                                    Profile Summary
+                                  </Typography>
+
                                   {candidate.highlights &&
                                   candidate.highlights.length > 0 ? (
-                                    candidate.highlights.map(
-                                      (highlight, highlightIndex) => (
-                                        <Box
-                                          key={highlightIndex}
+                                    <Box
+                                      sx={{
+                                        background:
+                                          "linear-gradient(145deg, rgba(248, 250, 252, 0.06) 0%, rgba(241, 245, 249, 0.03) 100%)",
+                                        backdropFilter: "blur(20px)",
+                                        borderRadius: 2,
+                                        padding: 3,
+                                        border:
+                                          "1px solid rgba(203, 213, 225, 0.12)",
+                                        position: "relative",
+                                        overflow: "hidden",
+                                        "&::before": {
+                                          content: '""',
+                                          position: "absolute",
+                                          top: 0,
+                                          left: 0,
+                                          right: 0,
+                                          height: "2px",
+                                          background:
+                                            "linear-gradient(90deg, #10b981 0%, #059669 100%)",
+                                          borderRadius: "16px 16px 0 0",
+                                        },
+                                      }}
+                                    >
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          flexDirection: "column",
+                                          gap: 2,
+                                        }}
+                                      >
+                                        {candidate.highlights.map(
+                                          (highlight, highlightIndex) => (
+                                            <Box
+                                              key={highlightIndex}
+                                              sx={{
+                                                display: "flex",
+                                                alignItems: "flex-start",
+                                                gap: 2,
+                                                position: "relative",
+                                                pl: 1,
+                                                "&::before": {
+                                                  content: '""',
+                                                  position: "absolute",
+                                                  left: 0,
+                                                  top: "50%",
+                                                  transform: "translateY(-50%)",
+                                                  width: 4,
+                                                  height: 4,
+                                                  backgroundColor: "#10b981",
+                                                  borderRadius: "50%",
+                                                  boxShadow:
+                                                    "0 0 0 2px rgba(16, 185, 129, 0.2)",
+                                                },
+                                              }}
+                                            >
+                                              <Typography
+                                                variant="body1"
+                                                sx={{
+                                                  color: AppColors.text.primary,
+                                                  lineHeight: 1.6,
+                                                  fontSize: "1rem",
+                                                  fontWeight: 500,
+                                                  pl: 2,
+                                                }}
+                                              >
+                                                {highlight}
+                                              </Typography>
+                                            </Box>
+                                          )
+                                        )}
+                                      </Box>
+                                    </Box>
+                                  ) : candidate.details ? (
+                                    // Show structured details if no highlights
+                                    <Box
+                                      sx={{
+                                        background:
+                                          "linear-gradient(145deg, rgba(248, 250, 252, 0.06) 0%, rgba(241, 245, 249, 0.03) 100%)",
+                                        backdropFilter: "blur(20px)",
+                                        borderRadius: 2,
+                                        padding: 3,
+                                        border:
+                                          "1px solid rgba(203, 213, 225, 0.12)",
+                                        position: "relative",
+                                        overflow: "hidden",
+                                        "&::before": {
+                                          content: '""',
+                                          position: "absolute",
+                                          top: 0,
+                                          left: 0,
+                                          right: 0,
+                                          height: "2px",
+                                          background:
+                                            "linear-gradient(90deg, #10b981 0%, #059669 100%)",
+                                          borderRadius: "16px 16px 0 0",
+                                        },
+                                      }}
+                                    >
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          alignItems: "flex-start",
+                                          gap: 2,
+                                          position: "relative",
+                                          pl: 1,
+                                          "&::before": {
+                                            content: '""',
+                                            position: "absolute",
+                                            left: 0,
+                                            top: "50%",
+                                            transform: "translateY(-50%)",
+                                            width: 4,
+                                            height: 4,
+                                            backgroundColor: "#10b981",
+                                            borderRadius: "50%",
+                                            boxShadow:
+                                              "0 0 0 2px rgba(16, 185, 129, 0.2)",
+                                          },
+                                        }}
+                                      >
+                                        <Typography
+                                          variant="body1"
                                           sx={{
-                                            display: "flex",
-                                            alignItems: "flex-start",
-                                            gap: 2.5,
-                                            mb: 3,
-                                            p: 3,
-                                            backgroundColor:
-                                              "rgba(248, 250, 252, 0.04)",
-                                            borderRadius: 2,
-                                            border:
-                                              "1px solid rgba(203, 213, 225, 0.08)",
-                                            transition: "all 0.3s ease",
-                                            "&:hover": {
-                                              backgroundColor:
-                                                "rgba(248, 250, 252, 0.07)",
-                                              borderColor:
-                                                "rgba(203, 213, 225, 0.15)",
-                                              transform: "translateX(8px)",
-                                              boxShadow:
-                                                "0 4px 16px rgba(0, 0, 0, 0.1)",
-                                            },
+                                            color: AppColors.text.primary,
+                                            lineHeight: 1.6,
+                                            fontSize: "1rem",
+                                            fontWeight: 500,
+                                            pl: 2,
                                           }}
                                         >
-                                          <Box
-                                            sx={{
-                                              width: 24,
-                                              height: 24,
-                                              borderRadius: "50%",
-                                              backgroundColor: "#10b981",
-                                              display: "flex",
-                                              alignItems: "center",
-                                              justifyContent: "center",
-                                              flexShrink: 0,
-                                              mt: 0.2,
-                                              boxShadow:
-                                                "0 2px 8px rgba(16, 185, 129, 0.3)",
-                                            }}
-                                          >
-                                            <CheckCircle
-                                              sx={{
-                                                color: "white",
-                                                fontSize: "14px",
-                                              }}
-                                            />
-                                          </Box>
-                                          <Typography
-                                            variant="body1"
-                                            sx={{
-                                              color: AppColors.text.primary,
-                                              lineHeight: 1.6,
-                                              fontSize: "1rem",
-                                              fontWeight: 500,
-                                            }}
-                                          >
-                                            {highlight}
-                                          </Typography>
-                                        </Box>
-                                      )
-                                    )
+                                          {candidate.details
+                                            .replace(/\*/g, "")
+                                            .trim()}
+                                        </Typography>
+                                      </Box>
+                                    </Box>
                                   ) : (
                                     // Fallback to skills and role if no highlights
                                     <>
@@ -1475,14 +2050,15 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                   )}
                                 </Box>
 
-                                {/* Enhanced Action Buttons */}
+                                {/* Premium Action Buttons */}
                                 <Box
                                   sx={{
                                     display: "flex",
                                     gap: 3,
-                                    pt: 3,
+                                    pt: 4,
                                     borderTop:
-                                      "1px solid rgba(203, 213, 225, 0.08)",
+                                      "1px solid rgba(203, 213, 225, 0.15)",
+                                    mt: 2,
                                   }}
                                 >
                                   <Button
@@ -1768,21 +2344,8 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                         color: AppColors.text.secondary,
                       }}
                     >
-                      No candidates match your search criteria.
-                    </Typography>
-
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        maxWidth: 600,
-                        lineHeight: 1.8,
-                        fontSize: "1rem",
-                        color: AppColors.text.secondary,
-                      }}
-                    >
-                      Try using different keywords, skills, or requirements.
-                      Consider broadening your search terms or checking for
-                      typos.
+                      No candidates found. Try different keywords or broaden
+                      your search.
                     </Typography>
 
                     <Button
@@ -1873,11 +2436,9 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                       color: AppColors.text.secondary,
                     }}
                   >
-                    Enter your search criteria above to find matching candidates
-                    from our comprehensive resume database.
-                    {selectedGroup && (
+                    {selectedGroup ? (
                       <>
-                        <br />
+                        Search in{" "}
                         <Typography
                           component="span"
                           sx={{
@@ -1885,9 +2446,11 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                             fontWeight: 600,
                           }}
                         >
-                          Currently searching in: {selectedGroup}
+                          {selectedGroup}
                         </Typography>
                       </>
+                    ) : (
+                      "Search for candidates by skills, role, or experience."
                     )}
                   </Typography>
 
@@ -1900,29 +2463,26 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                       justifyContent: "center",
                     }}
                   >
-                    {[
-                      "React Developer",
-                      "Python Engineer",
-                      "Data Scientist",
-                      "Full Stack",
-                    ].map((example, index) => (
-                      <Chip
-                        key={index}
-                        label={`Try: "${example}"`}
-                        onClick={() => setSearchQuery(example)}
-                        sx={{
-                          cursor: "pointer !important",
-                          backgroundColor: AppColors.border.light,
-                          color: AppColors.text.primary,
-                          fontWeight: 500,
-                          "&:hover": {
-                            backgroundColor: AppColors.primary.main,
-                            color: AppColors.primary.contrast,
+                    {getGroupBasedSuggestions(selectedGroup)
+                      .slice(0, 3)
+                      .map((example, index) => (
+                        <Chip
+                          key={index}
+                          label={example}
+                          onClick={() => setSearchQuery(example)}
+                          sx={{
                             cursor: "pointer !important",
-                          },
-                        }}
-                      />
-                    ))}
+                            backgroundColor: AppColors.border.light,
+                            color: AppColors.text.primary,
+                            fontWeight: 500,
+                            "&:hover": {
+                              backgroundColor: AppColors.primary.main,
+                              color: AppColors.primary.contrast,
+                              cursor: "pointer !important",
+                            },
+                          }}
+                        />
+                      ))}
                   </Box>
                 </Box>
               </CardContent>

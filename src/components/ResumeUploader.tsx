@@ -41,6 +41,7 @@ import {
   ErrorOutline,
   Add,
   Warning,
+  FolderOpen,
 } from "@mui/icons-material";
 
 // Internal imports
@@ -122,15 +123,20 @@ const ResumeUploader = ({
     "success"
   );
 
-  // File validation - PDF only, 10MB max
+  // File validation - PDF and DOCX only, 10MB max
   const validateFile = useCallback((file: File): string | null => {
     if (file.size > 10 * 1024 * 1024) {
       // 10MB limit
       return `File "${file.name}" is too large. Maximum size is 10MB.`;
     }
 
-    if (file.type !== "application/pdf") {
-      return `File "${file.name}" has an unsupported format. Please use PDF files only.`;
+    const allowedTypes = [
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      return `File "${file.name}" has an unsupported format. Please use PDF or DOCX files only.`;
     }
 
     return null;
@@ -190,11 +196,13 @@ const ResumeUploader = ({
     [files.length, validateFile, uploadStatus]
   );
 
-  // Dropzone configuration - PDF only to match UI
+  // Dropzone configuration - PDF and DOCX only to match UI
   const { getRootProps, getInputProps, open } = useDropzone({
     onDrop,
     accept: {
       "application/pdf": [".pdf"],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        [".docx"],
     },
     maxFiles: UPLOAD_CONFIG.maxFiles,
     disabled: isUploading || !selectedGroup, // Disabled until group is selected
@@ -463,20 +471,112 @@ const ResumeUploader = ({
         justifyContent: "center",
         px: 3,
         py: files.length > 8 ? 2 : 4,
+        background:
+          "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)",
       }}
     >
       <Box sx={{ maxWidth: 800, width: "100%" }}>
-        {/* Group Selection Section */}
-        <Card sx={{ mb: 3, backgroundColor: "background.paper" }}>
-          <CardContent sx={{ p: 3 }}>
-            <Typography
-              variant="h6"
-              gutterBottom
-              sx={{ fontWeight: 600, mb: 2 }}
-            >
-              Select Group
-            </Typography>
+        {/* Elegant Header Section with SVG Logo */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            mb: 5,
+            pb: 4,
+            position: "relative",
+          }}
+        >
+          {/* Logo and Brand */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              mb: 3,
+            }}
+          >
+            <Box
+              component="img"
+              src="/magure_ai_logo.svg"
+              alt="Magure AI Logo"
+              sx={{
+                height: 56,
+                width: "auto",
+                filter: "drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3))",
+              }}
+            />
+            <Box
+              sx={{
+                height: 40,
+                width: "2px",
+                background: "linear-gradient(45deg, #3077F3, #41E6F8)",
+                borderRadius: "1px",
+                opacity: 0.6,
+              }}
+            />
+            <Box>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 700,
+                  color: "white",
+                  lineHeight: 1.1,
+                  fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
+                  background: "linear-gradient(45deg, #ffffff, #f8fafc)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                CV Upload Center
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: "rgba(255, 255, 255, 0.7)",
+                  fontWeight: 400,
+                  mt: 0.5,
+                  fontSize: "1.1rem",
+                  letterSpacing: "0.01em",
+                }}
+              >
+                Intelligent Resume Management Platform
+              </Typography>
+            </Box>
+          </Box>
 
+          {/* Decorative Elements */}
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: 0,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "80px",
+              height: "3px",
+              background:
+                "linear-gradient(90deg, #3077F3, #41E6F8, #B96AF7, #FDA052)",
+              borderRadius: "2px",
+              opacity: 0.8,
+            }}
+          />
+        </Box>
+
+        {/* Group Selection Section */}
+        <Card
+          sx={{
+            mb: 3,
+            backgroundColor: "rgba(255, 255, 255, 0.02)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRadius: 1.25,
+            overflow: "hidden",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
             {groupsLoading ? (
               <Box display="flex" alignItems="center" gap={2}>
                 <CircularProgress size={20} />
@@ -492,109 +592,302 @@ const ResumeUploader = ({
                 </Button>
               </Alert>
             ) : (
-              <Stack direction="row" spacing={2} alignItems="center">
-                <FormControl sx={{ minWidth: 200, flexGrow: 1 }}>
-                  <InputLabel id="group-select-label">
-                    Select a group...
-                  </InputLabel>
-                  <Select
-                    labelId="group-select-label"
-                    id="group-select"
-                    value={selectedGroup?.id.toString() || ""}
-                    label="Select a group..."
-                    onChange={handleGroupChange}
-                    renderValue={() => (
-                      <Typography>
-                        {selectedGroup
-                          ? capitalizeGroupName(selectedGroup.name)
-                          : ""}
-                      </Typography>
-                    )}
+              <>
+                <Typography
+                  variant="h5"
+                  gutterBottom
+                  sx={{
+                    fontWeight: 600,
+                    mb: 3,
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      background: "linear-gradient(45deg, #3077F3, #41E6F8)",
+                      borderRadius: "2px",
+                    }}
+                  />
+                  Select Group
+                </Typography>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <FormControl
+                    sx={{
+                      minWidth: 200,
+                      flexGrow: 1,
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 1,
+                        backgroundColor: "rgba(255, 255, 255, 0.03)",
+                        "& fieldset": {
+                          borderColor: "rgba(255, 255, 255, 0.2)",
+                        },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(255, 255, 255, 0.3)",
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: "#3077F3",
+                        },
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "rgba(255, 255, 255, 0.7)",
+                      },
+                      "& .MuiSelect-select": {
+                        color: "white",
+                      },
+                    }}
                   >
-                    {groups.map((group) => (
-                      <MenuItem
-                        key={group.id}
-                        value={group.id.toString()}
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Typography>
-                            {capitalizeGroupName(group.name)}
-                          </Typography>
-                          {group.description && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
-                              {group.description}
-                            </Typography>
-                          )}
-                        </Box>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openDeleteDialog(group);
-                          }}
-                          disabled={deletingGroup}
+                    <InputLabel id="group-select-label">
+                      Select your target group for CV uploads
+                    </InputLabel>
+                    <Select
+                      labelId="group-select-label"
+                      id="group-select"
+                      value={selectedGroup?.id.toString() || ""}
+                      label="Select your target group for CV uploads"
+                      onChange={handleGroupChange}
+                      renderValue={() => (
+                        <Typography sx={{ color: "white" }}>
+                          {selectedGroup
+                            ? capitalizeGroupName(selectedGroup.name)
+                            : ""}
+                        </Typography>
+                      )}
+                      MenuProps={{
+                        PaperProps: {
+                          sx: {
+                            backgroundColor: "rgba(15, 23, 42, 0.95)",
+                            backdropFilter: "blur(10px)",
+                            border: "1px solid rgba(255, 255, 255, 0.1)",
+                            borderRadius: 1,
+                            mt: 1,
+                            "& .MuiList-root": {
+                              padding: "8px",
+                            },
+                          },
+                        },
+                      }}
+                    >
+                      {groups.map((group) => (
+                        <MenuItem
+                          key={group.id}
+                          value={group.id.toString()}
                           sx={{
-                            ml: 1,
-                            color: "text.secondary",
-                            "&:hover": { color: BRAND_COLORS.accent.red },
-                            "&:disabled": {
-                              color: BRAND_COLORS.neutral.whiteAlpha[30],
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            color: "white",
+                            px: 3,
+                            py: 2,
+                            mx: 1,
+                            my: 0.5,
+                            borderRadius: 1,
+                            "&:hover": {
+                              backgroundColor: "rgba(255, 255, 255, 0.08)",
+                            },
+                            "&.Mui-selected": {
+                              backgroundColor: "rgba(48, 119, 243, 0.15)",
+                              "&:hover": {
+                                backgroundColor: "rgba(48, 119, 243, 0.2)",
+                              },
                             },
                           }}
                         >
-                          {deletingGroup ? (
-                            <CircularProgress
-                              size={16}
+                          <Box sx={{ flexGrow: 1 }}>
+                            <Typography
                               sx={{
-                                color: BRAND_COLORS.neutral.whiteAlpha[50],
+                                color: "white",
+                                fontWeight: 500,
+                                mb: group.description ? 0.5 : 0,
                               }}
-                            />
-                          ) : (
-                            <Delete fontSize="small" />
-                          )}
-                        </IconButton>
+                            >
+                              {capitalizeGroupName(group.name)}
+                            </Typography>
+                            {group.description && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: "rgba(255, 255, 255, 0.6)",
+                                  fontSize: "0.75rem",
+                                  lineHeight: 1.2,
+                                }}
+                              >
+                                {group.description}
+                              </Typography>
+                            )}
+                          </Box>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDeleteDialog(group);
+                            }}
+                            disabled={deletingGroup}
+                            sx={{
+                              ml: 2,
+                              color: "rgba(255, 255, 255, 0.5)",
+                              "&:hover": {
+                                color: BRAND_COLORS.accent.red,
+                                backgroundColor: "rgba(239, 68, 68, 0.1)",
+                              },
+                              "&:disabled": {
+                                color: BRAND_COLORS.neutral.whiteAlpha[30],
+                              },
+                            }}
+                          >
+                            {deletingGroup ? (
+                              <CircularProgress
+                                size={16}
+                                sx={{
+                                  color: BRAND_COLORS.neutral.whiteAlpha[50],
+                                }}
+                              />
+                            ) : (
+                              <Delete fontSize="small" />
+                            )}
+                          </IconButton>
+                        </MenuItem>
+                      ))}
+                      <Divider
+                        sx={{
+                          borderColor: "rgba(255, 255, 255, 0.1)",
+                          mx: 1,
+                          my: 1,
+                        }}
+                      />
+                      <MenuItem
+                        onClick={() => setOpenAddGroupDialog(true)}
+                        sx={{
+                          color: "#3077F3",
+                          fontWeight: 600,
+                          px: 3,
+                          py: 2,
+                          mx: 1,
+                          my: 0.5,
+                          borderRadius: 1,
+                          "&:hover": {
+                            backgroundColor: "rgba(48, 119, 243, 0.1)",
+                          },
+                        }}
+                      >
+                        <Add sx={{ mr: 2 }} />
+                        <Typography sx={{ fontWeight: 600 }}>
+                          Create New Group
+                        </Typography>
                       </MenuItem>
-                    ))}
-                    <Divider />
-                    <MenuItem
-                      onClick={() => setOpenAddGroupDialog(true)}
-                      sx={{
-                        color: BRAND_COLORS.primary.blue,
-                        fontWeight: 600,
-                      }}
-                    >
-                      <Add sx={{ mr: 1 }} />
-                      Add New Group
-                    </MenuItem>
-                  </Select>
-                </FormControl>
-              </Stack>
+                    </Select>
+                  </FormControl>
+                </Stack>
+              </>
             )}
 
             {selectedGroup && (
               <Alert
-                severity="info"
+                severity="success"
                 sx={{
-                  mt: 2,
-                  backgroundColor: "rgba(37, 99, 235, 0.1)",
-                  border: `1px solid ${BRAND_COLORS.primary.blue}`,
+                  mt: 3,
+                  backgroundColor: "rgba(34, 197, 94, 0.1)",
+                  border: "1px solid rgba(34, 197, 94, 0.3)",
+                  borderRadius: 1.25,
+                  alignItems: "center",
+                  "& .MuiAlert-icon": {
+                    color: "#22c55e",
+                    alignSelf: "flex-start",
+                    mt: 0.1,
+                  },
+                  "& .MuiAlert-message": {
+                    color: "white",
+                    fontWeight: 500,
+                    width: "100%",
+                  },
                 }}
               >
-                CVs will be uploaded to group:{" "}
-                <strong>{capitalizeGroupName(selectedGroup.name)}</strong>
-                {selectedGroup.description && ` - ${selectedGroup.description}`}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Typography component="span">
+                    Perfect! Your CVs will be organized and uploaded to
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                      px: 1.5,
+                      py: 0.5,
+                      backgroundColor: "rgba(34, 197, 94, 0.2)",
+                      borderRadius: 1,
+                      border: "1px solid rgba(34, 197, 94, 0.4)",
+                    }}
+                  >
+                    <FolderOpen
+                      sx={{
+                        fontSize: "1.1rem",
+                        color: "#22c55e",
+                      }}
+                    />
+                    <Typography
+                      component="span"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#22c55e",
+                        fontSize: "0.95rem",
+                      }}
+                    >
+                      {capitalizeGroupName(selectedGroup.name)}
+                    </Typography>
+                  </Box>
+                </Box>
+                {selectedGroup.description && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "rgba(255, 255, 255, 0.8)",
+                      mt: 1,
+                      display: "block",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    {selectedGroup.description}
+                  </Typography>
+                )}
               </Alert>
             )}
           </CardContent>
         </Card>
+
+        {/* Warning Message - Repositioned */}
+        {!selectedGroup && (
+          <Alert
+            severity="warning"
+            icon={<Warning />}
+            sx={{
+              mb: 3,
+              backgroundColor: "rgba(255, 193, 7, 0.1)",
+              border: "1px solid rgba(255, 193, 7, 0.3)",
+              borderRadius: 1.25,
+              "& .MuiAlert-icon": {
+                color: "#ffc107",
+              },
+              "& .MuiAlert-message": {
+                color: "white",
+                fontWeight: 500,
+              },
+            }}
+          >
+            Please select a target group from the dropdown above to organize and
+            upload your CVs
+          </Alert>
+        )}
 
         {/* Upload Area */}
         <Box
@@ -608,42 +901,47 @@ const ResumeUploader = ({
             border: 3,
             borderStyle: "dashed",
             borderColor: !selectedGroup
-              ? BRAND_COLORS.neutral.whiteAlpha[20]
+              ? "rgba(255, 255, 255, 0.2)"
               : uploadStatus === "success"
               ? "#22c55e"
               : uploadStatus === "error"
               ? "#ef4444"
-              : BRAND_COLORS.primary.blue,
+              : "#3077F3",
             backgroundColor: !selectedGroup
-              ? BRAND_COLORS.neutral.whiteAlpha[5]
+              ? "rgba(255, 255, 255, 0.01)"
               : uploadStatus === "success"
-              ? "rgba(34, 197, 94, 0.02)"
+              ? "rgba(34, 197, 94, 0.05)"
               : uploadStatus === "error"
-              ? "rgba(239, 68, 68, 0.02)"
-              : "rgba(37, 99, 235, 0.02)",
+              ? "rgba(239, 68, 68, 0.05)"
+              : "rgba(48, 119, 243, 0.05)",
             minHeight: "400px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            borderRadius: 2,
-            opacity: !selectedGroup ? 0.4 : isUploading ? 0.6 : 1,
+            borderRadius: 1.25,
+            opacity: !selectedGroup ? 0.5 : isUploading ? 0.7 : 1,
             transition: "all 0.3s ease",
+            backdropFilter: "blur(5px)",
             "&:hover": {
               borderColor: !selectedGroup
-                ? BRAND_COLORS.neutral.whiteAlpha[20]
+                ? "rgba(255, 255, 255, 0.2)"
                 : uploadStatus === "success"
                 ? "#16a34a"
                 : uploadStatus === "error"
                 ? "#dc2626"
-                : BRAND_COLORS.primary.blueLight,
+                : "#41E6F8",
               backgroundColor: !selectedGroup
-                ? BRAND_COLORS.neutral.whiteAlpha[5]
+                ? "rgba(255, 255, 255, 0.01)"
                 : uploadStatus === "success"
-                ? "rgba(34, 197, 94, 0.05)"
+                ? "rgba(34, 197, 94, 0.08)"
                 : uploadStatus === "error"
-                ? "rgba(239, 68, 68, 0.05)"
-                : "rgba(37, 99, 235, 0.05)",
+                ? "rgba(239, 68, 68, 0.08)"
+                : "rgba(48, 119, 243, 0.08)",
+              transform: selectedGroup ? "translateY(-2px)" : "none",
+              boxShadow: selectedGroup
+                ? "0 8px 32px rgba(0, 0, 0, 0.2)"
+                : "none",
             },
           }}
         >
@@ -656,6 +954,7 @@ const ResumeUploader = ({
                 fontSize: "5rem",
                 color: "#22c55e",
                 mb: 3,
+                filter: "drop-shadow(0 4px 12px rgba(34, 197, 94, 0.3))",
               }}
             />
           ) : uploadStatus === "error" ? (
@@ -664,6 +963,7 @@ const ResumeUploader = ({
                 fontSize: "5rem",
                 color: "#ef4444",
                 mb: 3,
+                filter: "drop-shadow(0 4px 12px rgba(239, 68, 68, 0.3))",
               }}
             />
           ) : (
@@ -671,9 +971,12 @@ const ResumeUploader = ({
               sx={{
                 fontSize: "5rem",
                 color: !selectedGroup
-                  ? BRAND_COLORS.neutral.whiteAlpha[30]
-                  : BRAND_COLORS.neutral.whiteAlpha[50],
+                  ? "rgba(255, 255, 255, 0.3)"
+                  : "rgba(255, 255, 255, 0.6)",
                 mb: 3,
+                filter: selectedGroup
+                  ? "drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2))"
+                  : "none",
               }}
             />
           )}
@@ -684,13 +987,14 @@ const ResumeUploader = ({
             fontWeight={600}
             sx={{
               color: !selectedGroup
-                ? BRAND_COLORS.neutral.whiteAlpha[50]
+                ? "rgba(255, 255, 255, 0.5)"
                 : uploadStatus === "success"
                 ? "#22c55e"
                 : uploadStatus === "error"
                 ? "#ef4444"
-                : "text.primary",
+                : "white",
               mb: 1,
+              fontSize: { xs: "1.5rem", sm: "2rem", md: "2.5rem" },
             }}
           >
             {uploadStatus === "success"
@@ -702,11 +1006,17 @@ const ResumeUploader = ({
 
           <Typography
             variant="body1"
-            color="text.secondary"
             sx={{
               mb: 3,
               fontSize: "1.1rem",
-              opacity: !selectedGroup ? 0.7 : 1,
+              color: !selectedGroup
+                ? "rgba(255, 255, 255, 0.5)"
+                : uploadStatus === "success"
+                ? "rgba(34, 197, 94, 0.8)"
+                : uploadStatus === "error"
+                ? "rgba(239, 68, 68, 0.8)"
+                : "rgba(255, 255, 255, 0.7)",
+              fontWeight: 400,
             }}
           >
             {uploadStatus === "success"
@@ -730,36 +1040,41 @@ const ResumeUploader = ({
               disabled={isUploading || !selectedGroup}
               startIcon={<InsertDriveFile />}
               sx={{
-                backgroundColor: !selectedGroup
-                  ? BRAND_COLORS.neutral.whiteAlpha[20]
+                background: !selectedGroup
+                  ? "rgba(255, 255, 255, 0.1)"
                   : uploadStatus === "error"
-                  ? "#ef4444"
-                  : BRAND_COLORS.primary.blue,
-                color: !selectedGroup
-                  ? BRAND_COLORS.neutral.whiteAlpha[60]
-                  : "white",
+                  ? "linear-gradient(45deg, #ef4444, #dc2626)"
+                  : "linear-gradient(45deg, #3077F3, #41E6F8)",
+                color: "white",
                 px: 4,
                 py: 1.5,
                 fontSize: "1rem",
                 fontWeight: 600,
                 textTransform: "none",
-                borderRadius: 2,
+                borderRadius: 1,
                 cursor: !selectedGroup
                   ? "not-allowed !important"
                   : "pointer !important",
+                boxShadow: selectedGroup
+                  ? "0 4px 16px rgba(48, 119, 243, 0.3)"
+                  : "none",
                 "&:hover": {
-                  backgroundColor: !selectedGroup
-                    ? BRAND_COLORS.neutral.whiteAlpha[20]
+                  background: !selectedGroup
+                    ? "rgba(255, 255, 255, 0.1)"
                     : uploadStatus === "error"
-                    ? "#dc2626"
-                    : BRAND_COLORS.primary.blueDark,
+                    ? "linear-gradient(45deg, #dc2626, #b91c1c)"
+                    : "linear-gradient(45deg, #2563eb, #3b82f6)",
+                  transform: selectedGroup ? "translateY(-1px)" : "none",
+                  boxShadow: selectedGroup
+                    ? "0 6px 20px rgba(48, 119, 243, 0.4)"
+                    : "none",
                   cursor: !selectedGroup
                     ? "not-allowed !important"
                     : "pointer !important",
                 },
                 "&:disabled": {
-                  backgroundColor: BRAND_COLORS.neutral.whiteAlpha[20],
-                  color: BRAND_COLORS.neutral.whiteAlpha[60],
+                  background: "rgba(255, 255, 255, 0.1)",
+                  color: "rgba(255, 255, 255, 0.5)",
                   cursor: "not-allowed !important",
                 },
               }}
@@ -769,31 +1084,28 @@ const ResumeUploader = ({
           )}
         </Box>
 
-        {/* Info Section */}
-        <Alert
-          severity={!selectedGroup ? "warning" : "info"}
-          icon={<Info />}
-          sx={{
-            mt: 2,
-            backgroundColor: !selectedGroup
-              ? "rgba(255, 193, 7, 0.1)"
-              : "rgba(37, 99, 235, 0.1)",
-            border: !selectedGroup
-              ? `1px solid #ffc107`
-              : `1px solid ${BRAND_COLORS.primary.blue}`,
-            "& .MuiAlert-icon": {
-              color: !selectedGroup ? "#ffc107" : BRAND_COLORS.primary.blue,
-            },
-            "& .MuiAlert-message": {
-              color: "text.primary",
-              fontWeight: 500,
-            },
-          }}
-        >
-          {!selectedGroup
-            ? "Please select a group from the dropdown above to enable CV upload"
-            : "Supported format: PDF only • Maximum size: 10MB per file"}
-        </Alert>
+        {/* File Format Info */}
+        {selectedGroup && (
+          <Alert
+            severity="info"
+            icon={<Info />}
+            sx={{
+              mt: 2,
+              backgroundColor: "rgba(48, 119, 243, 0.1)",
+              border: "1px solid rgba(48, 119, 243, 0.3)",
+              borderRadius: 1.25,
+              "& .MuiAlert-icon": {
+                color: "#3077F3",
+              },
+              "& .MuiAlert-message": {
+                color: "white",
+                fontWeight: 500,
+              },
+            }}
+          >
+            Supported formats: PDF and DOCX • Maximum size: 10MB per file
+          </Alert>
+        )}
 
         {/* Error Messages */}
         {errors.length > 0 && (
@@ -1191,11 +1503,7 @@ const ResumeUploader = ({
               },
             }}
           >
-            {isUploading
-              ? "Uploading CVs..."
-              : !selectedGroup
-              ? "Select Group to Upload"
-              : `Upload CVs${files.length > 0 ? ` (${files.length})` : ""}`}
+            {isUploading ? "Uploading CVs..." : "Upload CVs"}
           </Button>
         </Box>
 

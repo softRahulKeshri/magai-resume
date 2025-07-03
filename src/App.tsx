@@ -185,7 +185,7 @@ const App = () => {
       {
         label: "Upload Resume",
         icon: <Upload />,
-        description: "Upload resume files to the system",
+        description: "Seamlessly import resumes with AI parsing",
         component: (
           <ResumeUploader
             onUploadStart={handleUploadStart}
@@ -197,13 +197,13 @@ const App = () => {
       {
         label: "Search Resumes",
         icon: <Search />,
-        description: "Search through uploaded resumes",
+        description: "Find perfect candidates with AI-powered search",
         component: <ResumeSearch onSearchResults={handleSearchResults} />,
       },
       {
         label: "Resume Store",
         icon: <Analytics />,
-        description: "Browse and manage uploaded resumes with analytics",
+        description: "Analyze talent pool with intelligent insights",
         component: (
           <Box>
             {error && (
@@ -328,7 +328,7 @@ const App = () => {
           variant="caption"
           sx={{ opacity: 0.7, color: "rgba(255, 255, 255, 0.7)" }}
         >
-          Resume Management Platform
+          AI-Powered Talent Discovery Platform
         </Typography>
       </Box>
 

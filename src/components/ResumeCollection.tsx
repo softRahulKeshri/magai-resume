@@ -1288,13 +1288,13 @@ const ResumeCollection = ({
   // Enhanced Statistics - Only 2 essential metrics to avoid clutter
   const stats = useMemo(() => {
     const totalFiles = resumes.length;
-    const completed = resumes.filter((r) => r.status === "completed").length;
+    const totalGroups = groups.length;
 
     return {
       totalFiles,
-      completed,
+      totalGroups,
     };
-  }, [resumes]);
+  }, [resumes, groups]);
 
   // Handle group selection
   const handleGroupSelect = (group: string, hasResumes: boolean) => {
@@ -1409,7 +1409,7 @@ const ResumeCollection = ({
           }}
         >
           <StatsCard
-            title="Total Files"
+            title="Total Resumes"
             value={stats.totalFiles}
             color="#fff"
             bgColor="linear-gradient(135deg, #4a90e2 0%, #357abd 100%)"
@@ -1420,12 +1420,12 @@ const ResumeCollection = ({
             }
           />
           <StatsCard
-            title="Completed"
-            value={stats.completed}
+            title="Total Groups"
+            value={stats.totalGroups}
             color="#fff"
             bgColor="linear-gradient(135deg, #22c55e 0%, #16a34a 100%)"
             icon={
-              <CheckCircle
+              <Assessment
                 sx={{ fontSize: "2.5rem", color: "rgba(255,255,255,0.8)" }}
               />
             }
@@ -1512,37 +1512,6 @@ const ResumeCollection = ({
               </Typography>
             </Box>
 
-            {(selectedGroup || searchQuery.trim()) && (
-              <Button
-                variant="contained"
-                size="small"
-                onClick={clearAllFilters}
-                startIcon={<Close sx={{ fontSize: "1rem" }} />}
-                sx={{
-                  background: `linear-gradient(135deg, ${alpha(
-                    darkTheme.error,
-                    0.8
-                  )} 0%, ${alpha(darkTheme.error, 0.9)} 100%)`,
-                  color: "#ffffff",
-                  borderRadius: "12px",
-                  textTransform: "none",
-                  fontSize: "0.85rem",
-                  fontWeight: 600,
-                  px: 3,
-                  py: 1,
-                  boxShadow: `0 4px 16px ${alpha(darkTheme.error, 0.3)}`,
-                  "&:hover": {
-                    background: `linear-gradient(135deg, ${darkTheme.error} 0%, #dc2626 100%)`,
-                    boxShadow: `0 6px 20px ${alpha(darkTheme.error, 0.4)}`,
-                    transform: "translateY(-2px)",
-                  },
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
-              >
-                Clear All Filters
-              </Button>
-            )}
-
             {/* Groups Error Handling */}
             {groupsError && (
               <Button
@@ -1575,8 +1544,17 @@ const ResumeCollection = ({
             )}
           </Box>
 
-          {/* Search Bar */}
-          <Box sx={{ mb: 4, position: "relative", zIndex: 1 }}>
+          {/* Search Bar - Aligned with content */}
+          <Box
+            sx={{
+              mb: 4,
+              position: "relative",
+              zIndex: 1,
+              maxWidth: "1400px",
+              mx: "auto",
+              px: 2,
+            }}
+          >
             <TextField
               fullWidth
               placeholder={
@@ -1638,9 +1616,18 @@ const ResumeCollection = ({
             />
           </Box>
 
-          {/* Group Filter Section */}
+          {/* Group Filter Section - Aligned with content */}
           {!groupsError && groupStats.length > 0 && (
-            <Box sx={{ position: "relative", zIndex: 1 }}>
+            <Box
+              sx={{
+                position: "relative",
+                zIndex: 1,
+                maxWidth: "1400px",
+                mx: "auto",
+                px: 2,
+                mb: 4,
+              }}
+            >
               {/* Filter by Groups Label */}
               <Box sx={{ mb: 3 }}>
                 <Typography
@@ -1996,7 +1983,7 @@ const ResumeCollection = ({
             </Box>
           )}
 
-          {/* No Groups Available Message */}
+          {/* No Groups Available Message - Aligned with content */}
           {!groupsError &&
             !groupsLoading &&
             groupStats.length === 0 &&
@@ -2005,42 +1992,51 @@ const ResumeCollection = ({
                 sx={{
                   position: "relative",
                   zIndex: 1,
-                  textAlign: "center",
-                  py: 4,
-                  px: 3,
-                  background: `linear-gradient(135deg, ${alpha(
-                    darkTheme.warning,
-                    0.1
-                  )} 0%, ${alpha(darkTheme.warning, 0.2)} 100%)`,
-                  borderRadius: "16px",
-                  border: `1px solid ${alpha(darkTheme.warning, 0.3)}`,
+                  maxWidth: "1400px",
+                  mx: "auto",
+                  px: 2,
+                  mb: 4,
                 }}
               >
-                <Typography
-                  variant="h6"
+                <Box
                   sx={{
-                    color: darkTheme.warning,
-                    fontWeight: 600,
-                    mb: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 1,
+                    textAlign: "center",
+                    py: 4,
+                    px: 3,
+                    background: `linear-gradient(135deg, ${alpha(
+                      darkTheme.warning,
+                      0.1
+                    )} 0%, ${alpha(darkTheme.warning, 0.2)} 100%)`,
+                    borderRadius: "16px",
+                    border: `1px solid ${alpha(darkTheme.warning, 0.3)}`,
                   }}
                 >
-                  <Assessment sx={{ fontSize: "1.2rem" }} />
-                  No Groups Available
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: darkTheme.textSecondary,
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  Groups are not available at the moment. You can still search
-                  through all resumes using the search bar above.
-                </Typography>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: darkTheme.warning,
+                      fontWeight: 600,
+                      mb: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 1,
+                    }}
+                  >
+                    <Assessment sx={{ fontSize: "1.2rem" }} />
+                    No Groups Available
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: darkTheme.textSecondary,
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                    Groups are not available at the moment. You can still search
+                    through all resumes using the search bar above.
+                  </Typography>
+                </Box>
               </Box>
             )}
         </Box>
@@ -2375,45 +2371,111 @@ const ResumeCollection = ({
             </Card>
           </Box>
         ) : (
+          /* Resume Grid - Aligned with search */
           <Box
             sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                sm: "repeat(auto-fit, minmax(380px, 1fr))",
-                lg: "repeat(3, 1fr)",
-              },
-              gap: 4,
               maxWidth: "1400px",
               mx: "auto",
               px: 2,
               position: "relative",
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: -20,
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: "80%",
-                height: 1,
-                background: `linear-gradient(90deg, transparent 0%, ${alpha(
-                  darkTheme.border,
-                  0.5
-                )} 50%, transparent 100%)`,
-                zIndex: 0,
-              },
             }}
           >
-            {filteredResumes.map((resume) => (
-              <FileCard
-                key={`${resume.id}-${resume.filename}`}
-                resume={resume}
-                onView={onView}
-                onDownload={onDownload}
-                onDelete={onDelete}
-                onResumeDeleted={handleResumeDeleted}
-              />
-            ))}
+            {/* Results Header */}
+            <Box
+              sx={{
+                mb: 3,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                p: 2,
+                background: alpha(darkTheme.surface, 0.5),
+                borderRadius: "12px",
+                border: `1px solid ${alpha(darkTheme.border, 0.2)}`,
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  color: darkTheme.text,
+                  fontWeight: 600,
+                  fontSize: "1.1rem",
+                }}
+              >
+                {selectedGroup
+                  ? `${selectedGroup} Resumes (${filteredResumes.length})`
+                  : `All Resumes (${filteredResumes.length})`}
+              </Typography>
+
+              {(selectedGroup || searchQuery.trim()) && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={clearAllFilters}
+                  startIcon={<Close sx={{ fontSize: "1rem" }} />}
+                  sx={{
+                    background: `linear-gradient(135deg, ${alpha(
+                      darkTheme.error,
+                      0.8
+                    )} 0%, ${alpha(darkTheme.error, 0.9)} 100%)`,
+                    color: "#ffffff",
+                    borderRadius: "12px",
+                    textTransform: "none",
+                    fontSize: "0.85rem",
+                    fontWeight: 600,
+                    px: 3,
+                    py: 1,
+                    boxShadow: `0 4px 16px ${alpha(darkTheme.error, 0.3)}`,
+                    "&:hover": {
+                      background: `linear-gradient(135deg, ${darkTheme.error} 0%, #dc2626 100%)`,
+                      boxShadow: `0 6px 20px ${alpha(darkTheme.error, 0.4)}`,
+                      transform: "translateY(-2px)",
+                    },
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  }}
+                >
+                  Clear All Filters
+                </Button>
+              )}
+            </Box>
+
+            {/* Resume Grid */}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(auto-fit, minmax(380px, 1fr))",
+                  lg: "repeat(3, 1fr)",
+                },
+                gap: 4,
+                position: "relative",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: -20,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "80%",
+                  height: 1,
+                  background: `linear-gradient(90deg, transparent 0%, ${alpha(
+                    darkTheme.border,
+                    0.5
+                  )} 50%, transparent 100%)`,
+                  zIndex: 0,
+                },
+              }}
+            >
+              {filteredResumes.map((resume) => (
+                <FileCard
+                  key={`${resume.id}-${resume.filename}`}
+                  resume={resume}
+                  onView={onView}
+                  onDownload={onDownload}
+                  onDelete={onDelete}
+                  onResumeDeleted={handleResumeDeleted}
+                />
+              ))}
+            </Box>
           </Box>
         )}
       </Box>
