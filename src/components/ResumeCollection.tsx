@@ -43,248 +43,232 @@ import { Resume } from "../types";
 import { API_CONFIG } from "../theme/constants";
 import { useGroups } from "../hooks/useGroups";
 
-// Dark theme colors to match the analytics design
-const darkTheme = {
-  background: "#0a0a0a", // Darker background
-  surface: "#1a1a1a",
-  surfaceLight: "#2a2a2a",
-  primary: "#4a90e2", // Blue
-  success: "#22c55e", // Green
-  warning: "#f59e0b", // Orange
-  error: "#ef4444", // Red
-  text: "#ffffff",
-  textSecondary: "#a1a1aa",
-  textMuted: "#71717a",
-  border: "#27272a",
+// Theme type definitions
+interface LightTheme {
+  background: string;
+  surface: string;
+  surfaceLight: string;
+  primary: string;
+  success: string;
+  warning: string;
+  error: string;
+  text: string;
+  textSecondary: string;
+  textMuted: string;
+  border: string;
+}
+
+interface ColorTheme {
+  primary: string;
+  secondary: string;
+  gradient: string;
+  shadowColor: string;
+  hoverShadowColor: string;
+  background: string;
+  border: string;
+}
+
+// Light theme colors with refined palette
+const lightTheme: LightTheme = {
+  background: "#FFFFFF",
+  surface: "#F5F5F5", // n100
+  surfaceLight: "#EAEAEC", // n150
+  primary: "#3077F3", // primary_ui_blue.p500
+  success: "#41E6F8", // brand_gradient.cyan
+  warning: "#FDA052", // brand_gradient.orange
+  error: "#B96AF7", // brand_gradient.purple
+  text: "#171921", // n3000
+  textSecondary: "#434654", // n900
+  textMuted: "#82838D", // n600
+  border: "#EAEAEC", // n150 - lighter border for elegance
 };
 
-// Dynamic color palette for groups
-const colorPalette = [
+// Sophisticated color palette for groups with gradients
+const colorPalette: ColorTheme[] = [
   {
-    primary: "#4a90e2",
-    secondary: "#357abd",
-    shadow: "rgba(74, 144, 226, 0.3)",
-    hoverShadow: "rgba(74, 144, 226, 0.4)",
+    primary: "#3077F3", // primary_ui_blue.p500
+    secondary: "#94BAFD", // primary_ui_blue.p400
+    gradient: "linear-gradient(135deg, #3077F3 0%, #94BAFD 100%)",
+    shadowColor: "rgba(48, 119, 243, 0.12)",
+    hoverShadowColor: "rgba(48, 119, 243, 0.2)",
+    background: "#FFFFFF",
+    border: "#3077F3",
   },
   {
-    primary: "#22c55e",
-    secondary: "#16a34a",
-    shadow: "rgba(34, 197, 94, 0.3)",
-    hoverShadow: "rgba(34, 197, 94, 0.4)",
+    primary: "#41E6F8", // brand_gradient.cyan
+    secondary: "#3077F3", // brand_gradient.blue
+    gradient: "linear-gradient(135deg, #41E6F8 0%, #3077F3 100%)",
+    shadowColor: "rgba(65, 230, 248, 0.12)",
+    hoverShadowColor: "rgba(65, 230, 248, 0.2)",
+    background: "#FFFFFF",
+    border: "#41E6F8",
   },
   {
-    primary: "#8b5cf6",
-    secondary: "#7c3aed",
-    shadow: "rgba(139, 92, 246, 0.3)",
-    hoverShadow: "rgba(139, 92, 246, 0.4)",
+    primary: "#B96AF7", // brand_gradient.purple
+    secondary: "#3077F3", // brand_gradient.blue
+    gradient: "linear-gradient(135deg, #B96AF7 0%, #3077F3 100%)",
+    shadowColor: "rgba(185, 106, 247, 0.12)",
+    hoverShadowColor: "rgba(185, 106, 247, 0.2)",
+    background: "#FFFFFF",
+    border: "#B96AF7",
   },
   {
-    primary: "#f59e0b",
-    secondary: "#d97706",
-    shadow: "rgba(245, 158, 11, 0.3)",
-    hoverShadow: "rgba(245, 158, 11, 0.4)",
+    primary: "#FDA052", // brand_gradient.orange
+    secondary: "#B96AF7", // brand_gradient.purple
+    gradient: "linear-gradient(135deg, #FDA052 0%, #B96AF7 100%)",
+    shadowColor: "rgba(253, 160, 82, 0.12)",
+    hoverShadowColor: "rgba(253, 160, 82, 0.2)",
+    background: "#FFFFFF",
+    border: "#FDA052",
   },
   {
-    primary: "#ec4899",
-    secondary: "#db2777",
-    shadow: "rgba(236, 72, 153, 0.3)",
-    hoverShadow: "rgba(236, 72, 153, 0.4)",
+    primary: "#434654", // n900
+    secondary: "#2E3141", // n1000
+    gradient: "linear-gradient(135deg, #434654 0%, #2E3141 100%)",
+    shadowColor: "rgba(67, 70, 84, 0.12)",
+    hoverShadowColor: "rgba(67, 70, 84, 0.2)",
+    background: "#FFFFFF",
+    border: "#434654",
   },
   {
-    primary: "#06b6d4",
-    secondary: "#0891b2",
-    shadow: "rgba(6, 182, 212, 0.3)",
-    hoverShadow: "rgba(6, 182, 212, 0.4)",
-  },
-  {
-    primary: "#ef4444",
-    secondary: "#dc2626",
-    shadow: "rgba(239, 68, 68, 0.3)",
-    hoverShadow: "rgba(239, 68, 68, 0.4)",
-  },
-  {
-    primary: "#10b981",
-    secondary: "#059669",
-    shadow: "rgba(16, 185, 129, 0.3)",
-    hoverShadow: "rgba(16, 185, 129, 0.4)",
-  },
-  {
-    primary: "#3b82f6",
-    secondary: "#2563eb",
-    shadow: "rgba(59, 130, 246, 0.3)",
-    hoverShadow: "rgba(59, 130, 246, 0.4)",
-  },
-  {
-    primary: "#f97316",
-    secondary: "#ea580c",
-    shadow: "rgba(249, 115, 22, 0.3)",
-    hoverShadow: "rgba(249, 115, 22, 0.4)",
-  },
-  {
-    primary: "#84cc16",
-    secondary: "#65a30d",
-    shadow: "rgba(132, 204, 22, 0.3)",
-    hoverShadow: "rgba(132, 204, 22, 0.4)",
-  },
-  {
-    primary: "#a855f7",
-    secondary: "#9333ea",
-    shadow: "rgba(168, 85, 247, 0.3)",
-    hoverShadow: "rgba(168, 85, 247, 0.4)",
-  },
-  {
-    primary: "#14b8a6",
-    secondary: "#0d9488",
-    shadow: "rgba(20, 184, 166, 0.3)",
-    hoverShadow: "rgba(20, 184, 166, 0.4)",
-  },
-  {
-    primary: "#f43f5e",
-    secondary: "#e11d48",
-    shadow: "rgba(244, 63, 94, 0.3)",
-    hoverShadow: "rgba(244, 63, 94, 0.4)",
-  },
-  {
-    primary: "#6366f1",
-    secondary: "#4f46e5",
-    shadow: "rgba(99, 102, 241, 0.3)",
-    hoverShadow: "rgba(99, 102, 241, 0.4)",
-  },
-  {
-    primary: "#8b5cf6",
-    secondary: "#7c3aed",
-    shadow: "rgba(139, 92, 246, 0.3)",
-    hoverShadow: "rgba(139, 92, 246, 0.4)",
+    primary: "#585A67", // n800
+    secondary: "#434654", // n900
+    gradient: "linear-gradient(135deg, #585A67 0%, #434654 100%)",
+    shadowColor: "rgba(88, 90, 103, 0.12)",
+    hoverShadowColor: "rgba(88, 90, 103, 0.2)",
+    background: "#FFFFFF",
+    border: "#585A67",
   },
 ];
 
-// Function to generate a consistent hash from a string
-const stringToHash = (str: string): number => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return Math.abs(hash);
+// Group to color palette index mapping
+const groupColorIndex: { [key: string]: number } = {
+  frontend: 0, // Blue
+  backend: 1, // Cyan
+  fullstack: 2, // Purple
+  general: 3, // Orange
+  mobile: 4, // Gray
+  devops: 5, // Light Gray
+  design: 2, // Purple
+  default: 5, // Light Gray
 };
 
-// Group color themes for better visual distinction
-const groupColorThemes = {
-  frontend: {
-    background: "linear-gradient(135deg, #4a90e2 0%, #357abd 100%)",
-    border: "#4a90e2",
-    shadow: "rgba(74, 144, 226, 0.3)",
-    hoverShadow: "rgba(74, 144, 226, 0.4)",
-  },
-  backend: {
-    background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
-    border: "#22c55e",
-    shadow: "rgba(34, 197, 94, 0.3)",
-    hoverShadow: "rgba(34, 197, 94, 0.4)",
-  },
-  fullstack: {
-    background: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
-    border: "#8b5cf6",
-    shadow: "rgba(139, 92, 246, 0.3)",
-    hoverShadow: "rgba(139, 92, 246, 0.4)",
-  },
-  general: {
-    background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-    border: "#f59e0b",
-    shadow: "rgba(245, 158, 11, 0.3)",
-    hoverShadow: "rgba(245, 158, 11, 0.4)",
-  },
-  mobile: {
-    background: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)",
-    border: "#ec4899",
-    shadow: "rgba(236, 72, 153, 0.3)",
-    hoverShadow: "rgba(236, 72, 153, 0.4)",
-  },
-  devops: {
-    background: "linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)",
-    border: "#06b6d4",
-    shadow: "rgba(6, 182, 212, 0.3)",
-    hoverShadow: "rgba(6, 182, 212, 0.4)",
-  },
-  design: {
-    background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-    border: "#ef4444",
-    shadow: "rgba(239, 68, 68, 0.3)",
-    hoverShadow: "rgba(239, 68, 68, 0.4)",
-  },
-  default: {
-    background: "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)",
-    border: "#6b7280",
-    shadow: "rgba(107, 114, 128, 0.3)",
-    hoverShadow: "rgba(107, 114, 128, 0.4)",
-  },
+// Helper function to get color theme for a group
+const getGroupColorTheme = (groupName: string = "default"): ColorTheme => {
+  const index =
+    groupColorIndex[groupName.toLowerCase()] ?? groupColorIndex.default;
+  return colorPalette[index];
 };
 
-// Function to get color theme based on group name - now with dynamic colors
-const getGroupColorTheme = (groupName: string) => {
-  const normalizedGroup = groupName.toLowerCase().trim();
-
-  // Map common variations to our predefined themes first
-  const groupMappings: { [key: string]: keyof typeof groupColorThemes } = {
-    frontend: "frontend",
-    "front-end": "frontend",
-    "front end": "frontend",
-    react: "frontend",
-    angular: "frontend",
-    vue: "frontend",
-
-    backend: "backend",
-    "back-end": "backend",
-    "back end": "backend",
-    node: "backend",
-    python: "backend",
-    java: "backend",
-
-    fullstack: "fullstack",
-    "full-stack": "fullstack",
-    "full stack": "fullstack",
-
-    general: "general",
-    other: "general",
-    misc: "general",
-
-    mobile: "mobile",
-    ios: "mobile",
-    android: "mobile",
-    "react native": "mobile",
-    flutter: "mobile",
-
-    devops: "devops",
-    "dev ops": "devops",
-    aws: "devops",
-    docker: "devops",
-    kubernetes: "devops",
-
-    design: "design",
-    ui: "design",
-    ux: "design",
-    "ui/ux": "design",
-    graphic: "design",
-  };
-
-  // Check if we have a predefined theme first
-  const themeKey = groupMappings[normalizedGroup];
-  if (themeKey && groupColorThemes[themeKey]) {
-    return groupColorThemes[themeKey];
-  }
-
-  // For new groups, generate a unique color based on the group name
-  const hash = stringToHash(groupName);
-  const colorIndex = hash % colorPalette.length;
-  const selectedColor = colorPalette[colorIndex];
-
-  return {
-    background: `linear-gradient(135deg, ${selectedColor.primary} 0%, ${selectedColor.secondary} 100%)`,
-    border: selectedColor.primary,
-    shadow: selectedColor.shadow,
-    hoverShadow: selectedColor.hoverShadow,
-  };
+// Enhanced styles for premium UI components
+const styles = {
+  container: {
+    backgroundColor: lightTheme.background,
+    borderRadius: "16px",
+    padding: "32px",
+    boxShadow: `0 8px 32px ${alpha(lightTheme.text, 0.08)}`,
+    border: `1px solid ${lightTheme.border}`,
+  },
+  searchInput: {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "12px",
+      backgroundColor: lightTheme.surface,
+      transition: "all 0.3s ease",
+      border: `1px solid ${lightTheme.border}`,
+      "&:hover": {
+        backgroundColor: lightTheme.surfaceLight,
+        boxShadow: "0 4px 12px rgba(23, 25, 33, 0.06)",
+      },
+      "&.Mui-focused": {
+        backgroundColor: lightTheme.background,
+        boxShadow: "0 4px 12px rgba(48, 119, 243, 0.12)",
+        border: `1px solid ${lightTheme.primary}`,
+      },
+    },
+  },
+  groupChip: (color: ColorTheme) => ({
+    borderRadius: "12px",
+    padding: "8px 16px",
+    background: color.gradient,
+    boxShadow: `0 8px 16px ${color.shadowColor}`,
+    transition: "all 0.3s ease",
+    "&:hover": {
+      transform: "translateY(-2px)",
+      boxShadow: `0 12px 24px ${color.hoverShadowColor}`,
+    },
+    "& .MuiChip-label": {
+      color: "#FFFFFF",
+      fontWeight: 600,
+      fontSize: "0.95rem",
+    },
+    "& .MuiChip-deleteIcon": {
+      color: "#FFFFFF",
+      opacity: 0.8,
+      "&:hover": {
+        opacity: 1,
+      },
+    },
+  }),
+  card: (color: ColorTheme) => ({
+    backgroundColor: lightTheme.background,
+    borderRadius: "16px",
+    boxShadow: `0 8px 16px ${color.shadowColor}`,
+    border: `2px solid ${color.primary}`,
+    transition: "all 0.3s ease",
+    "&:hover": {
+      transform: "translateY(-4px)",
+      boxShadow: `0 12px 24px ${color.hoverShadowColor}`,
+    },
+    mb: 2,
+  }),
+  fileIcon: (color: ColorTheme) => ({
+    width: 40,
+    height: 40,
+    borderRadius: "8px",
+    background: color.gradient,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  }),
+  iconButton: {
+    color: lightTheme.textMuted,
+    "&:hover": {
+      color: lightTheme.text,
+      backgroundColor: lightTheme.surface,
+    },
+  },
+  deleteButton: {
+    color: lightTheme.textMuted,
+    "&:hover": {
+      color: lightTheme.error,
+      backgroundColor: alpha(lightTheme.error, 0.1),
+    },
+  },
+  statusChip: (isProcessed: boolean) => ({
+    backgroundColor: isProcessed
+      ? alpha(lightTheme.success, 0.1)
+      : alpha(lightTheme.warning, 0.1),
+    color: isProcessed ? lightTheme.success : lightTheme.warning,
+    "& .MuiChip-icon": {
+      color: isProcessed ? lightTheme.success : lightTheme.warning,
+    },
+  }),
+  scrollbar: {
+    "&::-webkit-scrollbar": {
+      height: "8px",
+    },
+    "&::-webkit-scrollbar-track": {
+      backgroundColor: lightTheme.surface,
+      borderRadius: "4px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: lightTheme.border,
+      borderRadius: "4px",
+      "&:hover": {
+        backgroundColor: lightTheme.textMuted,
+      },
+    },
+  },
 };
 
 // Custom Styled Modal Component
@@ -328,8 +312,8 @@ const DeleteConfirmModal = ({
           sx={{
             minWidth: 400,
             maxWidth: 500,
-            background: `linear-gradient(135deg, ${darkTheme.surface} 0%, ${darkTheme.surfaceLight} 100%)`,
-            border: `2px solid ${darkTheme.error}`,
+            background: `linear-gradient(135deg, ${lightTheme.surface} 0%, ${lightTheme.surfaceLight} 100%)`,
+            border: `2px solid ${lightTheme.error}`,
             borderRadius: "16px",
             boxShadow: "0 20px 60px rgba(239, 68, 68, 0.3)",
             outline: "none",
@@ -346,10 +330,10 @@ const DeleteConfirmModal = ({
                 position: "absolute",
                 top: 16,
                 right: 16,
-                color: darkTheme.textMuted,
+                color: lightTheme.textMuted,
                 "&:hover": {
-                  backgroundColor: alpha(darkTheme.error, 0.1),
-                  color: darkTheme.error,
+                  backgroundColor: alpha(lightTheme.error, 0.1),
+                  color: lightTheme.error,
                 },
               }}
             >
@@ -363,7 +347,7 @@ const DeleteConfirmModal = ({
                   width: 80,
                   height: 80,
                   borderRadius: "50%",
-                  background: `linear-gradient(135deg, ${darkTheme.error} 0%, #dc2626 100%)`,
+                  background: `linear-gradient(135deg, ${lightTheme.error} 0%, #dc2626 100%)`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -386,7 +370,7 @@ const DeleteConfirmModal = ({
               variant="h5"
               sx={{
                 fontWeight: 700,
-                color: darkTheme.text,
+                color: lightTheme.text,
                 textAlign: "center",
                 mb: 2,
               }}
@@ -398,7 +382,7 @@ const DeleteConfirmModal = ({
             <Typography
               variant="body1"
               sx={{
-                color: darkTheme.textSecondary,
+                color: lightTheme.textSecondary,
                 textAlign: "center",
                 mb: 1,
                 lineHeight: 1.6,
@@ -410,14 +394,14 @@ const DeleteConfirmModal = ({
             <Typography
               variant="body1"
               sx={{
-                color: darkTheme.text,
+                color: lightTheme.text,
                 textAlign: "center",
                 fontWeight: 600,
                 mb: 3,
-                background: alpha(darkTheme.error, 0.1),
+                background: alpha(lightTheme.error, 0.1),
                 borderRadius: "8px",
                 p: 1,
-                border: `1px solid ${alpha(darkTheme.error, 0.2)}`,
+                border: `1px solid ${alpha(lightTheme.error, 0.2)}`,
               }}
             >
               "{filename}"
@@ -426,7 +410,7 @@ const DeleteConfirmModal = ({
             <Typography
               variant="body2"
               sx={{
-                color: darkTheme.textMuted,
+                color: lightTheme.textMuted,
                 textAlign: "center",
                 mb: 4,
                 fontStyle: "italic",
@@ -447,16 +431,16 @@ const DeleteConfirmModal = ({
                 disabled={isDeleting}
                 sx={{
                   minWidth: 120,
-                  borderColor: darkTheme.border,
-                  color: darkTheme.textSecondary,
+                  borderColor: lightTheme.border,
+                  color: lightTheme.textSecondary,
                   borderRadius: "12px",
                   px: 3,
                   py: 1.5,
                   fontWeight: 600,
                   textTransform: "none",
                   "&:hover": {
-                    borderColor: darkTheme.textSecondary,
-                    backgroundColor: alpha(darkTheme.textSecondary, 0.05),
+                    borderColor: lightTheme.textSecondary,
+                    backgroundColor: alpha(lightTheme.textSecondary, 0.05),
                   },
                 }}
               >
@@ -470,7 +454,7 @@ const DeleteConfirmModal = ({
                 startIcon={isDeleting ? undefined : <Delete />}
                 sx={{
                   minWidth: 120,
-                  background: `linear-gradient(135deg, ${darkTheme.error} 0%, #dc2626 100%)`,
+                  background: `linear-gradient(135deg, ${lightTheme.error} 0%, #dc2626 100%)`,
                   color: "#ffffff",
                   borderRadius: "12px",
                   px: 3,
@@ -484,8 +468,8 @@ const DeleteConfirmModal = ({
                     transform: "translateY(-1px)",
                   },
                   "&:disabled": {
-                    background: darkTheme.textMuted,
-                    color: darkTheme.background,
+                    background: lightTheme.textMuted,
+                    color: lightTheme.background,
                     transform: "none",
                     boxShadow: "none",
                   },
@@ -624,13 +608,13 @@ const FileCard = ({
   const getStatusColor = () => {
     switch (resume.status) {
       case "completed":
-        return darkTheme.success;
+        return lightTheme.success;
       case "processing":
-        return darkTheme.warning;
+        return lightTheme.warning;
       case "failed":
-        return darkTheme.error;
+        return lightTheme.error;
       default:
-        return darkTheme.primary;
+        return lightTheme.primary;
     }
   };
 
@@ -690,11 +674,11 @@ const FileCard = ({
   return (
     <Card
       sx={{
-        background: `linear-gradient(135deg, ${darkTheme.surface} 0%, ${alpha(
-          darkTheme.surfaceLight,
+        background: `linear-gradient(135deg, ${lightTheme.surface} 0%, ${alpha(
+          lightTheme.surfaceLight,
           0.8
         )} 100%)`,
-        border: `1px solid ${alpha(darkTheme.border, 0.3)}`,
+        border: `1px solid ${alpha(lightTheme.border, 0.3)}`,
         borderRadius: "20px",
         transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
         cursor: "default",
@@ -709,7 +693,7 @@ const FileCard = ({
           right: 0,
           bottom: 0,
           background: `radial-gradient(circle at 70% 20%, ${alpha(
-            darkTheme.primary,
+            lightTheme.primary,
             0.05
           )} 0%, transparent 50%)`,
           pointerEvents: "none",
@@ -717,10 +701,10 @@ const FileCard = ({
         "&:hover": {
           transform: "translateY(-8px) scale(1.02)",
           boxShadow: `0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px ${alpha(
-            darkTheme.primary,
+            lightTheme.primary,
             0.3
           )}`,
-          border: `1px solid ${alpha(darkTheme.primary, 0.6)}`,
+          border: `1px solid ${alpha(lightTheme.primary, 0.6)}`,
           "& .action-buttons": {
             opacity: 1,
             transform: "translateY(0)",
@@ -743,12 +727,12 @@ const FileCard = ({
               mr: 3,
               transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
               background: `linear-gradient(135deg, ${alpha(
-                darkTheme.surface,
+                lightTheme.surface,
                 0.8
-              )} 0%, ${alpha(darkTheme.surfaceLight, 0.9)} 100%)`,
+              )} 0%, ${alpha(lightTheme.surfaceLight, 0.9)} 100%)`,
               borderRadius: "12px",
               p: 1.5,
-              border: `1px solid ${alpha(darkTheme.border, 0.2)}`,
+              border: `1px solid ${alpha(lightTheme.border, 0.2)}`,
             }}
           >
             {getFileIcon()}
@@ -757,7 +741,7 @@ const FileCard = ({
             <Typography
               variant="h6"
               sx={{
-                color: darkTheme.text,
+                color: lightTheme.text,
                 fontWeight: 700,
                 fontSize: "1.1rem",
                 overflow: "hidden",
@@ -802,10 +786,10 @@ const FileCard = ({
             <Box
               sx={{
                 background: `linear-gradient(135deg, ${alpha(
-                  darkTheme.primary,
+                  lightTheme.primary,
                   0.1
-                )} 0%, ${alpha(darkTheme.primary, 0.2)} 100%)`,
-                border: `1px solid ${alpha(darkTheme.primary, 0.3)}`,
+                )} 0%, ${alpha(lightTheme.primary, 0.2)} 100%)`,
+                border: `1px solid ${alpha(lightTheme.primary, 0.3)}`,
                 borderRadius: "12px",
                 px: 2,
                 py: 0.8,
@@ -815,13 +799,13 @@ const FileCard = ({
               }}
             >
               <InsertDriveFile
-                sx={{ fontSize: "0.9rem", color: darkTheme.primary }}
+                sx={{ fontSize: "0.9rem", color: lightTheme.primary }}
               />
               <Typography
                 sx={{
                   fontSize: "0.8rem",
                   fontWeight: 600,
-                  color: darkTheme.primary,
+                  color: lightTheme.primary,
                 }}
               >
                 {formatFileSize(resume.fileSize)}
@@ -831,10 +815,10 @@ const FileCard = ({
             <Box
               sx={{
                 background: `linear-gradient(135deg, ${alpha(
-                  darkTheme.success,
+                  lightTheme.success,
                   0.1
-                )} 0%, ${alpha(darkTheme.success, 0.2)} 100%)`,
-                border: `1px solid ${alpha(darkTheme.success, 0.3)}`,
+                )} 0%, ${alpha(lightTheme.success, 0.2)} 100%)`,
+                border: `1px solid ${alpha(lightTheme.success, 0.3)}`,
                 borderRadius: "12px",
                 px: 2,
                 py: 0.8,
@@ -844,13 +828,13 @@ const FileCard = ({
               }}
             >
               <Description
-                sx={{ fontSize: "0.9rem", color: darkTheme.success }}
+                sx={{ fontSize: "0.9rem", color: lightTheme.success }}
               />
               <Typography
                 sx={{
                   fontSize: "0.8rem",
                   fontWeight: 600,
-                  color: darkTheme.success,
+                  color: lightTheme.success,
                   textTransform: "uppercase",
                 }}
               >
@@ -865,18 +849,18 @@ const FileCard = ({
                   <Box
                     className="group-chip"
                     sx={{
-                      background: colorTheme.background,
-                      border: `2px solid ${colorTheme.border}`,
+                      background: colorTheme.gradient,
+                      border: `2px solid ${colorTheme.primary}`,
                       borderRadius: "16px",
                       px: 2.5,
                       py: 1,
                       display: "flex",
                       alignItems: "center",
                       gap: 1,
-                      boxShadow: `0 4px 16px ${colorTheme.shadow}`,
+                      boxShadow: `0 4px 16px ${colorTheme.shadowColor}`,
                       transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                       "&:hover": {
-                        boxShadow: `0 8px 24px ${colorTheme.hoverShadow}`,
+                        boxShadow: `0 8px 24px ${colorTheme.hoverShadowColor}`,
                         transform: "translateY(-2px)",
                       },
                     }}
@@ -904,20 +888,20 @@ const FileCard = ({
               alignItems: "center",
               gap: 1,
               background: `linear-gradient(135deg, ${alpha(
-                darkTheme.textMuted,
+                lightTheme.textMuted,
                 0.05
-              )} 0%, ${alpha(darkTheme.textMuted, 0.1)} 100%)`,
+              )} 0%, ${alpha(lightTheme.textMuted, 0.1)} 100%)`,
               borderRadius: "10px",
               px: 2,
               py: 1,
-              border: `1px solid ${alpha(darkTheme.textMuted, 0.1)}`,
+              border: `1px solid ${alpha(lightTheme.textMuted, 0.1)}`,
             }}
           >
             <Schedule
               sx={{
                 fontSize: "1rem",
-                color: darkTheme.textMuted,
-                background: `linear-gradient(135deg, ${darkTheme.warning} 0%, #d97706 100%)`,
+                color: lightTheme.textMuted,
+                background: `linear-gradient(135deg, ${lightTheme.warning} 0%, #d97706 100%)`,
                 borderRadius: "6px",
                 p: 0.5,
               }}
@@ -925,7 +909,7 @@ const FileCard = ({
             <Typography
               variant="body2"
               sx={{
-                color: darkTheme.textSecondary,
+                color: lightTheme.textSecondary,
                 fontSize: "0.85rem",
                 fontWeight: 500,
               }}
@@ -974,7 +958,7 @@ const FileCard = ({
               }
             }}
             sx={{
-              background: `linear-gradient(135deg, ${darkTheme.primary} 0%, #357abd 100%)`,
+              background: `linear-gradient(135deg, ${lightTheme.primary} 0%, #357abd 100%)`,
               color: "#ffffff",
               borderRadius: "12px",
               textTransform: "none",
@@ -983,11 +967,11 @@ const FileCard = ({
               py: 1.2,
               px: 2,
               cursor: "pointer !important",
-              boxShadow: `0 4px 16px ${alpha(darkTheme.primary, 0.3)}`,
-              border: `1px solid ${alpha(darkTheme.primary, 0.2)}`,
+              boxShadow: `0 4px 16px ${alpha(lightTheme.primary, 0.3)}`,
+              border: `1px solid ${alpha(lightTheme.primary, 0.2)}`,
               "&:hover": {
                 background: `linear-gradient(135deg, #357abd 0%, #2c5aa0 100%)`,
-                boxShadow: `0 8px 24px ${alpha(darkTheme.primary, 0.4)}`,
+                boxShadow: `0 8px 24px ${alpha(lightTheme.primary, 0.4)}`,
                 transform: "translateY(-2px)",
               },
               "&:active": {
@@ -1054,7 +1038,7 @@ const FileCard = ({
               }
             }}
             sx={{
-              background: `linear-gradient(135deg, ${darkTheme.success} 0%, #16a34a 100%)`,
+              background: `linear-gradient(135deg, ${lightTheme.success} 0%, #16a34a 100%)`,
               color: "#ffffff",
               borderRadius: "12px",
               textTransform: "none",
@@ -1063,11 +1047,11 @@ const FileCard = ({
               py: 1.2,
               px: 2,
               cursor: "pointer !important",
-              boxShadow: `0 4px 16px ${alpha(darkTheme.success, 0.3)}`,
-              border: `1px solid ${alpha(darkTheme.success, 0.2)}`,
+              boxShadow: `0 4px 16px ${alpha(lightTheme.success, 0.3)}`,
+              border: `1px solid ${alpha(lightTheme.success, 0.2)}`,
               "&:hover": {
                 background: `linear-gradient(135deg, #16a34a 0%, #15803d 100%)`,
-                boxShadow: `0 8px 24px ${alpha(darkTheme.success, 0.4)}`,
+                boxShadow: `0 8px 24px ${alpha(lightTheme.success, 0.4)}`,
                 transform: "translateY(-2px)",
               },
               "&:active": {
@@ -1084,7 +1068,7 @@ const FileCard = ({
             startIcon={<Delete sx={{ fontSize: "1.1rem" }} />}
             onClick={() => setShowDeleteModal(true)}
             sx={{
-              background: `linear-gradient(135deg, ${darkTheme.error} 0%, #dc2626 100%)`,
+              background: `linear-gradient(135deg, ${lightTheme.error} 0%, #dc2626 100%)`,
               color: "#ffffff",
               borderRadius: "12px",
               textTransform: "none",
@@ -1093,11 +1077,11 @@ const FileCard = ({
               py: 1.2,
               px: 2,
               cursor: "pointer !important",
-              boxShadow: `0 4px 16px ${alpha(darkTheme.error, 0.3)}`,
-              border: `1px solid ${alpha(darkTheme.error, 0.2)}`,
+              boxShadow: `0 4px 16px ${alpha(lightTheme.error, 0.3)}`,
+              border: `1px solid ${alpha(lightTheme.error, 0.2)}`,
               "&:hover": {
                 background: `linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)`,
-                boxShadow: `0 8px 24px ${alpha(darkTheme.error, 0.4)}`,
+                boxShadow: `0 8px 24px ${alpha(lightTheme.error, 0.4)}`,
                 transform: "translateY(-2px)",
               },
               "&:active": {
@@ -1142,12 +1126,12 @@ const FileCard = ({
           >
             <Card
               sx={{
-                background: `linear-gradient(135deg, ${darkTheme.success} 0%, #16a34a 100%)`,
+                background: `linear-gradient(135deg, ${lightTheme.success} 0%, #16a34a 100%)`,
                 color: "#ffffff",
                 borderRadius: "12px",
                 boxShadow: "0 8px 32px rgba(34, 197, 94, 0.4)",
                 minWidth: 300,
-                border: `2px solid ${alpha(darkTheme.success, 0.3)}`,
+                border: `2px solid ${alpha(lightTheme.success, 0.3)}`,
               }}
             >
               <CardContent
@@ -1340,7 +1324,7 @@ const ResumeCollection = ({
       sx={{
         width: "100%",
         minHeight: "100vh",
-        background: darkTheme.background,
+        background: lightTheme.background,
         cursor: "default",
         px: { xs: 2, md: 4 },
         py: { xs: 3, md: 4 },
@@ -1365,7 +1349,7 @@ const ResumeCollection = ({
           <Assessment
             sx={{
               fontSize: "3rem",
-              color: darkTheme.primary,
+              color: lightTheme.primary,
               mr: 1,
             }}
           />
@@ -1376,7 +1360,7 @@ const ResumeCollection = ({
           sx={{
             fontWeight: 700,
             fontSize: { xs: "2.5rem", md: "3rem" },
-            color: darkTheme.text,
+            color: lightTheme.text,
             mb: 2,
           }}
         >
@@ -1386,7 +1370,7 @@ const ResumeCollection = ({
         <Typography
           variant="h6"
           sx={{
-            color: darkTheme.textSecondary,
+            color: lightTheme.textSecondary,
             fontWeight: 400,
             maxWidth: 600,
             mx: "auto",
@@ -1440,12 +1424,12 @@ const ResumeCollection = ({
           sx={{
             mb: 6,
             background: `linear-gradient(135deg, ${alpha(
-              darkTheme.surface,
+              lightTheme.surface,
               0.6
-            )} 0%, ${alpha(darkTheme.surfaceLight, 0.8)} 100%)`,
+            )} 0%, ${alpha(lightTheme.surfaceLight, 0.8)} 100%)`,
             borderRadius: "24px",
             p: 4,
-            border: `1px solid ${alpha(darkTheme.border, 0.3)}`,
+            border: `1px solid ${alpha(lightTheme.border, 0.3)}`,
             backdropFilter: "blur(8px)",
             position: "relative",
             overflow: "hidden",
@@ -1457,10 +1441,10 @@ const ResumeCollection = ({
               right: 0,
               bottom: 0,
               background: `radial-gradient(circle at 20% 80%, ${alpha(
-                darkTheme.primary,
+                lightTheme.primary,
                 0.1
               )} 0%, transparent 50%), radial-gradient(circle at 80% 20%, ${alpha(
-                darkTheme.success,
+                lightTheme.success,
                 0.1
               )} 0%, transparent 50%)`,
               pointerEvents: "none",
@@ -1484,7 +1468,7 @@ const ResumeCollection = ({
                 sx={{
                   fontWeight: 700,
                   fontSize: "1.4rem",
-                  background: `linear-gradient(135deg, ${darkTheme.text} 0%, ${darkTheme.textSecondary} 100%)`,
+                  background: `linear-gradient(135deg, ${lightTheme.text} 0%, ${lightTheme.textSecondary} 100%)`,
                   backgroundClip: "text",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
@@ -1494,13 +1478,15 @@ const ResumeCollection = ({
                   gap: 1,
                 }}
               >
-                <Search sx={{ fontSize: "1.5rem", color: darkTheme.primary }} />
+                <Search
+                  sx={{ fontSize: "1.5rem", color: lightTheme.primary }}
+                />
                 Search & Filter Resumes
               </Typography>
               <Typography
                 variant="body2"
                 sx={{
-                  color: darkTheme.textSecondary,
+                  color: lightTheme.textSecondary,
                   fontSize: "0.9rem",
                 }}
               >
@@ -1523,8 +1509,8 @@ const ResumeCollection = ({
                 }}
                 startIcon={<Warning sx={{ fontSize: "1rem" }} />}
                 sx={{
-                  borderColor: darkTheme.warning,
-                  color: darkTheme.warning,
+                  borderColor: lightTheme.warning,
+                  color: lightTheme.warning,
                   borderRadius: "12px",
                   textTransform: "none",
                   fontSize: "0.85rem",
@@ -1532,8 +1518,8 @@ const ResumeCollection = ({
                   px: 3,
                   py: 1,
                   "&:hover": {
-                    borderColor: darkTheme.warning,
-                    backgroundColor: alpha(darkTheme.warning, 0.1),
+                    borderColor: lightTheme.warning,
+                    backgroundColor: alpha(lightTheme.warning, 0.1),
                     transform: "translateY(-2px)",
                   },
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -1569,7 +1555,7 @@ const ResumeCollection = ({
                 startAdornment: (
                   <InputAdornment position="start">
                     <Search
-                      sx={{ color: darkTheme.textMuted, fontSize: "1.3rem" }}
+                      sx={{ color: lightTheme.textMuted, fontSize: "1.3rem" }}
                     />
                   </InputAdornment>
                 ),
@@ -1577,18 +1563,18 @@ const ResumeCollection = ({
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "16px",
-                  background: alpha(darkTheme.surface, 0.8),
-                  color: darkTheme.text,
-                  border: `1px solid ${alpha(darkTheme.border, 0.4)}`,
-                  boxShadow: `0 2px 12px ${alpha(darkTheme.background, 0.3)}`,
+                  background: alpha(lightTheme.surface, 0.8),
+                  color: lightTheme.text,
+                  border: `1px solid ${alpha(lightTheme.border, 0.4)}`,
+                  boxShadow: `0 2px 12px ${alpha(lightTheme.background, 0.3)}`,
                   "& input": {
-                    color: darkTheme.text,
+                    color: lightTheme.text,
                     py: 2.5,
                     px: 2,
                     fontSize: "1rem",
                     fontWeight: 500,
                     "&::placeholder": {
-                      color: darkTheme.textMuted,
+                      color: lightTheme.textMuted,
                       opacity: 1,
                       fontSize: "1rem",
                     },
@@ -1597,18 +1583,18 @@ const ResumeCollection = ({
                     border: "none",
                   },
                   "&:hover": {
-                    background: alpha(darkTheme.surfaceLight, 0.9),
-                    border: `1px solid ${alpha(darkTheme.primary, 0.4)}`,
-                    boxShadow: `0 4px 20px ${alpha(darkTheme.primary, 0.1)}`,
+                    background: alpha(lightTheme.surfaceLight, 0.9),
+                    border: `1px solid ${alpha(lightTheme.primary, 0.4)}`,
+                    boxShadow: `0 4px 20px ${alpha(lightTheme.primary, 0.1)}`,
                   },
                   "&.Mui-focused": {
-                    background: alpha(darkTheme.surfaceLight, 0.9),
-                    border: `1px solid ${darkTheme.primary}`,
-                    boxShadow: `0 4px 24px ${alpha(darkTheme.primary, 0.15)}`,
+                    background: alpha(lightTheme.surfaceLight, 0.9),
+                    border: `1px solid ${lightTheme.primary}`,
+                    boxShadow: `0 4px 24px ${alpha(lightTheme.primary, 0.15)}`,
                   },
                   "&.Mui-disabled": {
-                    background: alpha(darkTheme.surface, 0.3),
-                    color: darkTheme.textMuted,
+                    background: alpha(lightTheme.surface, 0.3),
+                    color: lightTheme.textMuted,
                   },
                   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                 },
@@ -1635,7 +1621,7 @@ const ResumeCollection = ({
                   sx={{
                     fontWeight: 600,
                     fontSize: "1.1rem",
-                    color: darkTheme.text,
+                    color: lightTheme.text,
                     mb: 1,
                     display: "flex",
                     alignItems: "center",
@@ -1643,7 +1629,7 @@ const ResumeCollection = ({
                   }}
                 >
                   <Assessment
-                    sx={{ fontSize: "1.2rem", color: darkTheme.primary }}
+                    sx={{ fontSize: "1.2rem", color: lightTheme.primary }}
                   />
                   Filter by Groups
                   {groupsLoading && (
@@ -1652,8 +1638,8 @@ const ResumeCollection = ({
                         width: 16,
                         height: 16,
                         borderRadius: "50%",
-                        border: `2px solid ${alpha(darkTheme.primary, 0.3)}`,
-                        borderTop: `2px solid ${darkTheme.primary}`,
+                        border: `2px solid ${alpha(lightTheme.primary, 0.3)}`,
+                        borderTop: `2px solid ${lightTheme.primary}`,
                         animation: "spin 1s linear infinite",
                         ml: 1,
                         "@keyframes spin": {
@@ -1667,7 +1653,7 @@ const ResumeCollection = ({
                 <Typography
                   variant="body2"
                   sx={{
-                    color: darkTheme.textSecondary,
+                    color: lightTheme.textSecondary,
                     fontSize: "0.85rem",
                   }}
                 >
@@ -1689,7 +1675,7 @@ const ResumeCollection = ({
                     width: "20px",
                     height: "100%",
                     background: `linear-gradient(90deg, ${alpha(
-                      darkTheme.surfaceLight,
+                      lightTheme.surfaceLight,
                       0.8
                     )} 0%, transparent 100%)`,
                     zIndex: 2,
@@ -1703,7 +1689,7 @@ const ResumeCollection = ({
                     width: "20px",
                     height: "100%",
                     background: `linear-gradient(270deg, ${alpha(
-                      darkTheme.surfaceLight,
+                      lightTheme.surfaceLight,
                       0.8
                     )} 0%, transparent 100%)`,
                     zIndex: 2,
@@ -1726,11 +1712,11 @@ const ResumeCollection = ({
                       height: 6,
                     },
                     "&::-webkit-scrollbar-track": {
-                      background: alpha(darkTheme.border, 0.1),
+                      background: alpha(lightTheme.border, 0.1),
                       borderRadius: "3px",
                     },
                     "&::-webkit-scrollbar-thumb": {
-                      background: `linear-gradient(90deg, ${darkTheme.primary} 0%, ${darkTheme.success} 100%)`,
+                      background: `linear-gradient(90deg, ${lightTheme.primary} 0%, ${lightTheme.success} 100%)`,
                       borderRadius: "3px",
                       "&:hover": {
                         background: `linear-gradient(90deg, #357abd 0%, #16a34a 100%)`,
@@ -1738,8 +1724,8 @@ const ResumeCollection = ({
                     },
                     // Custom scrollbar for Firefox
                     scrollbarWidth: "thin",
-                    scrollbarColor: `${darkTheme.primary} ${alpha(
-                      darkTheme.border,
+                    scrollbarColor: `${lightTheme.primary} ${alpha(
+                      lightTheme.border,
                       0.1
                     )}`,
                   }}
@@ -1755,12 +1741,12 @@ const ResumeCollection = ({
                             width: 120,
                             borderRadius: "16px",
                             background: `linear-gradient(90deg, ${alpha(
-                              darkTheme.surface,
+                              lightTheme.surface,
                               0.3
                             )} 0%, ${alpha(
-                              darkTheme.surfaceLight,
+                              lightTheme.surfaceLight,
                               0.5
-                            )} 50%, ${alpha(darkTheme.surface, 0.3)} 100%)`,
+                            )} 50%, ${alpha(lightTheme.surface, 0.3)} 100%)`,
                             backgroundSize: "200% 100%",
                             animation: "shimmer 1.5s ease-in-out infinite",
                             "@keyframes shimmer": {
@@ -1871,10 +1857,10 @@ const ResumeCollection = ({
                                   background: hasResumes
                                     ? colorTheme.background
                                     : `linear-gradient(135deg, ${alpha(
-                                        darkTheme.textMuted,
+                                        lightTheme.textMuted,
                                         0.2
                                       )} 0%, ${alpha(
-                                        darkTheme.textMuted,
+                                        lightTheme.textMuted,
                                         0.3
                                       )} 100%)`,
                                   opacity: isSelected ? 1 : 0,
@@ -1897,10 +1883,10 @@ const ResumeCollection = ({
                                         0.2
                                       )} 100%)`
                                     : `linear-gradient(135deg, ${alpha(
-                                        darkTheme.textMuted,
+                                        lightTheme.textMuted,
                                         0.1
                                       )} 0%, ${alpha(
-                                        darkTheme.textMuted,
+                                        lightTheme.textMuted,
                                         0.15
                                       )} 100%)`,
                                   opacity: isSelected ? 0 : 1,
@@ -1911,29 +1897,29 @@ const ResumeCollection = ({
                                   ? isSelected
                                     ? "#ffffff"
                                     : colorTheme.border
-                                  : darkTheme.textMuted,
+                                  : lightTheme.textMuted,
                                 border: `2px solid ${
                                   hasResumes
                                     ? isSelected
                                       ? colorTheme.border
                                       : alpha(colorTheme.border, 0.4)
-                                    : alpha(darkTheme.textMuted, 0.3)
+                                    : alpha(lightTheme.textMuted, 0.3)
                                 }`,
                                 borderRadius: "16px",
                                 boxShadow: hasResumes
                                   ? isSelected
                                     ? `0 8px 32px ${
-                                        colorTheme.hoverShadow
+                                        colorTheme.hoverShadowColor
                                       }, 0 0 0 1px ${alpha(
                                         colorTheme.border,
                                         0.2
                                       )}`
                                     : `0 4px 16px ${alpha(
-                                        colorTheme.shadow,
+                                        colorTheme.shadowColor,
                                         0.2
                                       )}`
                                   : `0 2px 8px ${alpha(
-                                      darkTheme.textMuted,
+                                      lightTheme.textMuted,
                                       0.1
                                     )}`,
                                 transform: isSelected
@@ -1950,7 +1936,7 @@ const ResumeCollection = ({
                                       color: "#ffffff",
                                       border: `2px solid ${colorTheme.border}`,
                                       boxShadow: `0 12px 40px ${
-                                        colorTheme.hoverShadow
+                                        colorTheme.hoverShadowColor
                                       }, 0 0 0 1px ${alpha(
                                         colorTheme.border,
                                         0.3
@@ -2004,17 +1990,17 @@ const ResumeCollection = ({
                     py: 4,
                     px: 3,
                     background: `linear-gradient(135deg, ${alpha(
-                      darkTheme.warning,
+                      lightTheme.warning,
                       0.1
-                    )} 0%, ${alpha(darkTheme.warning, 0.2)} 100%)`,
+                    )} 0%, ${alpha(lightTheme.warning, 0.2)} 100%)`,
                     borderRadius: "16px",
-                    border: `1px solid ${alpha(darkTheme.warning, 0.3)}`,
+                    border: `1px solid ${alpha(lightTheme.warning, 0.3)}`,
                   }}
                 >
                   <Typography
                     variant="h6"
                     sx={{
-                      color: darkTheme.warning,
+                      color: lightTheme.warning,
                       fontWeight: 600,
                       mb: 1,
                       display: "flex",
@@ -2029,7 +2015,7 @@ const ResumeCollection = ({
                   <Typography
                     variant="body2"
                     sx={{
-                      color: darkTheme.textSecondary,
+                      color: lightTheme.textSecondary,
                       fontSize: "0.9rem",
                     }}
                   >
@@ -2057,11 +2043,11 @@ const ResumeCollection = ({
                 px: 6,
                 maxWidth: 500,
                 background: `linear-gradient(135deg, ${
-                  darkTheme.surface
-                } 0%, ${alpha(darkTheme.surfaceLight, 0.9)} 100%)`,
-                border: `1px solid ${alpha(darkTheme.primary, 0.2)}`,
+                  lightTheme.surface
+                } 0%, ${alpha(lightTheme.surfaceLight, 0.9)} 100%)`,
+                border: `1px solid ${alpha(lightTheme.primary, 0.2)}`,
                 borderRadius: "24px",
-                boxShadow: `0 20px 60px ${alpha(darkTheme.background, 0.4)}`,
+                boxShadow: `0 20px 60px ${alpha(lightTheme.background, 0.4)}`,
                 backdropFilter: "blur(10px)",
                 position: "relative",
                 overflow: "hidden",
@@ -2073,10 +2059,10 @@ const ResumeCollection = ({
                   right: 0,
                   bottom: 0,
                   background: `radial-gradient(circle at 30% 40%, ${alpha(
-                    darkTheme.primary,
+                    lightTheme.primary,
                     0.1
                   )} 0%, transparent 70%), radial-gradient(circle at 70% 60%, ${alpha(
-                    darkTheme.success,
+                    lightTheme.success,
                     0.1
                   )} 0%, transparent 70%)`,
                   pointerEvents: "none",
@@ -2097,7 +2083,7 @@ const ResumeCollection = ({
                       width: 80,
                       height: 80,
                       borderRadius: "50%",
-                      background: `conic-gradient(${darkTheme.primary} 0deg, ${darkTheme.success} 120deg, ${darkTheme.warning} 240deg, ${darkTheme.primary} 360deg)`,
+                      background: `conic-gradient(${lightTheme.primary} 0deg, ${lightTheme.success} 120deg, ${lightTheme.warning} 240deg, ${lightTheme.primary} 360deg)`,
                       animation: "spin 2s linear infinite",
                       mx: "auto",
                       position: "relative",
@@ -2110,7 +2096,7 @@ const ResumeCollection = ({
                         width: 60,
                         height: 60,
                         borderRadius: "50%",
-                        background: darkTheme.surface,
+                        background: lightTheme.surface,
                       },
                       "@keyframes spin": {
                         "0%": { transform: "rotate(0deg)" },
@@ -2138,7 +2124,7 @@ const ResumeCollection = ({
                     }}
                   >
                     <InsertDriveFile
-                      sx={{ fontSize: "2rem", color: darkTheme.primary }}
+                      sx={{ fontSize: "2rem", color: lightTheme.primary }}
                     />
                   </Box>
                 </Box>
@@ -2148,7 +2134,7 @@ const ResumeCollection = ({
                   sx={{
                     mb: 2,
                     fontWeight: 700,
-                    background: `linear-gradient(135deg, ${darkTheme.text} 0%, ${darkTheme.textSecondary} 100%)`,
+                    background: `linear-gradient(135deg, ${lightTheme.text} 0%, ${lightTheme.textSecondary} 100%)`,
                     backgroundClip: "text",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
@@ -2159,7 +2145,7 @@ const ResumeCollection = ({
                 <Typography
                   variant="body1"
                   sx={{
-                    color: darkTheme.textSecondary,
+                    color: lightTheme.textSecondary,
                     mb: 3,
                     fontSize: "1rem",
                     lineHeight: 1.6,
@@ -2176,7 +2162,7 @@ const ResumeCollection = ({
                         width: 8,
                         height: 8,
                         borderRadius: "50%",
-                        backgroundColor: darkTheme.primary,
+                        backgroundColor: lightTheme.primary,
                         animation: `bounce 1.4s ease-in-out ${
                           i * 0.16
                         }s infinite both`,
@@ -2213,11 +2199,11 @@ const ResumeCollection = ({
                 px: 6,
                 maxWidth: 500,
                 background: `linear-gradient(135deg, ${
-                  darkTheme.surface
-                } 0%, ${alpha(darkTheme.surfaceLight, 0.9)} 100%)`,
-                border: `1px solid ${alpha(darkTheme.border, 0.3)}`,
+                  lightTheme.surface
+                } 0%, ${alpha(lightTheme.surfaceLight, 0.9)} 100%)`,
+                border: `1px solid ${alpha(lightTheme.border, 0.3)}`,
                 borderRadius: "24px",
-                boxShadow: `0 20px 60px ${alpha(darkTheme.background, 0.4)}`,
+                boxShadow: `0 20px 60px ${alpha(lightTheme.background, 0.4)}`,
                 backdropFilter: "blur(10px)",
                 position: "relative",
                 overflow: "hidden",
@@ -2229,10 +2215,10 @@ const ResumeCollection = ({
                   right: 0,
                   bottom: 0,
                   background: `radial-gradient(circle at 20% 20%, ${alpha(
-                    darkTheme.textMuted,
+                    lightTheme.textMuted,
                     0.05
                   )} 0%, transparent 50%), radial-gradient(circle at 80% 80%, ${alpha(
-                    darkTheme.textMuted,
+                    lightTheme.textMuted,
                     0.05
                   )} 0%, transparent 50%)`,
                   pointerEvents: "none",
@@ -2254,15 +2240,15 @@ const ResumeCollection = ({
                       height: 120,
                       borderRadius: "50%",
                       background: `linear-gradient(135deg, ${alpha(
-                        darkTheme.textMuted,
+                        lightTheme.textMuted,
                         0.1
-                      )} 0%, ${alpha(darkTheme.textMuted, 0.2)} 100%)`,
+                      )} 0%, ${alpha(lightTheme.textMuted, 0.2)} 100%)`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       mx: "auto",
                       mb: 2,
-                      border: `2px dashed ${alpha(darkTheme.textMuted, 0.3)}`,
+                      border: `2px dashed ${alpha(lightTheme.textMuted, 0.3)}`,
                       position: "relative",
                       "&::before": {
                         content: '""',
@@ -2272,7 +2258,7 @@ const ResumeCollection = ({
                         right: -10,
                         bottom: -10,
                         borderRadius: "50%",
-                        border: `1px solid ${alpha(darkTheme.textMuted, 0.1)}`,
+                        border: `1px solid ${alpha(lightTheme.textMuted, 0.1)}`,
                         animation: "pulse 2s ease-in-out infinite",
                       },
                       "@keyframes pulse": {
@@ -2290,7 +2276,7 @@ const ResumeCollection = ({
                     <FolderOpen
                       sx={{
                         fontSize: "3.5rem",
-                        color: darkTheme.textMuted,
+                        color: lightTheme.textMuted,
                         opacity: 0.8,
                       }}
                     />
@@ -2302,7 +2288,7 @@ const ResumeCollection = ({
                   sx={{
                     mb: 2,
                     fontWeight: 700,
-                    background: `linear-gradient(135deg, ${darkTheme.text} 0%, ${darkTheme.textSecondary} 100%)`,
+                    background: `linear-gradient(135deg, ${lightTheme.text} 0%, ${lightTheme.textSecondary} 100%)`,
                     backgroundClip: "text",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
@@ -2321,7 +2307,7 @@ const ResumeCollection = ({
                 <Typography
                   variant="body1"
                   sx={{
-                    color: darkTheme.textSecondary,
+                    color: lightTheme.textSecondary,
                     fontSize: "1.1rem",
                     lineHeight: 1.6,
                     mb: 4,
@@ -2344,7 +2330,7 @@ const ResumeCollection = ({
                     onClick={clearAllFilters}
                     startIcon={<Close />}
                     sx={{
-                      background: `linear-gradient(135deg, ${darkTheme.primary} 0%, #357abd 100%)`,
+                      background: `linear-gradient(135deg, ${lightTheme.primary} 0%, #357abd 100%)`,
                       color: "#ffffff",
                       borderRadius: "12px",
                       px: 4,
@@ -2352,11 +2338,11 @@ const ResumeCollection = ({
                       fontSize: "1rem",
                       fontWeight: 600,
                       textTransform: "none",
-                      boxShadow: `0 8px 24px ${alpha(darkTheme.primary, 0.3)}`,
+                      boxShadow: `0 8px 24px ${alpha(lightTheme.primary, 0.3)}`,
                       "&:hover": {
                         background: `linear-gradient(135deg, #357abd 0%, #2c5aa0 100%)`,
                         boxShadow: `0 12px 32px ${alpha(
-                          darkTheme.primary,
+                          lightTheme.primary,
                           0.4
                         )}`,
                         transform: "translateY(-2px)",
@@ -2388,15 +2374,15 @@ const ResumeCollection = ({
                 alignItems: "center",
                 justifyContent: "space-between",
                 p: 2,
-                background: alpha(darkTheme.surface, 0.5),
+                background: alpha(lightTheme.surface, 0.5),
                 borderRadius: "12px",
-                border: `1px solid ${alpha(darkTheme.border, 0.2)}`,
+                border: `1px solid ${alpha(lightTheme.border, 0.2)}`,
               }}
             >
               <Typography
                 variant="h6"
                 sx={{
-                  color: darkTheme.text,
+                  color: lightTheme.text,
                   fontWeight: 600,
                   fontSize: "1.1rem",
                 }}
@@ -2414,9 +2400,9 @@ const ResumeCollection = ({
                   startIcon={<Close sx={{ fontSize: "1rem" }} />}
                   sx={{
                     background: `linear-gradient(135deg, ${alpha(
-                      darkTheme.error,
+                      lightTheme.error,
                       0.8
-                    )} 0%, ${alpha(darkTheme.error, 0.9)} 100%)`,
+                    )} 0%, ${alpha(lightTheme.error, 0.9)} 100%)`,
                     color: "#ffffff",
                     borderRadius: "12px",
                     textTransform: "none",
@@ -2424,10 +2410,10 @@ const ResumeCollection = ({
                     fontWeight: 600,
                     px: 3,
                     py: 1,
-                    boxShadow: `0 4px 16px ${alpha(darkTheme.error, 0.3)}`,
+                    boxShadow: `0 4px 16px ${alpha(lightTheme.error, 0.3)}`,
                     "&:hover": {
-                      background: `linear-gradient(135deg, ${darkTheme.error} 0%, #dc2626 100%)`,
-                      boxShadow: `0 6px 20px ${alpha(darkTheme.error, 0.4)}`,
+                      background: `linear-gradient(135deg, ${lightTheme.error} 0%, #dc2626 100%)`,
+                      boxShadow: `0 6px 20px ${alpha(lightTheme.error, 0.4)}`,
                       transform: "translateY(-2px)",
                     },
                     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -2464,7 +2450,7 @@ const ResumeCollection = ({
                   width: "80%",
                   height: 1,
                   background: `linear-gradient(90deg, transparent 0%, ${alpha(
-                    darkTheme.border,
+                    lightTheme.border,
                     0.5
                   )} 50%, transparent 100%)`,
                   zIndex: 0,
@@ -2475,16 +2461,167 @@ const ResumeCollection = ({
                 },
               }}
             >
-              {filteredResumes.map((resume) => (
-                <FileCard
-                  key={`${resume.id}-${resume.filename}`}
-                  resume={resume}
-                  onView={onView}
-                  onDownload={onDownload}
-                  onDelete={onDelete}
-                  onResumeDeleted={handleResumeDeleted}
-                />
-              ))}
+              {filteredResumes.map((resume) => {
+                const colorTheme = getGroupColorTheme(resume.group);
+                return (
+                  <Card
+                    key={resume.id}
+                    sx={{
+                      backgroundColor: lightTheme.background,
+                      borderRadius: "16px",
+                      boxShadow: colorTheme.shadowColor,
+                      border: `2px solid ${colorTheme.primary}`,
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                        boxShadow: colorTheme.hoverShadowColor,
+                      },
+                      mb: 2,
+                    }}
+                  >
+                    <CardContent>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Box
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: "8px",
+                            background: colorTheme.gradient,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {resume.fileType === "pdf" ? (
+                            <PictureAsPdf sx={{ color: "#FFFFFF" }} />
+                          ) : (
+                            <Description sx={{ color: "#FFFFFF" }} />
+                          )}
+                        </Box>
+
+                        <Box sx={{ flexGrow: 1 }}>
+                          <Typography
+                            variant="subtitle1"
+                            sx={{ color: lightTheme.text, fontWeight: 600 }}
+                          >
+                            {resume.filename}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: lightTheme.textSecondary }}
+                          >
+                            {resume.group} • {resume.fileSize}
+                          </Typography>
+                        </Box>
+
+                        <Stack direction="row" spacing={1}>
+                          <IconButton
+                            size="small"
+                            onClick={() => onView(resume)}
+                            sx={{
+                              color: lightTheme.textMuted,
+                              "&:hover": {
+                                color: lightTheme.text,
+                                backgroundColor: lightTheme.surface,
+                              },
+                            }}
+                          >
+                            <Visibility />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => onDownload(resume)}
+                            sx={{
+                              color: lightTheme.textMuted,
+                              "&:hover": {
+                                color: lightTheme.text,
+                                backgroundColor: lightTheme.surface,
+                              },
+                            }}
+                          >
+                            <Download />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => onDelete(resume)}
+                            sx={{
+                              color: lightTheme.textMuted,
+                              "&:hover": {
+                                color: lightTheme.error,
+                                backgroundColor: alpha(lightTheme.error, 0.1),
+                              },
+                            }}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </Stack>
+                      </Stack>
+
+                      {resume.uploadedAt && (
+                        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                          <Chip
+                            size="small"
+                            icon={<Schedule sx={{ fontSize: 16 }} />}
+                            label={`Uploaded ${resume.uploadedAt}`}
+                            sx={{
+                              backgroundColor: lightTheme.surface,
+                              color: lightTheme.textSecondary,
+                              "& .MuiChip-icon": {
+                                color: lightTheme.textSecondary,
+                              },
+                            }}
+                          />
+                          <Chip
+                            size="small"
+                            icon={<InsertDriveFile sx={{ fontSize: 16 }} />}
+                            label={resume.fileType.toUpperCase()}
+                            sx={{
+                              backgroundColor: lightTheme.surface,
+                              color: lightTheme.textSecondary,
+                              "& .MuiChip-icon": {
+                                color: lightTheme.textSecondary,
+                              },
+                            }}
+                          />
+                          {resume.status && (
+                            <Chip
+                              size="small"
+                              icon={
+                                resume.status === "completed" ? (
+                                  <CheckCircle sx={{ fontSize: 16 }} />
+                                ) : (
+                                  <Assessment sx={{ fontSize: 16 }} />
+                                )
+                              }
+                              label={
+                                resume.status === "completed"
+                                  ? "Processed"
+                                  : "Processing"
+                              }
+                              sx={{
+                                backgroundColor:
+                                  resume.status === "completed"
+                                    ? alpha(lightTheme.success, 0.1)
+                                    : alpha(lightTheme.warning, 0.1),
+                                color:
+                                  resume.status === "completed"
+                                    ? lightTheme.success
+                                    : lightTheme.warning,
+                                "& .MuiChip-icon": {
+                                  color:
+                                    resume.status === "completed"
+                                      ? lightTheme.success
+                                      : lightTheme.warning,
+                                },
+                              }}
+                            />
+                          )}
+                        </Stack>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </Box>
           </Box>
         )}

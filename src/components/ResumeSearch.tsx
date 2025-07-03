@@ -31,6 +31,8 @@ import {
   CheckCircle,
   Visibility,
   Folder as FolderIcon,
+  Upload,
+  Search,
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 
@@ -41,82 +43,111 @@ import { useGroups } from "../hooks/useGroups";
 // Dark theme color palette for the entire application
 const AppColors = {
   primary: {
-    main: "#3b82f6", // Bright blue for dark theme
-    dark: "#1d4ed8", // Darker blue
-    light: "#60a5fa", // Lighter blue
-    contrast: "#ffffff", // White text on blue
+    main: "#3077F3", // Primary UI Blue p500
+    dark: "#1E50A8", // Primary UI Blue p600
+    light: "#94BAFD", // Primary UI Blue p400
+    contrast: "#FFFFFF", // n_white
   },
   secondary: {
-    main: "#ef4444", // Bright red accent
-    dark: "#dc2626", // Darker red
-    light: "#f87171", // Lighter red
-    contrast: "#ffffff", // White text on red
+    main: "#FDA052", // Brand gradient orange
+    dark: "#B96AF7", // Brand gradient purple
+    light: "#41E6F8", // Brand gradient cyan
+    contrast: "#FFFFFF", // n_white
   },
   success: {
-    main: "#10b981", // Bright green
-    light: "#34d399",
-    contrast: "#ffffff",
+    main: "#3077F3", // Primary UI Blue p500
+    light: "#94BAFD", // Primary UI Blue p400
+    contrast: "#FFFFFF", // n_white
   },
   background: {
-    default: "#0f172a", // Very dark blue-gray (light black)
-    paper: "#1e293b", // Dark gray for cards
-    elevated: "#334155", // Lighter gray for elevated cards
+    default: "#FFFFFF", // n_white
+    paper: "#F5F5F5", // n100
+    elevated: "#EAEAEC", // n150
   },
   text: {
-    primary: "#f8fafc", // Very light gray for primary text
-    secondary: "#cbd5e1", // Light gray for secondary text
-    disabled: "#64748b", // Medium gray for disabled text
+    primary: "#171921", // n3000
+    secondary: "#434654", // n900
+    disabled: "#82838D", // n600
   },
   border: {
-    light: "#334155", // Light border for dark theme
-    main: "#475569", // Main border
-    dark: "#64748b", // Dark border
+    light: "#D5D6D9", // n200
+    main: "#9698A0", // n500
+    dark: "#6D6F7A", // n700
+  },
+  neutral_palette: {
+    n900: "#434654",
+    n800: "#585A67",
+    n_white: "#FFFFFF",
+    n_black: "#050507",
+    n3000: "#171921",
+    n300: "#C0C1C6",
+    n400: "#ABADB3", // Adding missing n400 color
+    n100: "#F5F5F5",
+  },
+  brand_gradient: {
+    orange: "#FDA052",
+    purple: "#B96AF7",
+    blue: "#3077F3",
+    cyan: "#41E6F8",
+  },
+  primary_ui_blue: {
+    p700: "#11397E",
+    p600: "#1E50A8",
+    p500: "#3077F3",
+    p400: "#94BAFD",
+    p300: "#BFD6FF",
+    p200: "#E3EDFF",
+    p100: "#EFF5FF",
   },
 };
 
 // Styled components with dark theme colors and better contrast
 const HeroSection = styled(Paper)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${AppColors.primary.main} 0%, ${AppColors.primary.dark} 100%)`,
+  background: `linear-gradient(135deg, ${AppColors.brand_gradient.blue} 0%, ${AppColors.brand_gradient.purple} 100%)`,
   color: AppColors.primary.contrast,
-  padding: theme.spacing(6, 4),
-  borderRadius: theme.spacing(2),
+  padding: theme.spacing(10, 4),
+  borderRadius: theme.spacing(4),
   marginBottom: theme.spacing(4),
   position: "relative",
-  boxShadow: "0 8px 32px rgba(59, 130, 246, 0.15)",
+  boxShadow: "0 8px 32px rgba(48, 119, 243, 0.15)",
+  textAlign: "center",
+  overflow: "hidden",
+  "&::before": {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: `linear-gradient(45deg, ${AppColors.brand_gradient.orange}20 0%, ${AppColors.brand_gradient.cyan}20 100%)`,
+    opacity: 0.1,
+  },
 }));
 
 const SearchContainer = styled(Box)(({ theme }) => ({
   display: "flex",
-  alignItems: "flex-start",
-  gap: theme.spacing(1),
-  backgroundColor: "rgba(255, 255, 255, 0.05)",
+  alignItems: "center",
+  gap: theme.spacing(2),
+  backgroundColor: AppColors.neutral_palette.n_white,
   borderRadius: theme.spacing(2),
-  padding: theme.spacing(1.5),
-  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
-  border: `1px solid rgba(255, 255, 255, 0.1)`,
+  padding: theme.spacing(1.5, 2),
+  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+  border: `1px solid ${AppColors.primary_ui_blue.p100}`,
   transition: "all 0.3s ease",
-  minHeight: "140px",
-  backdropFilter: "blur(10px)",
+  maxWidth: "900px",
+  margin: "0 auto",
   "&:hover": {
-    borderColor: "rgba(255, 255, 255, 0.2)",
-    boxShadow: "0 12px 40px rgba(0, 0, 0, 0.3)",
-    transform: "translateY(-2px)",
-  },
-  "&:focus-within": {
-    borderColor: AppColors.primary.main,
-    boxShadow: `0 0 0 2px ${AppColors.primary.main}40`,
+    boxShadow: "0 6px 24px rgba(48, 119, 243, 0.12)",
+    borderColor: AppColors.primary_ui_blue.p200,
   },
 }));
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
   flex: 1,
   "& .MuiOutlinedInput-root": {
-    border: "none",
     backgroundColor: "transparent",
-    fontSize: "1.1rem",
+    fontSize: "1rem",
     color: AppColors.text.primary,
-    minHeight: "120px",
-    alignItems: "flex-start",
     "& fieldset": {
       border: "none",
     },
@@ -128,65 +159,56 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
     },
   },
   "& .MuiInputBase-input": {
-    padding: theme.spacing(2, 2, 2, 1.5),
+    padding: theme.spacing(1.5),
     color: AppColors.text.primary,
-    minHeight: "80px !important",
     "&::placeholder": {
       color: AppColors.text.secondary,
       opacity: 1,
     },
+    // Hide scrollbar but keep functionality
+    "&::-webkit-scrollbar": {
+      display: "none",
+    },
+    scrollbarWidth: "none", // Firefox
+    msOverflowStyle: "none", // IE and Edge
   },
 }));
 
 const SearchButton = styled(Button)(({ theme }) => ({
-  minWidth: 180,
-  height: 48,
+  height: 44,
+  minWidth: 120,
   borderRadius: theme.spacing(1.5),
   fontSize: "0.95rem",
   fontWeight: 600,
-  background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-  color: "#ffffff",
+  background: `linear-gradient(135deg, ${AppColors.brand_gradient.blue} 0%, ${AppColors.brand_gradient.purple} 100%)`,
+  color: AppColors.neutral_palette.n_white,
   textTransform: "none",
-  boxShadow: "0 8px 24px rgba(59, 130, 246, 0.25)",
-  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-  cursor: "pointer !important",
-  position: "relative",
-  overflow: "hidden",
-  border: "1px solid rgba(59, 130, 246, 0.3)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 8,
   padding: "0 24px",
-  whiteSpace: "nowrap",
-  backdropFilter: "blur(10px)",
-  "&::before": {
-    content: '""',
-    position: "absolute",
-    top: 0,
-    left: "-100%",
-    width: "100%",
-    height: "100%",
-    background:
-      "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
-    transition: "left 0.5s ease",
-  },
+  boxShadow: "0 4px 12px rgba(48, 119, 243, 0.2)",
   "&:hover": {
-    transform: "translateY(-2px)",
-    boxShadow: "0 12px 32px rgba(59, 130, 246, 0.35)",
-    background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-  },
-  "&:hover::before": {
-    left: "100%",
+    background: `linear-gradient(135deg, ${AppColors.brand_gradient.purple} 0%, ${AppColors.brand_gradient.blue} 100%)`,
+    boxShadow: "0 6px 16px rgba(48, 119, 243, 0.3)",
   },
   "&:disabled": {
-    background: "linear-gradient(135deg, #64748b 0%, #475569 100%)",
-    borderColor: "rgba(100, 116, 139, 0.3)",
-    color: "rgba(255, 255, 255, 0.5)",
-    boxShadow: "none",
+    background: AppColors.neutral_palette.n100,
+    color: AppColors.neutral_palette.n400,
   },
-  [theme.breakpoints.down("sm")]: {
-    width: "100%",
+}));
+
+const UploadButton = styled(Button)(({ theme }) => ({
+  height: 44,
+  minWidth: 120,
+  borderRadius: theme.spacing(1.5),
+  fontSize: "0.95rem",
+  fontWeight: 600,
+  backgroundColor: AppColors.primary_ui_blue.p100,
+  color: AppColors.primary_ui_blue.p500,
+  textTransform: "none",
+  padding: "0 24px",
+  border: `1px solid ${AppColors.primary_ui_blue.p200}`,
+  "&:hover": {
+    backgroundColor: AppColors.primary_ui_blue.p200,
+    borderColor: AppColors.primary_ui_blue.p300,
   },
 }));
 
@@ -198,11 +220,10 @@ const ControlsSection = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(3),
   padding: theme.spacing(2),
   flexWrap: "wrap",
-  backgroundColor: "rgba(255, 255, 255, 0.03)",
+  backgroundColor: AppColors.background.paper,
   borderRadius: theme.spacing(2),
-  backdropFilter: "blur(10px)",
-  border: "1px solid rgba(255, 255, 255, 0.1)",
-  boxShadow: "0 4px 24px rgba(0, 0, 0, 0.2)",
+  border: `1px solid ${AppColors.border.light}`,
+  boxShadow: "0 4px 24px rgba(0, 0, 0, 0.1)",
   [theme.breakpoints.down("sm")]: {
     flexDirection: "column",
     gap: theme.spacing(2),
@@ -213,18 +234,17 @@ const ControlsSection = styled(Box)(({ theme }) => ({
 const GroupSelectContainer = styled(FormControl)(({ theme }) => ({
   minWidth: 200,
   "& .MuiOutlinedInput-root": {
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    backgroundColor: AppColors.background.paper,
     borderRadius: theme.spacing(1.5),
-    border: `1px solid rgba(255, 255, 255, 0.1)`,
+    border: `1px solid ${AppColors.border.light}`,
     transition: "all 0.2s ease",
-    backdropFilter: "blur(10px)",
     "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.08)",
-      borderColor: "rgba(255, 255, 255, 0.2)",
+      backgroundColor: AppColors.background.elevated,
+      borderColor: AppColors.border.main,
       transform: "translateY(-1px)",
     },
     "&.Mui-focused": {
-      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      backgroundColor: AppColors.background.paper,
       borderColor: AppColors.primary.main,
       boxShadow: `0 0 0 2px ${AppColors.primary.main}40`,
     },
@@ -236,7 +256,7 @@ const GroupSelectContainer = styled(FormControl)(({ theme }) => ({
     display: "none",
   },
   "& .MuiSelect-select": {
-    color: "#ffffff",
+    color: AppColors.text.primary,
     display: "flex",
     alignItems: "center",
     gap: theme.spacing(1),
@@ -249,7 +269,7 @@ const GroupSelectContainer = styled(FormControl)(({ theme }) => ({
     },
   },
   "& .MuiSelect-icon": {
-    color: "rgba(255, 255, 255, 0.7)",
+    color: AppColors.text.secondary,
   },
   [theme.breakpoints.down("sm")]: {
     width: "100%",
@@ -257,8 +277,8 @@ const GroupSelectContainer = styled(FormControl)(({ theme }) => ({
 }));
 
 const MatchScoreChip = styled(Chip)(({ theme }) => ({
-  backgroundColor: AppColors.success.main,
-  color: AppColors.success.contrast,
+  backgroundColor: AppColors.primary.main,
+  color: AppColors.primary.contrast,
   fontWeight: 600,
   fontSize: "0.75rem",
   height: 28,
@@ -272,30 +292,30 @@ const ScoreBadge = styled(Box)<{ score: number }>(({ theme, score }) => {
   const getScoreColor = (score: number) => {
     if (score >= 8)
       return {
-        bg: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-        text: "#ffffff",
-        shadow: "0 8px 32px rgba(16, 185, 129, 0.4)",
-        border: "rgba(16, 185, 129, 0.3)",
+        bg: `linear-gradient(135deg, ${AppColors.brand_gradient.blue} 0%, ${AppColors.brand_gradient.purple} 100%)`,
+        text: AppColors.neutral_palette.n_white,
+        shadow: "0 8px 32px rgba(48, 119, 243, 0.2)",
+        border: AppColors.brand_gradient.blue,
       };
     if (score >= 6)
       return {
-        bg: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-        text: "#ffffff",
-        shadow: "0 8px 32px rgba(59, 130, 246, 0.4)",
-        border: "rgba(59, 130, 246, 0.3)",
+        bg: `linear-gradient(135deg, ${AppColors.brand_gradient.purple} 0%, ${AppColors.brand_gradient.orange} 100%)`,
+        text: AppColors.neutral_palette.n_white,
+        shadow: "0 8px 32px rgba(185, 106, 247, 0.2)",
+        border: AppColors.brand_gradient.purple,
       };
     if (score >= 4)
       return {
-        bg: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-        text: "#ffffff",
-        shadow: "0 8px 32px rgba(245, 158, 11, 0.4)",
-        border: "rgba(245, 158, 11, 0.3)",
+        bg: `linear-gradient(135deg, ${AppColors.brand_gradient.orange} 0%, ${AppColors.brand_gradient.cyan} 100%)`,
+        text: AppColors.neutral_palette.n_white,
+        shadow: "0 8px 32px rgba(253, 160, 82, 0.2)",
+        border: AppColors.brand_gradient.orange,
       };
     return {
-      bg: "linear-gradient(135deg, #64748b 0%, #475569 100%)",
-      text: "#ffffff",
-      shadow: "0 8px 32px rgba(100, 116, 139, 0.4)",
-      border: "rgba(100, 116, 139, 0.3)",
+      bg: `linear-gradient(135deg, ${AppColors.brand_gradient.cyan} 0%, ${AppColors.primary_ui_blue.p300} 100%)`,
+      text: AppColors.neutral_palette.n_white,
+      shadow: "0 8px 32px rgba(65, 230, 248, 0.2)",
+      border: AppColors.brand_gradient.cyan,
     };
   };
 
@@ -314,10 +334,9 @@ const ScoreBadge = styled(Box)<{ score: number }>(({ theme, score }) => {
     fontSize: "1.1rem",
     padding: theme.spacing(1, 2.5),
     boxShadow: colors.shadow,
-    border: `2px solid ${colors.border}`,
+    border: `2px solid ${colors.border}40`,
     position: "relative",
     overflow: "hidden",
-    backdropFilter: "blur(20px)",
     fontFamily: '"SF Pro Display", -apple-system, system-ui, sans-serif',
     letterSpacing: "-0.02em",
     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -334,7 +353,7 @@ const ScoreBadge = styled(Box)<{ score: number }>(({ theme, score }) => {
     },
     "&:hover": {
       transform: "translateY(-2px)",
-      boxShadow: `${colors.shadow.replace("0.4", "0.6")}`,
+      boxShadow: `${colors.shadow.replace("0.2", "0.3")}`,
     },
     "&:hover::before": {
       left: "100%",
@@ -344,12 +363,10 @@ const ScoreBadge = styled(Box)<{ score: number }>(({ theme, score }) => {
 
 // Elegant Score Metrics Section
 const ScoreMetricsSection = styled(Box)(({ theme }) => ({
-  background:
-    "linear-gradient(145deg, rgba(248, 250, 252, 0.06) 0%, rgba(241, 245, 249, 0.03) 100%)",
-  backdropFilter: "blur(20px)",
+  background: AppColors.neutral_palette.n_white,
   borderRadius: 16,
   padding: theme.spacing(3),
-  border: "1px solid rgba(203, 213, 225, 0.12)",
+  border: `1px solid ${AppColors.primary_ui_blue.p100}`,
   marginBottom: theme.spacing(3),
   position: "relative",
   overflow: "hidden",
@@ -360,8 +377,12 @@ const ScoreMetricsSection = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     height: "2px",
-    background: "linear-gradient(90deg, #3b82f6 0%, #10b981 100%)",
+    background: `linear-gradient(90deg, ${AppColors.brand_gradient.blue} 0%, ${AppColors.brand_gradient.purple} 100%)`,
     borderRadius: "16px 16px 0 0",
+  },
+  "&:hover": {
+    borderColor: AppColors.primary_ui_blue.p200,
+    boxShadow: "0 4px 20px rgba(48, 119, 243, 0.08)",
   },
 }));
 
@@ -374,10 +395,10 @@ const ScoreMetricsGrid = styled(Box)(({ theme }) => ({
 
 const ScoreMetricItem = styled(Box)<{ score: number }>(({ theme, score }) => {
   const getScoreColor = (score: number) => {
-    if (score >= 8) return "#10b981";
-    if (score >= 6) return "#3b82f6";
-    if (score >= 4) return "#f59e0b";
-    return "#64748b";
+    if (score >= 8) return AppColors.brand_gradient.blue;
+    if (score >= 6) return AppColors.brand_gradient.purple;
+    if (score >= 4) return AppColors.brand_gradient.orange;
+    return AppColors.brand_gradient.cyan;
   };
 
   const color = getScoreColor(score);
@@ -387,7 +408,7 @@ const ScoreMetricItem = styled(Box)<{ score: number }>(({ theme, score }) => {
     flexDirection: "column",
     alignItems: "center",
     padding: theme.spacing(2, 1.5),
-    backgroundColor: "rgba(248, 250, 252, 0.04)",
+    backgroundColor: AppColors.primary_ui_blue.p100,
     borderRadius: 12,
     border: `1px solid ${color}20`,
     transition: "all 0.3s ease",
@@ -427,7 +448,7 @@ const ScoreMetricItem = styled(Box)<{ score: number }>(({ theme, score }) => {
     "& .metric-bar": {
       width: "100%",
       height: 4,
-      backgroundColor: "rgba(100, 116, 139, 0.15)",
+      backgroundColor: AppColors.primary_ui_blue.p200,
       borderRadius: 2,
       marginTop: theme.spacing(1.5),
       overflow: "hidden",
@@ -454,33 +475,34 @@ const ScoreLabel = styled(Typography)(({ theme }) => ({
 // Enhanced Result Card styling
 const ResultCard = styled(Card)<{ score?: number }>(({ theme, score = 0 }) => {
   const getScoreAccent = (score: number) => {
-    if (score >= 8) return "#10b981"; // Green for excellent matches
-    if (score >= 6) return "#3b82f6"; // Blue for good matches
-    if (score >= 4) return "#f59e0b"; // Orange for fair matches
-    return "#64748b"; // Gray for lower matches
+    if (score >= 8) return AppColors.brand_gradient.blue;
+    if (score >= 6) return AppColors.brand_gradient.purple;
+    if (score >= 4) return AppColors.brand_gradient.orange;
+    return AppColors.brand_gradient.cyan;
   };
 
   const getCardGlow = (score: number) => {
     const accent = getScoreAccent(score);
-    return `0 0 0 1px ${accent}15, 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 16px ${accent}20`;
+    return `0 0 0 1px ${accent}15, 0 8px 32px rgba(0, 0, 0, 0.05)`;
   };
 
   const getHoverGlow = (score: number) => {
     const accent = getScoreAccent(score);
-    return `0 0 0 1px ${accent}25, 0 16px 48px rgba(0, 0, 0, 0.5), 0 4px 24px ${accent}30`;
+    return `0 0 0 1px ${accent}25, 0 16px 48px rgba(0, 0, 0, 0.08)`;
   };
 
   return {
     borderRadius: 12,
-    background: "linear-gradient(145deg, #1e293b 0%, #0f172a 100%)",
+    background: AppColors.neutral_palette.n_white,
     boxShadow: getCardGlow(score),
     transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
     position: "relative",
     overflow: "hidden",
-    border: "none",
+    border: `1px solid ${AppColors.primary_ui_blue.p100}`,
     "&:hover": {
       transform: "translateY(-6px)",
       boxShadow: getHoverGlow(score),
+      borderColor: AppColors.primary_ui_blue.p200,
     },
     "&::before": {
       content: '""',
@@ -494,26 +516,14 @@ const ResultCard = styled(Card)<{ score?: number }>(({ theme, score = 0 }) => {
       )} 0%, ${getScoreAccent(score)}80 100%)`,
       borderRadius: "12px 12px 0 0",
     },
-    "&::after": {
-      content: '""',
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background:
-        "linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
-      borderRadius: 12,
-      pointerEvents: "none",
-    },
   };
 });
 
 const StyledAlert = styled(Alert)(({ theme }) => ({
   borderRadius: theme.spacing(1.5),
-  border: `1px solid ${AppColors.secondary.light}`,
-  backgroundColor: "#7f1d1d",
-  color: AppColors.secondary.light,
+  border: `1px solid ${AppColors.secondary.main}`,
+  backgroundColor: AppColors.background.paper,
+  color: AppColors.text.primary,
   "& .MuiAlert-icon": {
     color: AppColors.secondary.main,
   },
@@ -636,6 +646,35 @@ const SearchResultSkeleton = () => (
     </CardContent>
   </Card>
 );
+
+const InitialStateCard = styled(Card)(({ theme }) => ({
+  minHeight: 400,
+  borderRadius: theme.spacing(3),
+  backgroundColor: AppColors.background.paper,
+  border: `1px solid ${AppColors.border.light}`,
+  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: theme.spacing(4),
+  textAlign: "center",
+}));
+
+const CircleIcon = styled(Box)(({ theme }) => ({
+  width: 80,
+  height: 80,
+  borderRadius: "50%",
+  backgroundColor: AppColors.primary.main,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: theme.spacing(3),
+  "& svg": {
+    fontSize: 32,
+    color: AppColors.primary.contrast,
+  },
+}));
 
 const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
   // State management
@@ -1204,19 +1243,19 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
       <Container maxWidth="lg">
         {/* Hero Section */}
         <HeroSection elevation={0}>
-          <Box sx={{ textAlign: "center", maxWidth: 700, mx: "auto" }}>
+          <Box sx={{ maxWidth: 800, mx: "auto" }}>
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                gap: 2,
                 mb: 3,
               }}
             >
               <AutoAwesome
                 sx={{
-                  fontSize: "2.5rem",
-                  mr: 2,
+                  fontSize: "2rem",
                   color: AppColors.primary.contrast,
                 }}
               />
@@ -1227,6 +1266,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                   fontWeight: 700,
                   fontSize: { xs: "2rem", md: "2.5rem" },
                   color: AppColors.primary.contrast,
+                  letterSpacing: "-0.02em",
                 }}
               >
                 AI Resume Search
@@ -1236,182 +1276,91 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
             <Typography
               variant="h6"
               sx={{
-                mb: 4,
+                mb: 6,
                 color: AppColors.primary.contrast,
-                opacity: 0.95,
                 fontWeight: 400,
                 lineHeight: 1.6,
-                fontSize: { xs: "1rem", md: "1.1rem" },
+                fontSize: { xs: "1rem", md: "1.25rem" },
+                opacity: 0.9,
+                maxWidth: "700px",
+                mx: "auto",
               }}
             >
               Find the perfect candidates with AI-powered search. Search by
               keywords or paste a complete job description.
             </Typography>
 
-            {/* Clean Search Input Area */}
+            {/* Search Input Area */}
             <SearchContainer>
-              <StyledTextField
-                fullWidth
-                multiline
-                minRows={3}
-                maxRows={6}
-                placeholder={`Enter search terms or paste a job description to find matching candidates${
-                  selectedGroup ? ` in ${selectedGroup}` : ""
-                }...
-
-Examples:
-• "React developer with 3+ years experience"
-• "Senior Python engineer with machine learning background"
-• Paste a complete job description here`}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                variant="outlined"
-              />
-
-              {searchQuery && (
-                <Tooltip title="Clear search query">
-                  <IconButton
-                    onClick={() => setSearchQuery("")}
-                    sx={{
-                      color: AppColors.text.secondary,
-                      cursor: "pointer !important",
-                      alignSelf: "flex-start",
-                      mt: 1,
-                      "&:hover": {
-                        cursor: "pointer !important",
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
-                      },
-                    }}
-                  >
-                    <Clear />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </SearchContainer>
-
-            {/* Controls Section - Group Selection & Search Button */}
-            <ControlsSection>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  flexWrap: "wrap",
-                  flex: 1,
-                  minWidth: 0,
-                }}
-              >
-                <GroupSelectContainer variant="outlined">
-                  <Select
-                    value={selectedGroup}
-                    onChange={(e) => setSelectedGroup(e.target.value)}
-                    disabled={groupsLoading}
-                    displayEmpty
-                    MenuProps={{
-                      PaperProps: {
-                        sx: (theme) => ({
-                          backgroundColor: "rgba(15, 23, 42, 0.98)",
-                          backdropFilter: "blur(10px)",
-                          border: "1px solid rgba(255, 255, 255, 0.1)",
-                          borderRadius: theme.spacing(1.5),
-                          boxShadow: "0 16px 40px rgba(0, 0, 0, 0.3)",
-                          mt: 1,
-                          padding: theme.spacing(1),
-                          "& .MuiList-root": {
-                            padding: theme.spacing(0.5),
-                          },
-                          "& .MuiMenuItem-root": {
-                            borderRadius: theme.spacing(1),
-                            margin: theme.spacing(0.5, 0),
-                            padding: theme.spacing(1.5, 2),
-                            color: "#ffffff",
-                            fontSize: "0.95rem",
-                            fontWeight: 500,
-                            transition: "all 0.2s ease",
-                            "&:hover": {
-                              backgroundColor: "rgba(59, 130, 246, 0.15)",
-                            },
-                            "&.Mui-selected": {
-                              backgroundColor: "rgba(59, 130, 246, 0.2)",
-                              "&:hover": {
-                                backgroundColor: "rgba(59, 130, 246, 0.25)",
-                              },
-                            },
-                          },
-                        }),
-                      },
-                    }}
-                  >
-                    <MenuItem value="">
+              {/* Group Selection First */}
+              <GroupSelectContainer>
+                <Select
+                  value={selectedGroup}
+                  onChange={(e) => setSelectedGroup(e.target.value)}
+                  displayEmpty
+                  renderValue={(value) => (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <FolderIcon
+                        sx={{
+                          fontSize: "20px",
+                          color: AppColors.primary_ui_blue.p500,
+                        }}
+                      />
+                      {value || "All Groups"}
+                    </Box>
+                  )}
+                >
+                  <MenuItem value="">
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <FolderIcon
+                        sx={{
+                          fontSize: "20px",
+                          color: AppColors.primary_ui_blue.p500,
+                        }}
+                      />
+                      All Groups
+                    </Box>
+                  </MenuItem>
+                  {(groups || []).map((group) => (
+                    <MenuItem key={group.name} value={group.name}>
                       <Box
                         sx={{ display: "flex", alignItems: "center", gap: 1 }}
                       >
-                        <AutoAwesome
-                          sx={{ fontSize: "18px", color: "#3b82f6" }}
-                        />
-                        <Typography
+                        <FolderIcon
                           sx={{
-                            fontSize: "0.95rem",
-                            color: "#ffffff",
-                            fontWeight: 600,
+                            fontSize: "20px",
+                            color: AppColors.primary_ui_blue.p500,
                           }}
-                        >
-                          All Groups
-                        </Typography>
+                        />
+                        {group.name}
                       </Box>
                     </MenuItem>
-                    {groups.map((group) => (
-                      <MenuItem key={group.id} value={group.name}>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
-                          <FolderIcon
-                            sx={{
-                              fontSize: "18px",
-                              color: "rgba(255, 255, 255, 0.7)",
-                            }}
-                          />
-                          <Typography
-                            sx={{
-                              fontSize: "0.95rem",
-                              color: "#ffffff",
-                              fontWeight: 500,
-                            }}
-                          >
-                            {group.name}
-                          </Typography>
-                        </Box>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </GroupSelectContainer>
+                  ))}
+                </Select>
+              </GroupSelectContainer>
 
-                {selectedGroup && (
-                  <Chip
-                    icon={<FolderIcon sx={{ fontSize: "14px" }} />}
-                    label={`Searching in: ${selectedGroup}`}
-                    size="small"
-                    sx={{
-                      backgroundColor: "rgba(255, 255, 255, 0.1)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255, 255, 255, 0.2)",
-                      color: "#ffffff",
-                      fontWeight: 500,
-                      borderRadius: "8px",
-                      padding: "4px",
-                      height: "28px",
-                      "& .MuiChip-icon": {
-                        color: "rgba(255, 255, 255, 0.7)",
-                      },
-                      "& .MuiChip-label": {
-                        padding: "0 8px",
-                      },
-                      whiteSpace: "nowrap",
-                    }}
-                  />
-                )}
-              </Box>
+              {/* Search Input */}
+              <StyledTextField
+                fullWidth
+                placeholder="Enter search terms or paste a job description to find matching candidates..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                variant="outlined"
+                multiline
+                rows={1}
+              />
 
+              {/* Upload Button */}
+              <UploadButton
+                startIcon={<Upload />}
+                onClick={() => {
+                  // Handle upload functionality
+                }}
+              >
+                Upload JD
+              </UploadButton>
+
+              {/* Search Button */}
               <SearchButton
                 onClick={handleSearch}
                 disabled={
@@ -1423,17 +1372,13 @@ Examples:
                   isSearching ? (
                     <CircularProgress size={20} color="inherit" />
                   ) : (
-                    <TrendingUp />
+                    <Search />
                   )
                 }
               >
-                {isSearching
-                  ? "Searching..."
-                  : searchQuery.trim().length < 5
-                  ? `${5 - searchQuery.trim().length} more chars`
-                  : "Search Candidates"}
+                {isSearching ? "Searching..." : "Search"}
               </SearchButton>
-            </ControlsSection>
+            </SearchContainer>
           </Box>
         </HeroSection>
 
@@ -1506,7 +1451,7 @@ Examples:
                 borderRadius: 2,
                 backgroundColor: AppColors.background.paper,
                 border: `1px solid ${AppColors.border.light}`,
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.25)",
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
               }}
             >
               <CardContent sx={{ p: 4 }}>
@@ -1518,7 +1463,7 @@ Examples:
                         sx={{
                           mb: 4,
                           p: 3,
-                          backgroundColor: "rgba(59, 130, 246, 0.08)",
+                          backgroundColor: `${AppColors.primary.main}08`,
                           borderRadius: 2,
                           border: `1px solid ${AppColors.primary.main}40`,
                           borderLeft: `4px solid ${AppColors.primary.main}`,
@@ -1527,7 +1472,7 @@ Examples:
                         <Typography
                           variant="h6"
                           sx={{
-                            color: AppColors.primary.light,
+                            color: AppColors.primary.main,
                             fontWeight: 600,
                             mb: 2,
                             display: "flex",
@@ -1551,6 +1496,7 @@ Examples:
                       </Box>
                     )}
 
+                    {/* Results Header */}
                     <Box
                       sx={{
                         display: "flex",
@@ -1606,10 +1552,10 @@ Examples:
                             size="small"
                             sx={{
                               backgroundColor: AppColors.primary.light,
-                              color: AppColors.primary.contrast,
+                              color: AppColors.primary.main,
                               fontWeight: 500,
                               "& .MuiChip-icon": {
-                                color: AppColors.primary.contrast,
+                                color: AppColors.primary.main,
                               },
                             }}
                           />
@@ -1624,7 +1570,7 @@ Examples:
                           fontWeight: 500,
                           cursor: "pointer !important",
                           "&:hover": {
-                            backgroundColor: AppColors.border.light,
+                            backgroundColor: AppColors.background.elevated,
                             cursor: "pointer !important",
                           },
                         }}
@@ -1633,6 +1579,7 @@ Examples:
                       </Button>
                     </Box>
 
+                    {/* Results Grid */}
                     <Box
                       sx={{ display: "flex", flexDirection: "column", gap: 3 }}
                     >
@@ -2517,6 +2464,7 @@ Examples:
                     </Box>
                   </>
                 ) : (
+                  /* No Results State */
                   <Box
                     sx={{
                       textAlign: "center",
@@ -2532,7 +2480,7 @@ Examples:
                         width: 120,
                         height: 120,
                         borderRadius: "50%",
-                        backgroundColor: AppColors.border.light,
+                        backgroundColor: AppColors.background.elevated,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -2585,8 +2533,8 @@ Examples:
                         color: AppColors.primary.main,
                         cursor: "pointer !important",
                         "&:hover": {
-                          backgroundColor: AppColors.primary.main,
-                          color: AppColors.primary.contrast,
+                          backgroundColor: `${AppColors.primary.main}08`,
+                          borderColor: AppColors.primary.main,
                           cursor: "pointer !important",
                         },
                       }}
@@ -2595,118 +2543,6 @@ Examples:
                     </Button>
                   </Box>
                 )}
-              </CardContent>
-            </Card>
-          </Fade>
-        )}
-
-        {/* Initial State */}
-        {!hasSearched && !isSearching && (
-          <Fade in timeout={800}>
-            <Card
-              sx={{
-                minHeight: 350,
-                borderRadius: 2,
-                backgroundColor: AppColors.background.paper,
-                border: `1px solid ${AppColors.border.light}`,
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.25)",
-              }}
-            >
-              <CardContent>
-                <Box
-                  sx={{
-                    textAlign: "center",
-                    py: 8,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 3,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 120,
-                      height: 120,
-                      borderRadius: "50%",
-                      backgroundColor: AppColors.primary.main,
-                      color: AppColors.primary.contrast,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <TrendingUp sx={{ fontSize: "3rem" }} />
-                  </Box>
-
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      fontWeight: 700,
-                      color: AppColors.text.primary,
-                      mb: 1,
-                    }}
-                  >
-                    Ready to Search
-                  </Typography>
-
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      maxWidth: 500,
-                      lineHeight: 1.8,
-                      fontSize: "1.1rem",
-                      color: AppColors.text.secondary,
-                    }}
-                  >
-                    {selectedGroup ? (
-                      <>
-                        Search in{" "}
-                        <Typography
-                          component="span"
-                          sx={{
-                            color: AppColors.primary.light,
-                            fontWeight: 600,
-                          }}
-                        >
-                          {selectedGroup}
-                        </Typography>
-                      </>
-                    ) : (
-                      "Search for candidates by skills, role, experience, or paste a complete job description to find the best matches."
-                    )}
-                  </Typography>
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 2,
-                      mt: 2,
-                      flexWrap: "wrap",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {getGroupBasedSuggestions(selectedGroup)
-                      .slice(0, 3)
-                      .map((example, index) => (
-                        <Chip
-                          key={index}
-                          label={example}
-                          onClick={() => setSearchQuery(example)}
-                          sx={{
-                            cursor: "pointer !important",
-                            backgroundColor: AppColors.border.light,
-                            color: AppColors.text.primary,
-                            fontWeight: 500,
-                            "&:hover": {
-                              backgroundColor: AppColors.primary.main,
-                              color: AppColors.primary.contrast,
-                              cursor: "pointer !important",
-                            },
-                          }}
-                        />
-                      ))}
-                  </Box>
-                </Box>
               </CardContent>
             </Card>
           </Fade>
