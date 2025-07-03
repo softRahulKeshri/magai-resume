@@ -167,7 +167,8 @@ const SearchButton = styled(Button)(({ theme }) => ({
     left: "-100%",
     width: "100%",
     height: "100%",
-    background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+    background:
+      "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
     transition: "left 0.5s ease",
   },
   "&:hover": {
@@ -532,6 +533,7 @@ interface CandidateDetail {
   candidate_name: string;
   details: string;
   file_name: string;
+  score_card: ScoreCard; // Add score_card to each candidate detail
 }
 
 interface ScoreCard {
@@ -544,7 +546,6 @@ interface ScoreCard {
 interface SearchApiResponse {
   answer: {
     candidate_details: CandidateDetail[];
-    score_card: ScoreCard;
     summary: string;
   };
   results: RawChunkResult[];
@@ -1079,12 +1080,12 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
         data.answer.candidate_details.length > 0
       ) {
         const candidateDetails = data.answer.candidate_details;
-        const scoreCard = data.answer.score_card;
 
         // Calculate average score from all score categories
         // Formula: (Clarity + Experience + Loyalty + Reputation) ÷ 4
         // Each score is rated 1-10, so average will also be 1-10
-        const calculateAverageScore = (scores: ScoreCard) => {
+        const calculateAverageScore = (scores: ScoreCard | null) => {
+          if (!scores) return 0;
           const total =
             scores.clarity_score +
             scores.experience_score +
@@ -1092,8 +1093,6 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
             scores.reputation_score;
           return total / 4;
         };
-
-        const averageScore = calculateAverageScore(scoreCard);
 
         // Create candidate objects from the structured response
         const candidates: CandidateResult[] = candidateDetails.map(
@@ -1107,16 +1106,26 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
               ? parseCandidateFromText(matchingChunk)
               : null;
 
+            // Add null check for score_card
+            const scoreCard = detail.score_card || null;
+            const averageScore = scoreCard
+              ? ((scoreCard.clarity_score || 0) +
+                  (scoreCard.experience_score || 0) +
+                  (scoreCard.loyality_score || 0) +
+                  (scoreCard.reputation_score || 0)) /
+                4
+              : 0;
+
             return {
               id: matchingChunk?.id || `candidate-${index}`,
               name: detail.candidate_name,
               filename: detail.file_name,
               details: detail.details,
-              // Include all individual scores
-              clarityScore: scoreCard.clarity_score,
-              experienceScore: scoreCard.experience_score,
-              loyaltyScore: scoreCard.loyality_score,
-              reputationScore: scoreCard.reputation_score,
+              // Include all individual scores with null checks
+              clarityScore: scoreCard?.clarity_score || 0,
+              experienceScore: scoreCard?.experience_score || 0,
+              loyaltyScore: scoreCard?.loyality_score || 0,
+              reputationScore: scoreCard?.reputation_score || 0,
               averageScore: averageScore,
               // Include chunk-based match score if available
               matchScore: matchingChunk?.score || averageScore / 10,
@@ -1282,14 +1291,16 @@ Examples:
 
             {/* Controls Section - Group Selection & Search Button */}
             <ControlsSection>
-              <Box sx={{ 
-                display: "flex", 
-                alignItems: "center", 
-                gap: 2,
-                flexWrap: "wrap",
-                flex: 1,
-                minWidth: 0 
-              }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  flexWrap: "wrap",
+                  flex: 1,
+                  minWidth: 0,
+                }}
+              >
                 <GroupSelectContainer variant="outlined">
                   <Select
                     value={selectedGroup}
@@ -1332,18 +1343,41 @@ Examples:
                     }}
                   >
                     <MenuItem value="">
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <AutoAwesome sx={{ fontSize: "18px", color: "#3b82f6" }} />
-                        <Typography sx={{ fontSize: "0.95rem", color: "#ffffff", fontWeight: 600 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <AutoAwesome
+                          sx={{ fontSize: "18px", color: "#3b82f6" }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: "0.95rem",
+                            color: "#ffffff",
+                            fontWeight: 600,
+                          }}
+                        >
                           All Groups
                         </Typography>
                       </Box>
                     </MenuItem>
                     {groups.map((group) => (
                       <MenuItem key={group.id} value={group.name}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <FolderIcon sx={{ fontSize: "18px", color: "rgba(255, 255, 255, 0.7)" }} />
-                          <Typography sx={{ fontSize: "0.95rem", color: "#ffffff", fontWeight: 500 }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <FolderIcon
+                            sx={{
+                              fontSize: "18px",
+                              color: "rgba(255, 255, 255, 0.7)",
+                            }}
+                          />
+                          <Typography
+                            sx={{
+                              fontSize: "0.95rem",
+                              color: "#ffffff",
+                              fontWeight: 500,
+                            }}
+                          >
                             {group.name}
                           </Typography>
                         </Box>
@@ -1380,8 +1414,18 @@ Examples:
 
               <SearchButton
                 onClick={handleSearch}
-                disabled={isSearching || !searchQuery.trim() || searchQuery.trim().length < 5}
-                startIcon={isSearching ? <CircularProgress size={20} color="inherit" /> : <TrendingUp />}
+                disabled={
+                  isSearching ||
+                  !searchQuery.trim() ||
+                  searchQuery.trim().length < 5
+                }
+                startIcon={
+                  isSearching ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <TrendingUp />
+                  )
+                }
               >
                 {isSearching
                   ? "Searching..."
@@ -1632,22 +1676,38 @@ Examples:
                                       letterSpacing: "1px",
                                     }}
                                   >
-                                    Overall Score
+                                    {candidate.clarityScore ||
+                                    candidate.experienceScore ||
+                                    candidate.loyaltyScore ||
+                                    candidate.reputationScore
+                                      ? "Overall Score"
+                                      : "No Score Available"}
                                   </ScoreLabel>
                                   <ScoreBadge
                                     score={candidate.averageScore || 0}
                                   >
-                                    {(candidate.averageScore || 0).toFixed(1)}
-                                    <Typography
-                                      component="span"
-                                      sx={{
-                                        fontSize: "0.8rem",
-                                        opacity: 0.8,
-                                        ml: 0.3,
-                                      }}
-                                    >
-                                      /10
-                                    </Typography>
+                                    {candidate.clarityScore ||
+                                    candidate.experienceScore ||
+                                    candidate.loyaltyScore ||
+                                    candidate.reputationScore ? (
+                                      <>
+                                        {(candidate.averageScore || 0).toFixed(
+                                          1
+                                        )}
+                                        <Typography
+                                          component="span"
+                                          sx={{
+                                            fontSize: "0.8rem",
+                                            opacity: 0.8,
+                                            ml: 0.3,
+                                          }}
+                                        >
+                                          /10
+                                        </Typography>
+                                      </>
+                                    ) : (
+                                      "N/A"
+                                    )}
                                   </ScoreBadge>
                                 </Box>
 
@@ -1756,66 +1816,94 @@ Examples:
                                         color: AppColors.primary.main,
                                       }}
                                     />
-                                    Performance Metrics
+                                    {candidate.clarityScore ||
+                                    candidate.experienceScore ||
+                                    candidate.loyaltyScore ||
+                                    candidate.reputationScore
+                                      ? "Performance Metrics"
+                                      : "Performance Metrics Not Available"}
                                   </Typography>
 
-                                  <ScoreMetricsGrid>
-                                    <ScoreMetricItem
-                                      score={candidate.clarityScore || 0}
-                                    >
-                                      <Typography className="metric-label">
-                                        Clarity
-                                      </Typography>
-                                      <Typography className="metric-value">
-                                        {candidate.clarityScore || 0}
-                                      </Typography>
-                                      <Box className="metric-bar">
-                                        <Box className="metric-fill" />
-                                      </Box>
-                                    </ScoreMetricItem>
+                                  {candidate.clarityScore ||
+                                  candidate.experienceScore ||
+                                  candidate.loyaltyScore ||
+                                  candidate.reputationScore ? (
+                                    <ScoreMetricsGrid>
+                                      <ScoreMetricItem
+                                        score={candidate.clarityScore || 0}
+                                      >
+                                        <Typography className="metric-label">
+                                          Clarity
+                                        </Typography>
+                                        <Typography className="metric-value">
+                                          {candidate.clarityScore || 0}
+                                        </Typography>
+                                        <Box className="metric-bar">
+                                          <Box className="metric-fill" />
+                                        </Box>
+                                      </ScoreMetricItem>
 
-                                    <ScoreMetricItem
-                                      score={candidate.experienceScore || 0}
-                                    >
-                                      <Typography className="metric-label">
-                                        Experience
-                                      </Typography>
-                                      <Typography className="metric-value">
-                                        {candidate.experienceScore || 0}
-                                      </Typography>
-                                      <Box className="metric-bar">
-                                        <Box className="metric-fill" />
-                                      </Box>
-                                    </ScoreMetricItem>
+                                      <ScoreMetricItem
+                                        score={candidate.experienceScore || 0}
+                                      >
+                                        <Typography className="metric-label">
+                                          Experience
+                                        </Typography>
+                                        <Typography className="metric-value">
+                                          {candidate.experienceScore || 0}
+                                        </Typography>
+                                        <Box className="metric-bar">
+                                          <Box className="metric-fill" />
+                                        </Box>
+                                      </ScoreMetricItem>
 
-                                    <ScoreMetricItem
-                                      score={candidate.loyaltyScore || 0}
-                                    >
-                                      <Typography className="metric-label">
-                                        Loyalty
-                                      </Typography>
-                                      <Typography className="metric-value">
-                                        {candidate.loyaltyScore || 0}
-                                      </Typography>
-                                      <Box className="metric-bar">
-                                        <Box className="metric-fill" />
-                                      </Box>
-                                    </ScoreMetricItem>
+                                      <ScoreMetricItem
+                                        score={candidate.loyaltyScore || 0}
+                                      >
+                                        <Typography className="metric-label">
+                                          Loyalty
+                                        </Typography>
+                                        <Typography className="metric-value">
+                                          {candidate.loyaltyScore || 0}
+                                        </Typography>
+                                        <Box className="metric-bar">
+                                          <Box className="metric-fill" />
+                                        </Box>
+                                      </ScoreMetricItem>
 
-                                    <ScoreMetricItem
-                                      score={candidate.reputationScore || 0}
+                                      <ScoreMetricItem
+                                        score={candidate.reputationScore || 0}
+                                      >
+                                        <Typography className="metric-label">
+                                          Reputation
+                                        </Typography>
+                                        <Typography className="metric-value">
+                                          {candidate.reputationScore || 0}
+                                        </Typography>
+                                        <Box className="metric-bar">
+                                          <Box className="metric-fill" />
+                                        </Box>
+                                      </ScoreMetricItem>
+                                    </ScoreMetricsGrid>
+                                  ) : (
+                                    <Box
+                                      sx={{
+                                        textAlign: "center",
+                                        py: 4,
+                                        color: AppColors.text.secondary,
+                                        backgroundColor:
+                                          "rgba(255, 255, 255, 0.03)",
+                                        borderRadius: 2,
+                                        border:
+                                          "1px solid rgba(255, 255, 255, 0.1)",
+                                      }}
                                     >
-                                      <Typography className="metric-label">
-                                        Reputation
+                                      <Typography variant="body1">
+                                        Performance metrics are not available
+                                        for this candidate.
                                       </Typography>
-                                      <Typography className="metric-value">
-                                        {candidate.reputationScore || 0}
-                                      </Typography>
-                                      <Box className="metric-bar">
-                                        <Box className="metric-fill" />
-                                      </Box>
-                                    </ScoreMetricItem>
-                                  </ScoreMetricsGrid>
+                                    </Box>
+                                  )}
                                 </ScoreMetricsSection>
 
                                 {/* Premium highlights section */}
