@@ -26,6 +26,46 @@ import ResumeCollection from "./components/ResumeCollection";
 import { Resume, UploadResult } from "./types";
 import { apiService } from "./services/api";
 
+// Color palette
+const brand_gradient = {
+  orange: "#FDA052",
+  purple: "#B96AF7",
+  blue: "#3077F3",
+  cyan: "#41E6F8",
+};
+
+const primary = {
+  charcoal_slate: "#2E3141",
+};
+
+const neutral_palette = {
+  n_black: "#050507",
+  n3000: "#171921",
+  n2000: "#20222E",
+  n1000: "#2E3141",
+  n900: "#434654",
+  n800: "#585A67",
+  n700: "#6D6F7A",
+  n600: "#82838D",
+  n500: "#9698A0",
+  n400: "#ABADB3",
+  n300: "#C0C1C6",
+  n200: "#D5D6D9",
+  n150: "#EAEAEC",
+  n100: "#F5F5F5",
+  n_white: "#FFFFFF",
+};
+
+const primary_ui_blue = {
+  p700: "#11397E",
+  p600: "#1E50A8",
+  p500: "#3077F3",
+  p400: "#94BAFD",
+  p300: "#BFD6FF",
+  p200: "#E3EDFF",
+  p100: "#EFF5FF",
+};
+
 // Tab Panel Component
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -296,19 +336,19 @@ const App = () => {
   const Sidebar = () => (
     <Paper
       sx={{
-        width: SIDEBAR_WIDTH,
+        width: "100%",
         height: "100%",
-        background: "#1a1a1a",
-        borderRadius: "10px",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
+        background: neutral_palette.n_white,
+        borderRadius: "16px",
+        border: `1px solid ${neutral_palette.n150}`,
         display: "flex",
         flexDirection: "column",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
       }}
       elevation={0}
     >
       {/* Sidebar Header */}
-      <Box sx={{ p: 3, borderBottom: "1px solid rgba(255, 255, 255, 0.1)" }}>
+      <Box sx={{ p: 3, borderBottom: `1px solid ${neutral_palette.n150}` }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
           <Box
             component="img"
@@ -317,41 +357,38 @@ const App = () => {
             sx={{
               height: "32px",
               width: "auto",
-              filter: "brightness(1.1)",
             }}
           />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "white" }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 700, color: primary.charcoal_slate }}
+          >
             ResumeAI
           </Typography>
         </Box>
-        <Typography
-          variant="caption"
-          sx={{ opacity: 0.7, color: "rgba(255, 255, 255, 0.7)" }}
-        >
+        <Typography variant="caption" sx={{ color: neutral_palette.n700 }}>
           AI-Powered Talent Discovery Platform
         </Typography>
       </Box>
 
       {/* Navigation */}
-      <List sx={{ flex: 1, py: 2 }}>
+      <List sx={{ flex: 1, py: 2, px: 1 }}>
         {tabConfig.map((tab, index) => (
-          <ListItem key={index} disablePadding sx={{ px: 2, mb: 1 }}>
+          <ListItem key={index} disablePadding sx={{ mb: 1 }}>
             <ListItemButton
               onClick={() => handleTabChange(index)}
               sx={{
-                borderRadius: 0,
+                borderRadius: "12px",
                 py: 1.5,
                 px: 2,
                 transition: "all 0.2s ease",
                 backgroundColor:
-                  activeTab === index
-                    ? "rgba(24, 119, 242, 0.15)"
-                    : "transparent",
+                  activeTab === index ? primary_ui_blue.p100 : "transparent",
                 "&:hover": {
                   backgroundColor:
                     activeTab === index
-                      ? "rgba(24, 119, 242, 0.2)"
-                      : "rgba(255, 255, 255, 0.05)",
+                      ? primary_ui_blue.p200
+                      : neutral_palette.n100,
                 },
               }}
             >
@@ -359,8 +396,8 @@ const App = () => {
                 sx={{
                   color:
                     activeTab === index
-                      ? "primary.main"
-                      : "rgba(255, 255, 255, 0.7)",
+                      ? primary_ui_blue.p500
+                      : neutral_palette.n700,
                   minWidth: 40,
                 }}
               >
@@ -374,12 +411,12 @@ const App = () => {
                   fontSize: "0.95rem",
                   color:
                     activeTab === index
-                      ? "primary.main"
-                      : "rgba(255, 255, 255, 0.9)",
+                      ? primary_ui_blue.p500
+                      : primary.charcoal_slate,
                 }}
                 secondaryTypographyProps={{
                   fontSize: "0.75rem",
-                  color: "rgba(255, 255, 255, 0.5)",
+                  color: neutral_palette.n700,
                   lineHeight: 1.2,
                 }}
               />
@@ -392,14 +429,14 @@ const App = () => {
       <Box
         sx={{
           p: 3,
-          borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+          borderTop: `1px solid ${neutral_palette.n150}`,
           textAlign: "center",
+          background: neutral_palette.n100,
+          borderBottomLeftRadius: "16px",
+          borderBottomRightRadius: "16px",
         }}
       >
-        <Typography
-          variant="caption"
-          sx={{ opacity: 0.5, color: "rgba(255, 255, 255, 0.5)" }}
-        >
+        <Typography variant="caption" sx={{ color: neutral_palette.n700 }}>
           Powered by Magure.AI
         </Typography>
       </Box>
@@ -424,13 +461,22 @@ const App = () => {
   );
 
   return (
-    <Box sx={{ display: "flex", height: "100vh", bgcolor: "#0a0a0a" }}>
+    <Box
+      sx={{ display: "flex", height: "100vh", bgcolor: neutral_palette.n100 }}
+    >
       {/* Desktop Sidebar */}
       <Box
         sx={{
           display: { xs: "none", md: "block" },
           width: SIDEBAR_WIDTH,
           flexShrink: 0,
+          p: 3,
+          bgcolor: neutral_palette.n100,
+          borderRight: `1px solid ${neutral_palette.n150}`,
+          height: "100vh",
+          position: "sticky",
+          top: 0,
+          left: 0,
         }}
       >
         <Sidebar />
@@ -446,17 +492,35 @@ const App = () => {
           flexGrow: 1,
           height: "100vh",
           overflow: "auto",
-          background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)",
+          background: neutral_palette.n_white,
+          borderLeft: `1px solid ${neutral_palette.n150}`,
+          borderTopLeftRadius: "20px",
+          borderBottomLeftRadius: "20px",
+          boxShadow: "-4px 0 20px rgba(0, 0, 0, 0.02)",
+          position: "relative",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "8px",
+            height: "100%",
+            background: `linear-gradient(90deg, ${neutral_palette.n100}, transparent)`,
+            opacity: 0.5,
+            pointerEvents: "none",
+            borderTopLeftRadius: "20px",
+            borderBottomLeftRadius: "20px",
+          },
         }}
       >
         <Container
           maxWidth={false}
           sx={{
             height: "100%",
-            p: 0,
+            p: 3,
             "&.MuiContainer-root": {
-              paddingLeft: 0,
-              paddingRight: 0,
+              paddingLeft: 3,
+              paddingRight: 3,
             },
           }}
         >
