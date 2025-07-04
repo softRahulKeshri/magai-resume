@@ -13,15 +13,12 @@ import {
   Fade,
   Zoom,
   Container,
-  IconButton,
-  Tooltip,
-  Skeleton,
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   Tabs,
   Tab,
+  Skeleton,
 } from "@mui/material";
 import {
   Person,
@@ -31,7 +28,6 @@ import {
   TrendingUp,
   FilterList,
   CheckCircle,
-  Visibility,
   Folder as FolderIcon,
   Upload,
   Search,
@@ -237,12 +233,15 @@ const SearchButton = styled(Button)(({ theme }) => ({
   fontWeight: 600,
   textTransform: "none",
   padding: "0 24px",
+  transition: "all 0.3s ease",
   "&:hover": {
     backgroundColor: "#7C3AED",
+    transform: "translateY(-1px)",
   },
   "&:disabled": {
     backgroundColor: "#E5E7EB",
     color: "#9CA3AF",
+    transform: "none",
   },
 }));
 
@@ -536,7 +535,7 @@ interface CandidateDetail {
   candidate_name: string;
   details: string;
   file_name: string;
-  score_card: ScoreCard; // Add score_card to each candidate detail
+  score_card: ScoreCard;
 }
 
 interface ScoreCard {
@@ -580,16 +579,8 @@ interface CandidateResult {
 
 // Add new interface for JD upload response
 interface JDUploadResponse {
-  answer: string;
-  results: {
-    score: number;
-    content: string;
-    metadata: {
-      filename: string;
-      stored_filename: string;
-      [key: string]: any;
-    };
-  }[];
+  candidate_details: CandidateDetail[];
+  summary: string;
 }
 
 // Props interface
@@ -697,12 +688,24 @@ const UploadArea = styled(Box)<{ isDragging?: boolean }>(
     textAlign: "center",
     transition: "all 0.3s ease",
     cursor: "pointer",
+    minHeight: "300px",
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
     "&:hover": {
       backgroundColor: AppColors.background.elevated,
       borderColor: AppColors.primary.main,
     },
   })
 );
+
+// Helper function to clean up filename for display
+const getDisplayFilename = (originalFilename: string): string => {
+  if (!originalFilename) return "Unknown file";
+  const cleaned = originalFilename.replace(/^[a-zA-Z0-9]+_[a-zA-Z0-9]+_/, "");
+  return cleaned.length < 5 ? originalFilename : cleaned;
+};
 
 const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
   // State management
@@ -715,7 +718,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
   const [searchSummary, setSearchSummary] = useState<string | null>(null);
 
   // Groups management
-  const { groups, loading: groupsLoading, error: groupsError } = useGroups();
+  const { groups, error: groupsError } = useGroups();
 
   // Add new state for file upload
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -756,22 +759,6 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
         searchInputRef.current?.focus();
       }, 100);
     }
-  };
-
-  // Helper function to clean up filename for display
-  const getDisplayFilename = (originalFilename: string): string => {
-    if (!originalFilename) return "Unknown file";
-
-    // Remove common prefixes that might be added by the system
-    // This handles cases like "4FT2I_4duwG_RAHUL_KESHRI_SDE.pdf" -> "RAHUL_KESHRI_SDE.pdf"
-    const cleaned = originalFilename.replace(/^[a-zA-Z0-9]+_[a-zA-Z0-9]+_/, "");
-
-    // If the cleaned version is too short, return the original
-    if (cleaned.length < 5) {
-      return originalFilename;
-    }
-
-    return cleaned;
   };
 
   // Helper function to get search suggestions based on selected group
@@ -1291,6 +1278,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
     }
 
     setIsUploading(true);
+    setIsSearching(true);
     setError(null);
     setHasSearched(true);
 
@@ -1312,24 +1300,68 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
         );
       }
 
-      const data: JDUploadResponse = await response.json();
+      const data: SearchApiResponse = await response.json();
+      console.log("JD Upload Response:", data);
 
-      // Process and transform the results to match our CandidateResult format
-      const transformedResults: CandidateResult[] = data.results.map(
-        (result, index) => ({
-          id: result.metadata.stored_filename || `result-${index}`,
-          name: getDisplayFilename(result.metadata.filename),
-          filename: result.metadata.stored_filename,
-          matchScore: result.score,
-          rawText: result.content,
-          highlights: [data.answer], // Use AI analysis as the first highlight
-          details: result.content.substring(0, 300) + "...", // Preview of the content
-        })
-      );
+      // Use the same logic as text search
+      if (data.answer && data.answer.candidate_details && data.answer.candidate_details.length > 0) {
+        const candidateDetails = data.answer.candidate_details;
 
-      setSearchResults(transformedResults);
-      setSearchSummary(data.answer);
-      onSearchResults(transformedResults);
+        // Calculate average score from all score categories
+        const candidates: CandidateResult[] = candidateDetails.map((detail, index) => {
+          const scoreCard = detail.score_card;
+          const averageScore = scoreCard
+            ? (scoreCard.clarity_score +
+                scoreCard.experience_score +
+                scoreCard.loyality_score +
+                scoreCard.reputation_score) /
+              4
+            : 0;
+
+          // Extract name from filename if candidate_name is "Name not found"
+          let displayName = detail.candidate_name;
+          if (displayName === "Name not found" && detail.file_name) {
+            const nameParts = detail.file_name.split("_");
+            if (nameParts.length > 1) {
+              displayName = nameParts
+                .slice(1, -1)
+                .join(" ")
+                .replace(/\.pdf$|\.docx$/i, "");
+            }
+          }
+
+          return {
+            id: detail.file_name || `candidate-${index}`,
+            name: displayName || "Unknown Candidate",
+            filename: detail.file_name,
+            details: detail.details,
+            clarityScore: scoreCard.clarity_score,
+            experienceScore: scoreCard.experience_score,
+            loyaltyScore: scoreCard.loyality_score,
+            reputationScore: scoreCard.reputation_score,
+            averageScore,
+            matchScore: scoreCard.clarity_score / 10,
+            highlights: detail.details
+              .split("\n")
+              .map(line => line.trim().replace(/^[-•]\s*/, ""))
+              .filter(line => line.length > 0),
+            rawText: detail.details
+          };
+        });
+
+        // Sort candidates by average score in descending order
+        const sortedCandidates = candidates.sort(
+          (a, b) => (b.averageScore || 0) - (a.averageScore || 0)
+        );
+
+        setSearchResults(sortedCandidates);
+        setSearchSummary(data.answer.summary);
+        onSearchResults(sortedCandidates);
+      } else {
+        setSearchResults([]);
+        setSearchSummary(null);
+        onSearchResults([]);
+      }
 
       // Clear the file input
       setSelectedFile(null);
@@ -1348,6 +1380,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
       onSearchResults([]);
     } finally {
       setIsUploading(false);
+      setIsSearching(false);
     }
   };
 
@@ -1472,13 +1505,13 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
             </Box>
 
             {/* Enhanced Title */}
-            <HeroTitle variant="h1">AI Resume Search</HeroTitle>
+            <HeroTitle variant="h1">AI-Powered Resume Matching</HeroTitle>
 
             {/* Enhanced Subtitle */}
             <HeroSubtitle>
-              Discover top talent effortlessly with our AI-powered resume
-              search. Get instant matches based on skills, experience, and job
-              requirements.
+              Let our advanced AI find your perfect candidates. We analyze
+              skills, experience, and potential matches using state-of-the-art
+              language models to deliver precise results.
             </HeroSubtitle>
 
             <SearchOptionsContainer>
@@ -1575,7 +1608,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                     <StyledTextField
                       fullWidth
                       inputRef={searchInputRef}
-                      placeholder="Enter search terms or job title to find matching candidates..."
+                      placeholder="Describe your ideal candidate or paste job requirements..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyPress={handleKeyPress}
@@ -1606,7 +1639,9 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                 // Upload JD Interface
                 <Box sx={{ maxWidth: "800px", mx: "auto" }}>
                   {/* Group Selection for Upload */}
-                  <GroupSelectContainer sx={{ mb: 3, width: "100%" }}>
+                  <GroupSelectContainer
+                    sx={{ mb: 3, width: "100%", minWidth: "600px" }}
+                  >
                     <Select
                       value={selectedGroup}
                       onChange={(e) => setSelectedGroup(e.target.value)}
@@ -1678,117 +1713,99 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                   >
-                    {selectedFile ? (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          gap: 2,
-                          position: "relative",
-                          "&::after": isDragging
-                            ? {
-                                content: '""',
-                                position: "absolute",
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                                borderRadius: 1,
-                              }
-                            : {},
-                        }}
-                      >
-                        <Description
-                          sx={{
-                            fontSize: "3rem",
-                            color: isDragging
-                              ? AppColors.primary.main
-                              : AppColors.primary.main,
-                            transition: "all 0.3s ease",
-                          }}
-                        />
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            color: AppColors.text.primary,
-                            fontWeight: 600,
-                            transition: "all 0.3s ease",
-                          }}
-                        >
-                          {selectedFile.name}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: isDragging
-                              ? AppColors.primary.main
-                              : AppColors.text.secondary,
-                            transition: "all 0.3s ease",
-                          }}
-                        >
-                          {isDragging
-                            ? "Drop to replace file"
-                            : "Click to change file"}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          gap: 2,
-                          position: "relative",
-                          "&::after": isDragging
-                            ? {
-                                content: '""',
-                                position: "absolute",
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                                borderRadius: 1,
-                              }
-                            : {},
-                        }}
-                      >
-                        <Upload
-                          sx={{
-                            fontSize: "3rem",
-                            color: isDragging
-                              ? AppColors.primary.main
-                              : AppColors.text.secondary,
-                            transition: "all 0.3s ease",
-                          }}
-                        />
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            color: AppColors.text.primary,
-                            fontWeight: 600,
-                            transition: "all 0.3s ease",
-                          }}
-                        >
-                          {isDragging
-                            ? "Drop your file here"
-                            : "Drop your JD file here or click to browse"}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: isDragging
-                              ? AppColors.primary.main
-                              : AppColors.text.secondary,
-                            transition: "all 0.3s ease",
-                          }}
-                        >
-                          Supports PDF and DOCX files
-                        </Typography>
-                      </Box>
-                    )}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 2,
+                        position: "relative",
+                        "&::after": isDragging
+                          ? {
+                              content: '""',
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              backgroundColor: "rgba(255, 255, 255, 0.1)",
+                              borderRadius: 1,
+                            }
+                          : {},
+                      }}
+                    >
+                      {selectedFile ? (
+                        <>
+                          <Description
+                            sx={{
+                              fontSize: "3rem",
+                              color: isDragging
+                                ? AppColors.primary.main
+                                : AppColors.primary.main,
+                              transition: "all 0.3s ease",
+                            }}
+                          />
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              color: AppColors.text.primary,
+                              fontWeight: 600,
+                              transition: "all 0.3s ease",
+                            }}
+                          >
+                            {selectedFile.name}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: isDragging
+                                ? AppColors.primary.main
+                                : AppColors.text.secondary,
+                              transition: "all 0.3s ease",
+                            }}
+                          >
+                            {isDragging
+                              ? "Drop to replace file"
+                              : "Click to change file"}
+                          </Typography>
+                        </>
+                      ) : (
+                        <>
+                          <Upload
+                            sx={{
+                              fontSize: "3rem",
+                              color: isDragging
+                                ? AppColors.primary.main
+                                : AppColors.text.secondary,
+                              transition: "all 0.3s ease",
+                            }}
+                          />
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              color: AppColors.text.primary,
+                              fontWeight: 600,
+                              transition: "all 0.3s ease",
+                            }}
+                          >
+                            {isDragging
+                              ? "Drop your file here"
+                              : "Drop your JD file here or click to browse"}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: isDragging
+                                ? AppColors.primary.main
+                                : AppColors.text.secondary,
+                              transition: "all 0.3s ease",
+                            }}
+                          >
+                            Supports PDF and DOCX files
+                          </Typography>
+                        </>
+                      )}
+                    </Box>
                   </UploadArea>
 
                   {/* Upload Button */}
@@ -1805,9 +1822,22 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                           <Search />
                         )
                       }
-                      sx={{ minWidth: "200px" }}
+                      sx={{
+                        minWidth: "200px",
+                        opacity: selectedFile ? 1 : 0.7,
+                        border: "1px solidrgb(222, 228, 238)",
+                        transform: selectedFile ? "scale(1)" : "scale(0.95)",
+                        transition: "all 0.3s ease",
+                        backgroundColor: selectedFile ? "#8B5CF6" : "#A78BFA",
+                        "&:hover": {
+                          backgroundColor: selectedFile ? "#7C3AED" : "#9333EA",
+                          transform: selectedFile
+                            ? "translateY(-2px)"
+                            : "scale(0.95)",
+                        },
+                      }}
                     >
-                      {isUploading ? "Uploading..." : "Search with JD"}
+                      {isUploading ? "Searching..." : "Search with JD"}
                     </SearchButton>
                   </Box>
                 </Box>
@@ -1836,7 +1866,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
           </Box>
         </Fade>
 
-        {/* Loading Skeletons */}
+        {/* Loading Skeletons - Show for both search types */}
         {isSearching && (
           <Fade in timeout={300}>
             <Card
@@ -1888,13 +1918,16 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                   textAlign: "center",
                 }}
               >
-                Enter your search terms above to find matching candidates
+                Ready to find your perfect match?{" "}
+                {activeTab === 0
+                  ? "Start by entering skills, experience, or job requirements above."
+                  : "Upload a job description file to begin matching."}
               </Typography>
             </InitialStateCard>
           </Fade>
         )}
 
-        {/* Search Results */}
+        {/* Search Results - Show for both search types */}
         {hasSearched && !isSearching && (
           <Fade in timeout={500}>
             <Card
@@ -1911,29 +1944,34 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                 },
                 position: "relative",
                 overflow: "visible",
-                "&::before": {
-                  content: '""',
-                  position: "absolute",
-                  top: -2,
-                  left: "5%",
-                  right: "5%",
-                  height: "4px",
-                  background:
-                    "linear-gradient(90deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%)",
-                  borderRadius: "4px 4px 0 0",
-                  opacity: 0.8,
-                },
               }}
             >
-              <CardContent
-                sx={{
-                  p: 4,
-                  "&:last-child": {
-                    pb: 4,
-                  },
-                }}
-              >
-                {searchResults.length > 0 ? (
+              <CardContent sx={{ p: 4 }}>
+                {isSearching ? (
+                  // Loading State
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minHeight: "300px",
+                      gap: 3,
+                    }}
+                  >
+                    <CircularProgress
+                      size={40}
+                      sx={{ color: AppColors.primary.main }}
+                    />
+                    <Typography
+                      variant="h6"
+                      sx={{ color: AppColors.text.secondary }}
+                    >
+                      Searching through resumes...
+                    </Typography>
+                  </Box>
+                ) : searchResults.length > 0 ? (
+                  // Results Found
                   <>
                     {/* Search Summary Section */}
                     {searchSummary && (
@@ -2830,7 +2868,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                     </Box>
                   </>
                 ) : (
-                  /* No Results State */
+                  // No Results Found
                   <Box
                     sx={{
                       textAlign: "center",
@@ -2897,11 +2935,10 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                         py: 1.5,
                         borderColor: AppColors.primary.main,
                         color: AppColors.primary.main,
-                        cursor: "pointer !important",
+                        cursor: "pointer",
                         "&:hover": {
                           backgroundColor: `${AppColors.primary.main}08`,
                           borderColor: AppColors.primary.main,
-                          cursor: "pointer !important",
                         },
                       }}
                     >
