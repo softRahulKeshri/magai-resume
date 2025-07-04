@@ -21,6 +21,7 @@ import {
   Backdrop,
   Fade,
   IconButton,
+  Pagination,
 } from "@mui/material";
 import {
   Search,
@@ -32,11 +33,9 @@ import {
   Schedule,
   InsertDriveFile,
   Assessment,
-  CheckCircle,
   FolderOpen,
   Close,
   Warning,
-  CheckCircleOutline,
 } from "@mui/icons-material";
 
 import { Resume } from "../types";
@@ -68,76 +67,76 @@ interface ColorTheme {
   border: string;
 }
 
-// Light theme colors with refined palette
+// Brand theme colors for premium, elegant look
 const lightTheme: LightTheme = {
-  background: "#FFFFFF",
+  background: "#FFFFFF", // n_white
   surface: "#F5F5F5", // n100
   surfaceLight: "#EAEAEC", // n150
-  primary: "#3077F3", // primary_ui_blue.p500
-  success: "#41E6F8", // brand_gradient.cyan
-  warning: "#FDA052", // brand_gradient.orange
-  error: "#B96AF7", // brand_gradient.purple
-  text: "#171921", // n3000
-  textSecondary: "#434654", // n900
-  textMuted: "#82838D", // n600
-  border: "#EAEAEC", // n150 - lighter border for elegance
+  primary: "#3077F3", // brand blue
+  success: "#41E6F8", // brand cyan
+  warning: "#FDA052", // brand orange
+  error: "#B96AF7", // brand purple
+  text: "#050507", // n_black
+  textSecondary: "#2E3141", // primary charcoal_slate
+  textMuted: "#6D6F7A", // n700
+  border: "#D5D6D9", // n200
 };
 
-// Sophisticated color palette for groups with gradients
+// Brand color palette for groups with premium gradients
 const colorPalette: ColorTheme[] = [
   {
-    primary: "#3077F3", // primary_ui_blue.p500
-    secondary: "#94BAFD", // primary_ui_blue.p400
+    primary: "#3077F3", // Brand blue
+    secondary: "#94BAFD",
     gradient: "linear-gradient(135deg, #3077F3 0%, #94BAFD 100%)",
-    shadowColor: "rgba(48, 119, 243, 0.12)",
-    hoverShadowColor: "rgba(48, 119, 243, 0.2)",
+    shadowColor: "rgba(48, 119, 243, 0.15)",
+    hoverShadowColor: "rgba(48, 119, 243, 0.25)",
     background: "#FFFFFF",
     border: "#3077F3",
   },
   {
-    primary: "#41E6F8", // brand_gradient.cyan
-    secondary: "#3077F3", // brand_gradient.blue
-    gradient: "linear-gradient(135deg, #41E6F8 0%, #3077F3 100%)",
-    shadowColor: "rgba(65, 230, 248, 0.12)",
-    hoverShadowColor: "rgba(65, 230, 248, 0.2)",
+    primary: "#41E6F8", // Brand cyan
+    secondary: "#94BAFD",
+    gradient: "linear-gradient(135deg, #41E6F8 0%, #94BAFD 100%)",
+    shadowColor: "rgba(65, 230, 248, 0.15)",
+    hoverShadowColor: "rgba(65, 230, 248, 0.25)",
     background: "#FFFFFF",
     border: "#41E6F8",
   },
   {
-    primary: "#B96AF7", // brand_gradient.purple
-    secondary: "#3077F3", // brand_gradient.blue
-    gradient: "linear-gradient(135deg, #B96AF7 0%, #3077F3 100%)",
-    shadowColor: "rgba(185, 106, 247, 0.12)",
-    hoverShadowColor: "rgba(185, 106, 247, 0.2)",
+    primary: "#B96AF7", // Brand purple
+    secondary: "#FDA052",
+    gradient: "linear-gradient(135deg, #B96AF7 0%, #FDA052 100%)",
+    shadowColor: "rgba(185, 106, 247, 0.15)",
+    hoverShadowColor: "rgba(185, 106, 247, 0.25)",
     background: "#FFFFFF",
     border: "#B96AF7",
   },
   {
-    primary: "#FDA052", // brand_gradient.orange
-    secondary: "#B96AF7", // brand_gradient.purple
+    primary: "#FDA052", // Brand orange
+    secondary: "#B96AF7",
     gradient: "linear-gradient(135deg, #FDA052 0%, #B96AF7 100%)",
-    shadowColor: "rgba(253, 160, 82, 0.12)",
-    hoverShadowColor: "rgba(253, 160, 82, 0.2)",
+    shadowColor: "rgba(253, 160, 82, 0.15)",
+    hoverShadowColor: "rgba(253, 160, 82, 0.25)",
     background: "#FFFFFF",
     border: "#FDA052",
   },
   {
-    primary: "#434654", // n900
-    secondary: "#2E3141", // n1000
-    gradient: "linear-gradient(135deg, #434654 0%, #2E3141 100%)",
-    shadowColor: "rgba(67, 70, 84, 0.12)",
-    hoverShadowColor: "rgba(67, 70, 84, 0.2)",
+    primary: "#2E3141", // Charcoal slate
+    secondary: "#6D6F7A",
+    gradient: "linear-gradient(135deg, #2E3141 0%, #6D6F7A 100%)",
+    shadowColor: "rgba(46, 49, 65, 0.15)",
+    hoverShadowColor: "rgba(46, 49, 65, 0.25)",
     background: "#FFFFFF",
-    border: "#434654",
+    border: "#2E3141",
   },
   {
-    primary: "#585A67", // n800
-    secondary: "#434654", // n900
-    gradient: "linear-gradient(135deg, #585A67 0%, #434654 100%)",
-    shadowColor: "rgba(88, 90, 103, 0.12)",
-    hoverShadowColor: "rgba(88, 90, 103, 0.2)",
+    primary: "#11397E", // Primary UI blue p700
+    secondary: "#3077F3",
+    gradient: "linear-gradient(135deg, #11397E 0%, #3077F3 100%)",
+    shadowColor: "rgba(17, 57, 126, 0.15)",
+    hoverShadowColor: "rgba(17, 57, 126, 0.25)",
     background: "#FFFFFF",
-    border: "#585A67",
+    border: "#11397E",
   },
 ];
 
@@ -158,117 +157,6 @@ const getGroupColorTheme = (groupName: string = "default"): ColorTheme => {
   const index =
     groupColorIndex[groupName.toLowerCase()] ?? groupColorIndex.default;
   return colorPalette[index];
-};
-
-// Enhanced styles for premium UI components
-const styles = {
-  container: {
-    backgroundColor: lightTheme.background,
-    borderRadius: "16px",
-    padding: "32px",
-    boxShadow: `0 8px 32px ${alpha(lightTheme.text, 0.08)}`,
-    border: `1px solid ${lightTheme.border}`,
-  },
-  searchInput: {
-    "& .MuiOutlinedInput-root": {
-      borderRadius: "12px",
-      backgroundColor: lightTheme.surface,
-      transition: "all 0.3s ease",
-      border: `1px solid ${lightTheme.border}`,
-      "&:hover": {
-        backgroundColor: lightTheme.surfaceLight,
-        boxShadow: "0 4px 12px rgba(23, 25, 33, 0.06)",
-      },
-      "&.Mui-focused": {
-        backgroundColor: lightTheme.background,
-        boxShadow: "0 4px 12px rgba(48, 119, 243, 0.12)",
-        border: `1px solid ${lightTheme.primary}`,
-      },
-    },
-  },
-  groupChip: (color: ColorTheme) => ({
-    borderRadius: "12px",
-    padding: "8px 16px",
-    background: color.gradient,
-    boxShadow: `0 8px 16px ${color.shadowColor}`,
-    transition: "all 0.3s ease",
-    "&:hover": {
-      transform: "translateY(-2px)",
-      boxShadow: `0 12px 24px ${color.hoverShadowColor}`,
-    },
-    "& .MuiChip-label": {
-      color: "#FFFFFF",
-      fontWeight: 600,
-      fontSize: "0.95rem",
-    },
-    "& .MuiChip-deleteIcon": {
-      color: "#FFFFFF",
-      opacity: 0.8,
-      "&:hover": {
-        opacity: 1,
-      },
-    },
-  }),
-  card: (color: ColorTheme) => ({
-    backgroundColor: lightTheme.background,
-    borderRadius: "16px",
-    boxShadow: `0 8px 16px ${color.shadowColor}`,
-    border: `2px solid ${color.primary}`,
-    transition: "all 0.3s ease",
-    "&:hover": {
-      transform: "translateY(-4px)",
-      boxShadow: `0 12px 24px ${color.hoverShadowColor}`,
-    },
-    mb: 2,
-  }),
-  fileIcon: (color: ColorTheme) => ({
-    width: 40,
-    height: 40,
-    borderRadius: "8px",
-    background: color.gradient,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  }),
-  iconButton: {
-    color: lightTheme.textMuted,
-    "&:hover": {
-      color: lightTheme.text,
-      backgroundColor: lightTheme.surface,
-    },
-  },
-  deleteButton: {
-    color: lightTheme.textMuted,
-    "&:hover": {
-      color: lightTheme.error,
-      backgroundColor: alpha(lightTheme.error, 0.1),
-    },
-  },
-  statusChip: (isProcessed: boolean) => ({
-    backgroundColor: isProcessed
-      ? alpha(lightTheme.success, 0.1)
-      : alpha(lightTheme.warning, 0.1),
-    color: isProcessed ? lightTheme.success : lightTheme.warning,
-    "& .MuiChip-icon": {
-      color: isProcessed ? lightTheme.success : lightTheme.warning,
-    },
-  }),
-  scrollbar: {
-    "&::-webkit-scrollbar": {
-      height: "8px",
-    },
-    "&::-webkit-scrollbar-track": {
-      backgroundColor: lightTheme.surface,
-      borderRadius: "4px",
-    },
-    "&::-webkit-scrollbar-thumb": {
-      backgroundColor: lightTheme.border,
-      borderRadius: "4px",
-      "&:hover": {
-        backgroundColor: lightTheme.textMuted,
-      },
-    },
-  },
 };
 
 // Custom Styled Modal Component
@@ -499,41 +387,74 @@ const StatsCard = ({ title, value, color, icon, bgColor }: StatsCardProps) => {
     <Card
       sx={{
         background: bgColor,
-        borderRadius: "16px",
+        borderRadius: "20px",
         border: "none",
-        minWidth: "320px",
-        minHeight: "140px",
+        minWidth: { xs: "280px", sm: "300px", md: "320px", lg: "340px" },
+        minHeight: { xs: "140px", sm: "150px", md: "160px" },
+        width: { xs: "100%", sm: "auto" },
+        maxWidth: { xs: "100%", sm: "400px" },
         transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         cursor: "default",
+        position: "relative",
+        overflow: "hidden",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background:
+            "linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, transparent 100%)",
+          pointerEvents: "none",
+        },
         "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
+          transform: "translateY(-6px)",
+          boxShadow: "0 24px 48px rgba(0,0,0,0.3)",
         },
       }}
     >
-      <CardContent sx={{ p: 4, position: "relative" }}>
-        {/* Icon positioned in top right */}
+      <CardContent sx={{ p: 4, position: "relative", height: "100%" }}>
+        {/* Icon positioned in top right with better styling */}
         <Box
           sx={{
             position: "absolute",
-            top: 20,
-            right: 20,
-            opacity: 0.8,
+            top: 24,
+            right: 24,
+            opacity: 0.9,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 48,
+            height: 48,
+            borderRadius: "12px",
+            background: "rgba(255,255,255,0.15)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid rgba(255,255,255,0.2)",
           }}
         >
-          {icon}
+          <Box sx={{ fontSize: "1.75rem", color: "#ffffff" }}>{icon}</Box>
         </Box>
 
         {/* Main content */}
-        <Box>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            height: "100%",
+            pr: 7, // Leave space for icon
+          }}
+        >
           <Typography
             variant="h6"
             sx={{
               color: "#ffffff",
               fontWeight: 600,
-              fontSize: "1.1rem",
-              mb: 2,
-              opacity: 0.9,
+              fontSize: "1.125rem",
+              mb: 1,
+              opacity: 0.95,
+              lineHeight: 1.3,
             }}
           >
             {title}
@@ -543,8 +464,9 @@ const StatsCard = ({ title, value, color, icon, bgColor }: StatsCardProps) => {
             sx={{
               color: "#ffffff",
               fontWeight: 700,
-              fontSize: "3rem",
+              fontSize: "3.5rem",
               lineHeight: 1,
+              textShadow: "0 2px 4px rgba(0,0,0,0.1)",
             }}
           >
             {value}
@@ -555,7 +477,7 @@ const StatsCard = ({ title, value, color, icon, bgColor }: StatsCardProps) => {
   );
 };
 
-// File Card Component (simplified and improved)
+// File Card Component (improved with better UI and functionality)
 interface FileCardProps {
   resume: Resume;
   onView: (resume: Resume) => void;
@@ -574,7 +496,6 @@ const FileCard = ({
   // Modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 B";
@@ -596,25 +517,14 @@ const FileCard = ({
   const getFileIcon = () => {
     switch (resume.fileType.toLowerCase()) {
       case "pdf":
-        return <PictureAsPdf sx={{ fontSize: "2rem", color: "#ef4444" }} />;
+        return <PictureAsPdf sx={{ fontSize: "1.75rem", color: "#ffffff" }} />;
       case "doc":
       case "docx":
-        return <Description sx={{ fontSize: "2rem", color: "#4a90e2" }} />;
+        return <Description sx={{ fontSize: "1.75rem", color: "#ffffff" }} />;
       default:
-        return <InsertDriveFile sx={{ fontSize: "2rem", color: "#22c55e" }} />;
-    }
-  };
-
-  const getStatusColor = () => {
-    switch (resume.status) {
-      case "completed":
-        return lightTheme.success;
-      case "processing":
-        return lightTheme.warning;
-      case "failed":
-        return lightTheme.error;
-      default:
-        return lightTheme.primary;
+        return (
+          <InsertDriveFile sx={{ fontSize: "1.75rem", color: "#ffffff" }} />
+        );
     }
   };
 
@@ -636,15 +546,7 @@ const FileCard = ({
 
       if (response.ok) {
         setShowDeleteModal(false);
-        setShowSuccessMessage(true);
-
-        // Hide success message after 3 seconds
-        setTimeout(() => {
-          setShowSuccessMessage(false);
-        }, 3000);
-
-        onDelete(resume); // Call the optional callback
-        // Notify parent to refresh the list if callback is provided
+        onDelete(resume);
         if (onResumeDeleted) {
           onResumeDeleted(resume.id);
         }
@@ -671,506 +573,335 @@ const FileCard = ({
     }
   };
 
+  const colorTheme = getGroupColorTheme(resume.group);
+
   return (
-    <Card
-      sx={{
-        background: `linear-gradient(135deg, ${lightTheme.surface} 0%, ${alpha(
-          lightTheme.surfaceLight,
-          0.8
-        )} 100%)`,
-        border: `1px solid ${alpha(lightTheme.border, 0.3)}`,
-        borderRadius: "20px",
-        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-        cursor: "default",
-        position: "relative",
-        overflow: "hidden",
-        backdropFilter: "blur(10px)",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `radial-gradient(circle at 70% 20%, ${alpha(
-            lightTheme.primary,
-            0.05
-          )} 0%, transparent 50%)`,
-          pointerEvents: "none",
-        },
-        "&:hover": {
-          transform: "translateY(-8px) scale(1.02)",
-          boxShadow: `0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px ${alpha(
-            lightTheme.primary,
-            0.3
-          )}`,
-          border: `1px solid ${alpha(lightTheme.primary, 0.6)}`,
-          "& .action-buttons": {
-            opacity: 1,
-            transform: "translateY(0)",
+    <>
+      <Card
+        sx={{
+          background: lightTheme.background,
+          borderRadius: "16px",
+          transition: "all 0.3s ease",
+          position: "relative",
+          overflow: "hidden",
+          boxShadow: `0 4px 6px -1px ${alpha(
+            lightTheme.text,
+            0.1
+          )}, 0 2px 4px -2px ${alpha(lightTheme.text, 0.1)}`,
+          border: `1px solid ${lightTheme.border}`,
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          "&:hover": {
+            transform: "translateY(-4px)",
+            boxShadow: `0 12px 24px -4px ${alpha(
+              colorTheme.primary,
+              0.2
+            )}, 0 8px 16px -8px ${alpha(colorTheme.primary, 0.1)}`,
+            border: `1px solid ${alpha(colorTheme.primary, 0.3)}`,
           },
-          "& .file-icon": {
-            transform: "scale(1.1) rotate(-5deg)",
-          },
-          "& .group-chip": {
-            transform: "scale(1.05)",
-          },
-        },
-      }}
-    >
-      <CardContent sx={{ p: 4, position: "relative", zIndex: 1 }}>
-        {/* Header with enhanced icon and status */}
-        <Box sx={{ display: "flex", alignItems: "flex-start", mb: 3 }}>
-          <Box
-            className="file-icon"
-            sx={{
-              mr: 3,
-              transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-              background: `linear-gradient(135deg, ${alpha(
-                lightTheme.surface,
-                0.8
-              )} 0%, ${alpha(lightTheme.surfaceLight, 0.9)} 100%)`,
-              borderRadius: "12px",
-              p: 1.5,
-              border: `1px solid ${alpha(lightTheme.border, 0.2)}`,
-            }}
-          >
-            {getFileIcon()}
-          </Box>
-          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-            <Typography
-              variant="h6"
-              sx={{
-                color: lightTheme.text,
-                fontWeight: 700,
-                fontSize: "1.1rem",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                mb: 1,
-                lineHeight: 1.3,
-              }}
-              title={resume.original_filename || resume.filename}
-            >
-              {resume.original_filename || resume.filename}
-            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Box
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: getStatusColor(),
-                  boxShadow: `0 0 10px ${alpha(getStatusColor(), 0.6)}`,
-                }}
-              />
-              <Typography
-                variant="body2"
-                sx={{
-                  color: getStatusColor(),
-                  fontWeight: 600,
-                  fontSize: "0.8rem",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px",
-                }}
-              >
-                {resume.status.charAt(0).toUpperCase() + resume.status.slice(1)}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Enhanced File details */}
-        <Box sx={{ mb: 3 }}>
-          <Stack direction="row" spacing={1.5} sx={{ mb: 2, flexWrap: "wrap" }}>
-            <Box
-              sx={{
-                background: `linear-gradient(135deg, ${alpha(
-                  lightTheme.primary,
-                  0.1
-                )} 0%, ${alpha(lightTheme.primary, 0.2)} 100%)`,
-                border: `1px solid ${alpha(lightTheme.primary, 0.3)}`,
-                borderRadius: "12px",
-                px: 2,
-                py: 0.8,
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-              }}
-            >
-              <InsertDriveFile
-                sx={{ fontSize: "0.9rem", color: lightTheme.primary }}
-              />
-              <Typography
-                sx={{
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                  color: lightTheme.primary,
-                }}
-              >
-                {formatFileSize(resume.fileSize)}
-              </Typography>
-            </Box>
-
-            <Box
-              sx={{
-                background: `linear-gradient(135deg, ${alpha(
-                  lightTheme.success,
-                  0.1
-                )} 0%, ${alpha(lightTheme.success, 0.2)} 100%)`,
-                border: `1px solid ${alpha(lightTheme.success, 0.3)}`,
-                borderRadius: "12px",
-                px: 2,
-                py: 0.8,
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-              }}
-            >
-              <Description
-                sx={{ fontSize: "0.9rem", color: lightTheme.success }}
-              />
-              <Typography
-                sx={{
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                  color: lightTheme.success,
-                  textTransform: "uppercase",
-                }}
-              >
-                {resume.fileType}
-              </Typography>
-            </Box>
-
-            {resume.group &&
-              (() => {
-                const colorTheme = getGroupColorTheme(resume.group);
-                return (
-                  <Box
-                    className="group-chip"
-                    sx={{
-                      background: colorTheme.gradient,
-                      border: `2px solid ${colorTheme.primary}`,
-                      borderRadius: "16px",
-                      px: 2.5,
-                      py: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      boxShadow: `0 4px 16px ${colorTheme.shadowColor}`,
-                      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                      "&:hover": {
-                        boxShadow: `0 8px 24px ${colorTheme.hoverShadowColor}`,
-                        transform: "translateY(-2px)",
-                      },
-                    }}
-                  >
-                    <Assessment sx={{ fontSize: "1rem", color: "#ffffff" }} />
-                    <Typography
-                      sx={{
-                        fontSize: "0.85rem",
-                        fontWeight: 700,
-                        color: "#ffffff",
-                        textTransform: "capitalize",
-                        letterSpacing: "0.3px",
-                      }}
-                    >
-                      {resume.group}
-                    </Typography>
-                  </Box>
-                );
-              })()}
-          </Stack>
-
+        }}
+      >
+        <CardContent
+          sx={{
+            p: { xs: 2, sm: 2.5, md: 3 },
+            flexGrow: 1,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {/* Header with file info */}
           <Box
             sx={{
               display: "flex",
-              alignItems: "center",
-              gap: 1,
-              background: `linear-gradient(135deg, ${alpha(
-                lightTheme.textMuted,
-                0.05
-              )} 0%, ${alpha(lightTheme.textMuted, 0.1)} 100%)`,
-              borderRadius: "10px",
-              px: 2,
-              py: 1,
-              border: `1px solid ${alpha(lightTheme.textMuted, 0.1)}`,
+              alignItems: "flex-start",
+              mb: { xs: 2, sm: 2.5, md: 3 },
             }}
           >
-            <Schedule
+            <Box
               sx={{
-                fontSize: "1rem",
-                color: lightTheme.textMuted,
-                background: `linear-gradient(135deg, ${lightTheme.warning} 0%, #d97706 100%)`,
-                borderRadius: "6px",
-                p: 0.5,
-              }}
-            />
-            <Typography
-              variant="body2"
-              sx={{
-                color: lightTheme.textSecondary,
-                fontSize: "0.85rem",
-                fontWeight: 500,
+                width: { xs: 56, sm: 60, md: 64 },
+                height: { xs: 56, sm: 60, md: 64 },
+                borderRadius: { xs: "14px", sm: "15px", md: "16px" },
+                background: colorTheme.gradient,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mr: { xs: 2, sm: 2.5, md: 3 },
+                boxShadow: `0 8px 24px ${alpha(colorTheme.primary, 0.25)}`,
+                flexShrink: 0,
+                position: "relative",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: -2,
+                  left: -2,
+                  right: -2,
+                  bottom: -2,
+                  borderRadius: { xs: "16px", sm: "17px", md: "18px" },
+                  background: `linear-gradient(135deg, ${alpha(
+                    colorTheme.primary,
+                    0.3
+                  )} 0%, ${alpha(colorTheme.secondary, 0.3)} 100%)`,
+                  zIndex: -1,
+                },
               }}
             >
-              Uploaded {formatDate(resume.uploadedAt)}
-            </Typography>
-          </Box>
-        </Box>
+              {getFileIcon()}
+            </Box>
 
-        {/* Enhanced Action buttons */}
-        <Box
-          className="action-buttons"
-          sx={{
-            opacity: 0,
-            transform: "translateY(10px)",
-            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 1.5,
-          }}
-        >
-          <Button
-            size="medium"
-            startIcon={<Visibility sx={{ fontSize: "1.1rem" }} />}
-            onClick={() => {
-              try {
-                // Extract filename from filepath by removing uploaded_ prefix and path
-                let filename;
-                if (resume.filepath) {
-                  // Remove "uploaded_" prefix and get filename after the last slash
-                  const cleanPath = resume.filepath.replace(
-                    /^uploaded_[^/]+\//,
-                    ""
-                  );
-                  filename = cleanPath.split("/").pop() || cleanPath;
-                } else {
-                  // Fallback to stored_filename or filename
-                  filename = resume.stored_filename || resume.filename;
-                }
-                const viewUrl = `${API_CONFIG.baseURL}/uploads/${filename}`;
-                window.open(viewUrl, "_blank");
-                onView(resume); // Call the optional callback
-              } catch (error) {
-                console.error("Error viewing resume:", error);
-                alert("Failed to view resume. Please try again.");
-              }
-            }}
-            sx={{
-              background: `linear-gradient(135deg, ${lightTheme.primary} 0%, #357abd 100%)`,
-              color: "#ffffff",
-              borderRadius: "12px",
-              textTransform: "none",
-              fontSize: "0.8rem",
-              fontWeight: 600,
-              py: 1.2,
-              px: 2,
-              cursor: "pointer !important",
-              boxShadow: `0 4px 16px ${alpha(lightTheme.primary, 0.3)}`,
-              border: `1px solid ${alpha(lightTheme.primary, 0.2)}`,
-              "&:hover": {
-                background: `linear-gradient(135deg, #357abd 0%, #2c5aa0 100%)`,
-                boxShadow: `0 8px 24px ${alpha(lightTheme.primary, 0.4)}`,
-                transform: "translateY(-2px)",
-              },
-              "&:active": {
-                transform: "translateY(0)",
-              },
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
-            View
-          </Button>
-
-          <Button
-            size="medium"
-            startIcon={<Download sx={{ fontSize: "1.1rem" }} />}
-            onClick={async () => {
-              try {
-                // Extract filename from filepath by removing uploaded_ prefix and path
-                let filename;
-                if (resume.filepath) {
-                  // Remove "uploaded_" prefix and get filename after the last slash
-                  const cleanPath = resume.filepath.replace(
-                    /^uploaded_[^/]+\//,
-                    ""
-                  );
-                  filename = cleanPath.split("/").pop() || cleanPath;
-                } else {
-                  // Fallback to stored_filename or filename
-                  filename = resume.stored_filename || resume.filename;
-                }
-                const displayFilename =
-                  resume.original_filename || resume.filename;
-
-                // Fetch the file for download
-                const response = await fetch(
-                  `${API_CONFIG.baseURL}/uploads/${filename}`,
-                  {
-                    method: "GET",
-                  }
-                );
-
-                if (response.ok) {
-                  // Get the file as a blob
-                  const blob = await response.blob();
-                  const url = window.URL.createObjectURL(blob);
-
-                  // Create a temporary link element and trigger download
-                  const link = document.createElement("a");
-                  link.href = url;
-                  link.download = displayFilename; // Use original filename for download
-                  document.body.appendChild(link);
-                  link.click();
-
-                  // Clean up
-                  document.body.removeChild(link);
-                  window.URL.revokeObjectURL(url);
-
-                  onDownload(resume); // Call the optional callback
-                } else {
-                  throw new Error("Download failed");
-                }
-              } catch (error) {
-                console.error("Error downloading resume:", error);
-                alert("Failed to download resume. Please try again.");
-              }
-            }}
-            sx={{
-              background: `linear-gradient(135deg, ${lightTheme.success} 0%, #16a34a 100%)`,
-              color: "#ffffff",
-              borderRadius: "12px",
-              textTransform: "none",
-              fontSize: "0.8rem",
-              fontWeight: 600,
-              py: 1.2,
-              px: 2,
-              cursor: "pointer !important",
-              boxShadow: `0 4px 16px ${alpha(lightTheme.success, 0.3)}`,
-              border: `1px solid ${alpha(lightTheme.success, 0.2)}`,
-              "&:hover": {
-                background: `linear-gradient(135deg, #16a34a 0%, #15803d 100%)`,
-                boxShadow: `0 8px 24px ${alpha(lightTheme.success, 0.4)}`,
-                transform: "translateY(-2px)",
-              },
-              "&:active": {
-                transform: "translateY(0)",
-              },
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
-            Download
-          </Button>
-
-          <Button
-            size="medium"
-            startIcon={<Delete sx={{ fontSize: "1.1rem" }} />}
-            onClick={() => setShowDeleteModal(true)}
-            sx={{
-              background: `linear-gradient(135deg, ${lightTheme.error} 0%, #dc2626 100%)`,
-              color: "#ffffff",
-              borderRadius: "12px",
-              textTransform: "none",
-              fontSize: "0.8rem",
-              fontWeight: 600,
-              py: 1.2,
-              px: 2,
-              cursor: "pointer !important",
-              boxShadow: `0 4px 16px ${alpha(lightTheme.error, 0.3)}`,
-              border: `1px solid ${alpha(lightTheme.error, 0.2)}`,
-              "&:hover": {
-                background: `linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)`,
-                boxShadow: `0 8px 24px ${alpha(lightTheme.error, 0.4)}`,
-                transform: "translateY(-2px)",
-              },
-              "&:active": {
-                transform: "translateY(0)",
-              },
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
-            Delete
-          </Button>
-        </Box>
-
-        {/* Delete Confirmation Modal */}
-        <DeleteConfirmModal
-          open={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
-          onConfirm={handleDeleteConfirm}
-          filename={resume.original_filename || resume.filename}
-          isDeleting={isDeleting}
-        />
-
-        {/* Success Message */}
-        {showSuccessMessage && (
-          <Box
-            sx={{
-              position: "fixed",
-              top: 24,
-              right: 24,
-              zIndex: 9999,
-              animation: "slideInRight 0.3s ease-out",
-              "@keyframes slideInRight": {
-                from: {
-                  transform: "translateX(100%)",
-                  opacity: 0,
-                },
-                to: {
-                  transform: "translateX(0)",
-                  opacity: 1,
-                },
-              },
-            }}
-          >
-            <Card
-              sx={{
-                background: `linear-gradient(135deg, ${lightTheme.success} 0%, #16a34a 100%)`,
-                color: "#ffffff",
-                borderRadius: "12px",
-                boxShadow: "0 8px 32px rgba(34, 197, 94, 0.4)",
-                minWidth: 300,
-                border: `2px solid ${alpha(lightTheme.success, 0.3)}`,
-              }}
-            >
-              <CardContent
-                sx={{ p: 3, display: "flex", alignItems: "center", gap: 2 }}
+            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontSize: { xs: "1rem", sm: "1.0625rem", md: "1.125rem" },
+                  fontWeight: 600,
+                  color: lightTheme.text,
+                  mb: { xs: 1, sm: 1.25, md: 1.5 },
+                  lineHeight: 1.3,
+                  wordBreak: "break-word",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
               >
-                <CheckCircleOutline sx={{ fontSize: "1.5rem" }} />
-                <Box>
-                  <Typography
-                    variant="h6"
-                    sx={{ fontWeight: 600, fontSize: "1rem", mb: 0.5 }}
-                  >
-                    Resume Deleted Successfully
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ opacity: 0.9, fontSize: "0.875rem" }}
-                  >
-                    "{resume.original_filename || resume.filename}" has been
-                    permanently removed.
-                  </Typography>
-                </Box>
-                <IconButton
-                  onClick={() => setShowSuccessMessage(false)}
+                {resume.original_filename || resume.filename}
+              </Typography>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: { xs: 1.5, sm: 2 },
+                  mb: { xs: 1, sm: 1.25, md: 1.5 },
+                  flexWrap: "wrap",
+                }}
+              >
+                <Box
                   sx={{
-                    color: "#ffffff",
-                    ml: "auto",
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.1)",
-                    },
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    backgroundColor: alpha(lightTheme.textSecondary, 0.08),
+                    borderRadius: "8px",
+                    px: { xs: 1, sm: 1.5 },
+                    py: 0.5,
                   }}
                 >
-                  <Close sx={{ fontSize: "1.2rem" }} />
-                </IconButton>
-              </CardContent>
-            </Card>
+                  <InsertDriveFile
+                    sx={{
+                      fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                      color: lightTheme.textSecondary,
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: lightTheme.textSecondary,
+                      fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                      fontWeight: 500,
+                    }}
+                  >
+                    {formatFileSize(resume.fileSize)}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    backgroundColor: alpha(colorTheme.primary, 0.08),
+                    borderRadius: "8px",
+                    px: { xs: 1, sm: 1.5 },
+                    py: 0.5,
+                  }}
+                >
+                  <PictureAsPdf
+                    sx={{
+                      fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                      color: colorTheme.primary,
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: colorTheme.primary,
+                      fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                      fontWeight: 500,
+                    }}
+                  >
+                    {resume.fileType.toUpperCase()}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {resume.group && (
+                <Chip
+                  label={resume.group}
+                  size="small"
+                  sx={{
+                    backgroundColor: alpha(colorTheme.primary, 0.12),
+                    color: colorTheme.primary,
+                    fontSize: { xs: "0.6875rem", sm: "0.75rem" },
+                    height: { xs: "24px", sm: "28px" },
+                    borderRadius: "8px",
+                    fontWeight: 600,
+                    border: `1px solid ${alpha(colorTheme.primary, 0.2)}`,
+                    "&:hover": {
+                      backgroundColor: alpha(colorTheme.primary, 0.16),
+                    },
+                  }}
+                />
+              )}
+            </Box>
           </Box>
-        )}
-      </CardContent>
-    </Card>
+
+          {/* Date display */}
+          {resume.uploadedAt && (
+            <Box sx={{ mb: { xs: 2, sm: 2.5, md: 3 } }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  backgroundColor: alpha(lightTheme.textMuted, 0.06),
+                  borderRadius: "10px",
+                  px: { xs: 1.5, sm: 2 },
+                  py: { xs: 1, sm: 1.5 },
+                  border: `1px solid ${alpha(lightTheme.textMuted, 0.1)}`,
+                }}
+              >
+                <Schedule
+                  sx={{
+                    fontSize: { xs: "1rem", sm: "1.125rem" },
+                    color: lightTheme.textMuted,
+                    flexShrink: 0,
+                  }}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: lightTheme.textMuted,
+                    fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                    fontWeight: 500,
+                  }}
+                >
+                  Uploaded {formatDate(resume.uploadedAt)}
+                </Typography>
+              </Box>
+            </Box>
+          )}
+
+          {/* Action buttons */}
+          <Box sx={{ mt: "auto" }}>
+            <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }}>
+              <Button
+                variant="outlined"
+                size="medium"
+                startIcon={
+                  <Visibility
+                    sx={{ fontSize: { xs: "1rem", sm: "1.125rem" } }}
+                  />
+                }
+                onClick={() => onView(resume)}
+                sx={{
+                  flex: 1,
+                  borderRadius: { xs: "10px", sm: "12px" },
+                  textTransform: "none",
+                  fontWeight: 600,
+                  fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                  py: { xs: 1, sm: 1.25 },
+                  px: { xs: 1.5, sm: 2 },
+                  minHeight: { xs: "36px", sm: "40px" },
+                  borderColor: alpha(colorTheme.primary, 0.3),
+                  color: colorTheme.primary,
+                  backgroundColor: alpha(colorTheme.primary, 0.03),
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    backgroundColor: alpha(colorTheme.primary, 0.08),
+                    borderColor: colorTheme.primary,
+                    transform: "translateY(-1px)",
+                    boxShadow: `0 4px 12px ${alpha(colorTheme.primary, 0.2)}`,
+                  },
+                  "& .MuiButton-startIcon": {
+                    mr: { xs: 0.5, sm: 1 },
+                  },
+                }}
+              >
+                View
+              </Button>
+
+              <Button
+                variant="outlined"
+                size="medium"
+                startIcon={
+                  <Download sx={{ fontSize: { xs: "1rem", sm: "1.125rem" } }} />
+                }
+                onClick={() => onDownload(resume)}
+                sx={{
+                  flex: 1,
+                  borderRadius: { xs: "10px", sm: "12px" },
+                  textTransform: "none",
+                  fontWeight: 600,
+                  fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                  py: { xs: 1, sm: 1.25 },
+                  px: { xs: 1.5, sm: 2 },
+                  minHeight: { xs: "36px", sm: "40px" },
+                  borderColor: alpha(lightTheme.success, 0.3),
+                  color: lightTheme.success,
+                  backgroundColor: alpha(lightTheme.success, 0.03),
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    backgroundColor: alpha(lightTheme.success, 0.08),
+                    borderColor: lightTheme.success,
+                    transform: "translateY(-1px)",
+                    boxShadow: `0 4px 12px ${alpha(lightTheme.success, 0.2)}`,
+                  },
+                  "& .MuiButton-startIcon": {
+                    mr: { xs: 0.5, sm: 1 },
+                  },
+                }}
+              >
+                Download
+              </Button>
+
+              <IconButton
+                size="medium"
+                onClick={() => setShowDeleteModal(true)}
+                sx={{
+                  color: lightTheme.textMuted,
+                  border: `1px solid ${alpha(lightTheme.error, 0.3)}`,
+                  borderRadius: { xs: "10px", sm: "12px" },
+                  backgroundColor: alpha(lightTheme.error, 0.03),
+                  width: { xs: "36px", sm: "40px" },
+                  height: { xs: "36px", sm: "40px" },
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    color: lightTheme.error,
+                    backgroundColor: alpha(lightTheme.error, 0.08),
+                    borderColor: lightTheme.error,
+                    transform: "translateY(-1px)",
+                    boxShadow: `0 4px 12px ${alpha(lightTheme.error, 0.2)}`,
+                  },
+                }}
+              >
+                <Delete sx={{ fontSize: { xs: "1rem", sm: "1.125rem" } }} />
+              </IconButton>
+            </Stack>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        open={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteConfirm}
+        filename={resume.original_filename || resume.filename}
+        isDeleting={isDeleting}
+      />
+    </>
   );
 };
 
@@ -1195,6 +926,8 @@ const ResumeCollection = ({
   // State
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Fetch groups using the useGroups hook
   const {
@@ -1269,6 +1002,17 @@ const ResumeCollection = ({
     return filtered;
   }, [resumes, searchQuery, selectedGroup]);
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredResumes.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedResumes = filteredResumes.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedGroup]);
+
   // Enhanced Statistics - Only 2 essential metrics to avoid clutter
   const stats = useMemo(() => {
     const totalFiles = resumes.length;
@@ -1315,8 +1059,21 @@ const ResumeCollection = ({
       }
     }
 
+    // If we're on a page that will be empty after deletion, go to previous page
+    if (paginatedResumes.length === 1 && currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+
     // Call the parent callback to refresh data
     onResumeDeleted(resumeId);
+  };
+
+  // Handle pagination change
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setCurrentPage(value);
   };
 
   return (
@@ -1343,16 +1100,46 @@ const ResumeCollection = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            mb: 2,
+            mb: 3,
           }}
         >
-          <Assessment
+          <Box
             sx={{
-              fontSize: "3rem",
-              color: lightTheme.primary,
-              mr: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 80,
+              height: 80,
+              borderRadius: "20px",
+              background: `linear-gradient(135deg, ${
+                lightTheme.primary
+              } 0%, ${alpha(lightTheme.primary, 0.8)} 100%)`,
+              boxShadow: `0 12px 32px ${alpha(lightTheme.primary, 0.3)}`,
+              mr: 2,
+              position: "relative",
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: -4,
+                left: -4,
+                right: -4,
+                bottom: -4,
+                borderRadius: "24px",
+                background: `linear-gradient(135deg, ${alpha(
+                  lightTheme.primary,
+                  0.2
+                )} 0%, ${alpha(lightTheme.primary, 0.1)} 100%)`,
+                zIndex: -1,
+              },
             }}
-          />
+          >
+            <Assessment
+              sx={{
+                fontSize: "2.5rem",
+                color: "#ffffff",
+              }}
+            />
+          </Box>
         </Box>
 
         <Typography
@@ -1361,7 +1148,11 @@ const ResumeCollection = ({
             fontWeight: 700,
             fontSize: { xs: "2.5rem", md: "3rem" },
             color: lightTheme.text,
-            mb: 2,
+            mb: 3,
+            background: `linear-gradient(135deg, ${lightTheme.text} 0%, ${lightTheme.textSecondary} 100%)`,
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
           }}
         >
           Resume Analytics
@@ -1375,6 +1166,8 @@ const ResumeCollection = ({
             maxWidth: 600,
             mx: "auto",
             mb: 6,
+            fontSize: "1.125rem",
+            lineHeight: 1.6,
           }}
         >
           View all uploaded resumes from here. You can view, delete, and
@@ -1386,20 +1179,21 @@ const ResumeCollection = ({
           sx={{
             display: "flex",
             justifyContent: "center",
-            gap: 4,
+            gap: { xs: 2, sm: 3, md: 4 },
             flexWrap: "wrap",
-            maxWidth: "800px",
+            maxWidth: { xs: "100%", sm: "700px", md: "800px", lg: "900px" },
             mx: "auto",
+            px: { xs: 1, sm: 2 },
           }}
         >
           <StatsCard
             title="Total Resumes"
             value={stats.totalFiles}
             color="#fff"
-            bgColor="linear-gradient(135deg, #4a90e2 0%, #357abd 100%)"
+            bgColor="linear-gradient(135deg, #3077F3 0%, #94BAFD 100%)"
             icon={
               <FolderOpen
-                sx={{ fontSize: "2.5rem", color: "rgba(255,255,255,0.8)" }}
+                sx={{ fontSize: "2.5rem", color: "rgba(255,255,255,0.9)" }}
               />
             }
           />
@@ -1407,10 +1201,10 @@ const ResumeCollection = ({
             title="Total Groups"
             value={stats.totalGroups}
             color="#fff"
-            bgColor="linear-gradient(135deg, #22c55e 0%, #16a34a 100%)"
+            bgColor="linear-gradient(135deg, #41E6F8 0%, #3077F3 100%)"
             icon={
               <Assessment
-                sx={{ fontSize: "2.5rem", color: "rgba(255,255,255,0.8)" }}
+                sx={{ fontSize: "2.5rem", color: "rgba(255,255,255,0.9)" }}
               />
             }
           />
@@ -1419,47 +1213,29 @@ const ResumeCollection = ({
 
       {/* Search and File Management Section */}
       <Box>
-        {/* Combined Search and Group Filter Section */}
+        {/* Search and Filter Section */}
         <Box
           sx={{
-            mb: 6,
-            background: `linear-gradient(135deg, ${alpha(
-              lightTheme.surface,
-              0.6
-            )} 0%, ${alpha(lightTheme.surfaceLight, 0.8)} 100%)`,
-            borderRadius: "24px",
-            p: 4,
-            border: `1px solid ${alpha(lightTheme.border, 0.3)}`,
-            backdropFilter: "blur(8px)",
-            position: "relative",
-            overflow: "hidden",
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: `radial-gradient(circle at 20% 80%, ${alpha(
-                lightTheme.primary,
-                0.1
-              )} 0%, transparent 50%), radial-gradient(circle at 80% 20%, ${alpha(
-                lightTheme.success,
-                0.1
-              )} 0%, transparent 50%)`,
-              pointerEvents: "none",
-            },
+            mb: { xs: 4, md: 6 },
+            background: lightTheme.background,
+            borderRadius: { xs: "16px", md: "24px" },
+            p: { xs: 2, sm: 3, md: 4 },
+            border: `1px solid ${lightTheme.border}`,
+            boxShadow: `0 4px 6px -1px ${alpha(
+              lightTheme.text,
+              0.1
+            )}, 0 2px 4px -2px ${alpha(lightTheme.text, 0.1)}`,
           }}
         >
           {/* Section Header */}
           <Box
             sx={{
               display: "flex",
-              alignItems: "center",
+              alignItems: { xs: "flex-start", sm: "center" },
               justifyContent: "space-between",
-              mb: 4,
-              position: "relative",
-              zIndex: 1,
+              flexDirection: { xs: "column", sm: "row" },
+              gap: { xs: 2, sm: 0 },
+              mb: { xs: 3, md: 4 },
             }}
           >
             <Box>
@@ -1467,27 +1243,44 @@ const ResumeCollection = ({
                 variant="h5"
                 sx={{
                   fontWeight: 700,
-                  fontSize: "1.4rem",
-                  background: `linear-gradient(135deg, ${lightTheme.text} 0%, ${lightTheme.textSecondary} 100%)`,
-                  backgroundClip: "text",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  mb: 0.5,
+                  fontSize: { xs: "1.125rem", sm: "1.25rem", md: "1.5rem" },
+                  color: lightTheme.text,
+                  mb: 1,
                   display: "flex",
                   alignItems: "center",
-                  gap: 1,
+                  flexWrap: "wrap",
+                  gap: { xs: 1, sm: 1.5 },
                 }}
               >
-                <Search
-                  sx={{ fontSize: "1.5rem", color: lightTheme.primary }}
-                />
-                Search & Filter Resumes
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: { xs: 32, sm: 36 },
+                    height: { xs: 32, sm: 36 },
+                    borderRadius: { xs: "8px", sm: "10px" },
+                    background: `linear-gradient(135deg, ${
+                      lightTheme.primary
+                    } 0%, ${alpha(lightTheme.primary, 0.8)} 100%)`,
+                    boxShadow: `0 4px 12px ${alpha(lightTheme.primary, 0.3)}`,
+                  }}
+                >
+                  <Search
+                    sx={{
+                      color: "#ffffff",
+                      fontSize: { xs: "1.125rem", sm: "1.25rem" },
+                    }}
+                  />
+                </Box>
+                Search & Filter
               </Typography>
               <Typography
                 variant="body2"
                 sx={{
                   color: lightTheme.textSecondary,
                   fontSize: "0.9rem",
+                  ml: 5.5,
                 }}
               >
                 {groupsError
@@ -1507,40 +1300,29 @@ const ResumeCollection = ({
                   clearGroupsError();
                   refreshGroups();
                 }}
-                startIcon={<Warning sx={{ fontSize: "1rem" }} />}
+                startIcon={<Warning />}
                 sx={{
                   borderColor: lightTheme.warning,
                   color: lightTheme.warning,
                   borderRadius: "12px",
                   textTransform: "none",
-                  fontSize: "0.85rem",
+                  fontSize: "0.875rem",
                   fontWeight: 600,
                   px: 3,
                   py: 1,
                   "&:hover": {
                     borderColor: lightTheme.warning,
                     backgroundColor: alpha(lightTheme.warning, 0.1),
-                    transform: "translateY(-2px)",
                   },
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
               >
-                Retry Groups
+                Retry Loading Groups
               </Button>
             )}
           </Box>
 
-          {/* Search Bar - Aligned with content */}
-          <Box
-            sx={{
-              mb: 4,
-              position: "relative",
-              zIndex: 1,
-              maxWidth: "1400px",
-              mx: "auto",
-              px: 2,
-            }}
-          >
+          {/* Search Bar */}
+          <Box sx={{ mb: 4 }}>
             <TextField
               fullWidth
               placeholder={
@@ -1554,477 +1336,264 @@ const ResumeCollection = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search
-                      sx={{ color: lightTheme.textMuted, fontSize: "1.3rem" }}
-                    />
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 32,
+                        height: 32,
+                        borderRadius: "8px",
+                        backgroundColor: alpha(lightTheme.primary, 0.1),
+                        mr: 1,
+                      }}
+                    >
+                      <Search
+                        sx={{ color: lightTheme.primary, fontSize: "1.125rem" }}
+                      />
+                    </Box>
+                  </InputAdornment>
+                ),
+                endAdornment: searchQuery && (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => setSearchQuery("")}
+                      sx={{
+                        color: lightTheme.textMuted,
+                        backgroundColor: alpha(lightTheme.error, 0.08),
+                        borderRadius: "8px",
+                        width: 32,
+                        height: 32,
+                        transition: "all 0.2s ease",
+                        "&:hover": {
+                          backgroundColor: alpha(lightTheme.error, 0.12),
+                          color: lightTheme.error,
+                          transform: "scale(1.1)",
+                        },
+                      }}
+                    >
+                      <Close sx={{ fontSize: "1rem" }} />
+                    </IconButton>
                   </InputAdornment>
                 ),
               }}
               sx={{
                 "& .MuiOutlinedInput-root": {
-                  borderRadius: "16px",
-                  background: alpha(lightTheme.surface, 0.8),
-                  color: lightTheme.text,
-                  border: `1px solid ${alpha(lightTheme.border, 0.4)}`,
-                  boxShadow: `0 2px 12px ${alpha(lightTheme.background, 0.3)}`,
+                  borderRadius: { xs: "16px", sm: "20px" },
+                  backgroundColor: lightTheme.surface,
+                  transition: "all 0.3s ease",
+                  border: `2px solid ${lightTheme.border}`,
+                  minHeight: { xs: "48px", sm: "56px" },
                   "& input": {
-                    color: lightTheme.text,
-                    py: 2.5,
-                    px: 2,
-                    fontSize: "1rem",
+                    padding: { xs: "12px 8px", sm: "16px 8px" },
+                    fontSize: { xs: "0.875rem", sm: "1rem" },
                     fontWeight: 500,
                     "&::placeholder": {
                       color: lightTheme.textMuted,
                       opacity: 1,
-                      fontSize: "1rem",
+                      fontWeight: 400,
                     },
                   },
-                  "& fieldset": {
-                    border: "none",
-                  },
                   "&:hover": {
-                    background: alpha(lightTheme.surfaceLight, 0.9),
-                    border: `1px solid ${alpha(lightTheme.primary, 0.4)}`,
-                    boxShadow: `0 4px 20px ${alpha(lightTheme.primary, 0.1)}`,
+                    backgroundColor: lightTheme.surfaceLight,
+                    borderColor: alpha(lightTheme.primary, 0.4),
+                    transform: "translateY(-1px)",
+                    boxShadow: `0 4px 12px ${alpha(lightTheme.primary, 0.1)}`,
                   },
                   "&.Mui-focused": {
-                    background: alpha(lightTheme.surfaceLight, 0.9),
-                    border: `1px solid ${lightTheme.primary}`,
-                    boxShadow: `0 4px 24px ${alpha(lightTheme.primary, 0.15)}`,
+                    backgroundColor: lightTheme.background,
+                    borderColor: lightTheme.primary,
+                    boxShadow: `0 0 0 4px ${alpha(lightTheme.primary, 0.1)}`,
+                    transform: "translateY(-2px)",
                   },
                   "&.Mui-disabled": {
-                    background: alpha(lightTheme.surface, 0.3),
-                    color: lightTheme.textMuted,
+                    backgroundColor: alpha(lightTheme.textMuted, 0.05),
+                    borderColor: alpha(lightTheme.textMuted, 0.2),
                   },
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                 },
               }}
             />
           </Box>
 
-          {/* Group Filter Section - Aligned with content */}
+          {/* Group Filter Section */}
           {!groupsError && groupStats.length > 0 && (
-            <Box
-              sx={{
-                position: "relative",
-                zIndex: 1,
-                maxWidth: "1400px",
-                mx: "auto",
-                px: 2,
-                mb: 4,
-              }}
-            >
-              {/* Filter by Groups Label */}
-              <Box sx={{ mb: 3 }}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: "1.1rem",
-                    color: lightTheme.text,
-                    mb: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                  }}
-                >
-                  <Assessment
-                    sx={{ fontSize: "1.2rem", color: lightTheme.primary }}
-                  />
-                  Filter by Groups
-                  {groupsLoading && (
-                    <Box
-                      sx={{
-                        width: 16,
-                        height: 16,
-                        borderRadius: "50%",
-                        border: `2px solid ${alpha(lightTheme.primary, 0.3)}`,
-                        borderTop: `2px solid ${lightTheme.primary}`,
-                        animation: "spin 1s linear infinite",
-                        ml: 1,
-                        "@keyframes spin": {
-                          "0%": { transform: "rotate(0deg)" },
-                          "100%": { transform: "rotate(360deg)" },
-                        },
-                      }}
-                    />
-                  )}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: lightTheme.textSecondary,
-                    fontSize: "0.85rem",
-                  }}
-                >
-                  {groupsLoading
-                    ? "Loading groups..."
-                    : "Select a group to filter resumes. Groups without resumes are disabled. Scroll horizontally to view all available groups"}
-                </Typography>
-              </Box>
-
-              {/* Horizontal Scrollable Group Chips */}
-              <Box
+            <Box>
+              <Typography
+                variant="subtitle1"
                 sx={{
-                  position: "relative",
-                  "&::before": {
-                    content: '""',
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "20px",
-                    height: "100%",
-                    background: `linear-gradient(90deg, ${alpha(
-                      lightTheme.surfaceLight,
-                      0.8
-                    )} 0%, transparent 100%)`,
-                    zIndex: 2,
-                    pointerEvents: "none",
-                  },
-                  "&::after": {
-                    content: '""',
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    width: "20px",
-                    height: "100%",
-                    background: `linear-gradient(270deg, ${alpha(
-                      lightTheme.surfaceLight,
-                      0.8
-                    )} 0%, transparent 100%)`,
-                    zIndex: 2,
-                    pointerEvents: "none",
-                  },
+                  fontWeight: 600,
+                  color: lightTheme.text,
+                  mb: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
                 }}
               >
                 <Box
                   sx={{
                     display: "flex",
-                    gap: 2.5,
                     alignItems: "center",
-                    overflowX: "auto",
-                    overflowY: "hidden",
-                    py: 2,
-                    px: 1,
-                    scrollBehavior: "smooth",
-                    minHeight: 64, // Ensure consistent height even when loading
-                    "&::-webkit-scrollbar": {
-                      height: 6,
-                    },
-                    "&::-webkit-scrollbar-track": {
-                      background: alpha(lightTheme.border, 0.1),
-                      borderRadius: "3px",
-                    },
-                    "&::-webkit-scrollbar-thumb": {
-                      background: `linear-gradient(90deg, ${lightTheme.primary} 0%, ${lightTheme.success} 100%)`,
-                      borderRadius: "3px",
-                      "&:hover": {
-                        background: `linear-gradient(90deg, #357abd 0%, #16a34a 100%)`,
-                      },
-                    },
-                    // Custom scrollbar for Firefox
-                    scrollbarWidth: "thin",
-                    scrollbarColor: `${lightTheme.primary} ${alpha(
-                      lightTheme.border,
-                      0.1
-                    )}`,
+                    justifyContent: "center",
+                    width: 32,
+                    height: 32,
+                    borderRadius: "8px",
+                    background: `linear-gradient(135deg, ${
+                      lightTheme.success
+                    } 0%, ${alpha(lightTheme.success, 0.8)} 100%)`,
+                    boxShadow: `0 4px 12px ${alpha(lightTheme.success, 0.3)}`,
                   }}
                 >
-                  {groupsLoading
-                    ? // Loading skeleton for groups
-                      Array.from({ length: 4 }).map((_, index) => (
-                        <Box
-                          key={index}
-                          sx={{
-                            flexShrink: 0,
-                            height: 48,
-                            width: 120,
-                            borderRadius: "16px",
-                            background: `linear-gradient(90deg, ${alpha(
-                              lightTheme.surface,
-                              0.3
-                            )} 0%, ${alpha(
-                              lightTheme.surfaceLight,
-                              0.5
-                            )} 50%, ${alpha(lightTheme.surface, 0.3)} 100%)`,
-                            backgroundSize: "200% 100%",
-                            animation: "shimmer 1.5s ease-in-out infinite",
-                            "@keyframes shimmer": {
-                              "0%": {
-                                backgroundPosition: "-200% 0",
-                              },
-                              "100%": {
-                                backgroundPosition: "200% 0",
-                              },
-                            },
-                          }}
-                        />
-                      ))
-                    : groupStats.map(({ group, count, hasResumes }, index) => {
-                        const colorTheme = getGroupColorTheme(group);
-                        const isSelected = selectedGroup === group;
+                  <Assessment sx={{ fontSize: "1.125rem", color: "#ffffff" }} />
+                </Box>
+                Filter by Group
+                {groupsLoading && (
+                  <Box
+                    sx={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: "50%",
+                      border: `3px solid ${alpha(lightTheme.primary, 0.2)}`,
+                      borderTop: `3px solid ${lightTheme.primary}`,
+                      animation: "spin 1s linear infinite",
+                      ml: 1,
+                      "@keyframes spin": {
+                        "0%": { transform: "rotate(0deg)" },
+                        "100%": { transform: "rotate(360deg)" },
+                      },
+                    }}
+                  />
+                )}
+              </Typography>
 
-                        return (
+              {/* Group Chips */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: { xs: 1.5, sm: 2 },
+                  py: { xs: 1.5, sm: 2 },
+                }}
+              >
+                {groupStats.map(({ group, count, hasResumes }) => {
+                  const colorTheme = getGroupColorTheme(group);
+                  const isSelected = selectedGroup === group;
+
+                  return (
+                    <Chip
+                      key={group}
+                      label={
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: { xs: 1, sm: 1.5 },
+                            py: { xs: 0.25, sm: 0.5 },
+                          }}
+                        >
                           <Box
-                            key={group}
                             sx={{
-                              flexShrink: 0,
-                              position: "relative",
-                              animation: `fadeInScale 0.6s ease-out ${
-                                index * 0.05
-                              }s both`,
-                              "@keyframes fadeInScale": {
-                                from: {
-                                  opacity: 0,
-                                  transform: "scale(0.8)",
-                                },
-                                to: {
-                                  opacity: 1,
-                                  transform: "scale(1)",
-                                },
-                              },
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: 20,
+                              height: 20,
+                              borderRadius: "6px",
+                              background: isSelected
+                                ? "rgba(255,255,255,0.2)"
+                                : hasResumes
+                                ? colorTheme.gradient
+                                : alpha(lightTheme.textMuted, 0.3),
+                              boxShadow: hasResumes
+                                ? `0 2px 8px ${alpha(colorTheme.primary, 0.2)}`
+                                : "none",
                             }}
                           >
-                            <Chip
-                              label={
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 1,
-                                  }}
-                                >
-                                  <Typography
-                                    component="span"
-                                    sx={{
-                                      fontWeight: 700,
-                                      textTransform: "capitalize",
-                                      fontSize: "0.9rem",
-                                      whiteSpace: "nowrap",
-                                    }}
-                                  >
-                                    {group}
-                                  </Typography>
-                                  <Box
-                                    sx={{
-                                      background: isSelected
-                                        ? "rgba(255, 255, 255, 0.3)"
-                                        : hasResumes
-                                        ? "rgba(255, 255, 255, 0.2)"
-                                        : "rgba(255, 255, 255, 0.1)",
-                                      color: hasResumes
-                                        ? "#ffffff"
-                                        : alpha("#ffffff", 0.6),
-                                      borderRadius: "10px",
-                                      px: 1,
-                                      py: 0.2,
-                                      fontSize: "0.75rem",
-                                      fontWeight: 700,
-                                      minWidth: "24px",
-                                      textAlign: "center",
-                                      border: isSelected
-                                        ? "1px solid rgba(255, 255, 255, 0.4)"
-                                        : hasResumes
-                                        ? "1px solid rgba(255, 255, 255, 0.2)"
-                                        : "1px solid rgba(255, 255, 255, 0.1)",
-                                    }}
-                                  >
-                                    {count === 0 ? "0" : count}
-                                  </Box>
-                                </Box>
-                              }
-                              onClick={() =>
-                                handleGroupSelect(group, hasResumes)
-                              }
-                              disabled={groupsLoading || !hasResumes}
+                            <Assessment
                               sx={{
-                                height: 48,
-                                px: 2,
-                                cursor: hasResumes ? "pointer" : "not-allowed",
-                                position: "relative",
-                                overflow: "hidden",
-                                minWidth: "fit-content",
-                                opacity: hasResumes ? 1 : 0.5,
-                                transition:
-                                  "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                                "&::before": {
-                                  content: '""',
-                                  position: "absolute",
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  background: hasResumes
-                                    ? colorTheme.background
-                                    : `linear-gradient(135deg, ${alpha(
-                                        lightTheme.textMuted,
-                                        0.2
-                                      )} 0%, ${alpha(
-                                        lightTheme.textMuted,
-                                        0.3
-                                      )} 100%)`,
-                                  opacity: isSelected ? 1 : 0,
-                                  transition: "opacity 0.3s ease",
-                                  zIndex: -1,
-                                },
-                                "&::after": {
-                                  content: '""',
-                                  position: "absolute",
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  background: hasResumes
-                                    ? `linear-gradient(135deg, ${alpha(
-                                        colorTheme.border,
-                                        0.1
-                                      )} 0%, ${alpha(
-                                        colorTheme.border,
-                                        0.2
-                                      )} 100%)`
-                                    : `linear-gradient(135deg, ${alpha(
-                                        lightTheme.textMuted,
-                                        0.1
-                                      )} 0%, ${alpha(
-                                        lightTheme.textMuted,
-                                        0.15
-                                      )} 100%)`,
-                                  opacity: isSelected ? 0 : 1,
-                                  transition: "opacity 0.3s ease",
-                                  zIndex: -1,
-                                },
-                                color: hasResumes
-                                  ? isSelected
-                                    ? "#ffffff"
-                                    : colorTheme.border
+                                fontSize: "0.75rem",
+                                color: isSelected
+                                  ? "#fff"
+                                  : hasResumes
+                                  ? "#fff"
                                   : lightTheme.textMuted,
-                                border: `2px solid ${
-                                  hasResumes
-                                    ? isSelected
-                                      ? colorTheme.border
-                                      : alpha(colorTheme.border, 0.4)
-                                    : alpha(lightTheme.textMuted, 0.3)
-                                }`,
-                                borderRadius: "16px",
-                                boxShadow: hasResumes
-                                  ? isSelected
-                                    ? `0 8px 32px ${
-                                        colorTheme.hoverShadowColor
-                                      }, 0 0 0 1px ${alpha(
-                                        colorTheme.border,
-                                        0.2
-                                      )}`
-                                    : `0 4px 16px ${alpha(
-                                        colorTheme.shadowColor,
-                                        0.2
-                                      )}`
-                                  : `0 2px 8px ${alpha(
-                                      lightTheme.textMuted,
-                                      0.1
-                                    )}`,
-                                transform: isSelected
-                                  ? "translateY(-4px) scale(1.02)"
-                                  : "translateY(0) scale(1)",
-                                "&:hover": hasResumes
-                                  ? {
-                                      "&::before": {
-                                        opacity: 1,
-                                      },
-                                      "&::after": {
-                                        opacity: 0,
-                                      },
-                                      color: "#ffffff",
-                                      border: `2px solid ${colorTheme.border}`,
-                                      boxShadow: `0 12px 40px ${
-                                        colorTheme.hoverShadowColor
-                                      }, 0 0 0 1px ${alpha(
-                                        colorTheme.border,
-                                        0.3
-                                      )}`,
-                                      transform: "translateY(-6px) scale(1.05)",
-                                    }
-                                  : {},
-                                "&:active": hasResumes
-                                  ? {
-                                      transform: "translateY(-2px) scale(1.02)",
-                                    }
-                                  : {},
-                                "&.Mui-disabled": {
-                                  opacity: hasResumes ? 0.6 : 0.4,
-                                  cursor: hasResumes
-                                    ? "default"
-                                    : "not-allowed",
-                                  transform: "none",
-                                  "&:hover": {
-                                    transform: "none",
-                                  },
-                                },
                               }}
                             />
                           </Box>
-                        );
-                      })}
-                </Box>
+                          <span style={{ fontWeight: 600 }}>{group}</span>
+                          <Box
+                            component="span"
+                            sx={{
+                              backgroundColor: isSelected
+                                ? "rgba(255,255,255,0.25)"
+                                : hasResumes
+                                ? alpha(colorTheme.primary, 0.2)
+                                : alpha(lightTheme.textMuted, 0.2),
+                              px: 1.5,
+                              py: 0.5,
+                              borderRadius: "8px",
+                              fontSize: "0.75rem",
+                              fontWeight: 700,
+                              minWidth: "28px",
+                              textAlign: "center",
+                            }}
+                          >
+                            {count}
+                          </Box>
+                        </Box>
+                      }
+                      onClick={() => handleGroupSelect(group, hasResumes)}
+                      disabled={!hasResumes}
+                      sx={{
+                        borderRadius: { xs: "12px", sm: "16px" },
+                        height: { xs: 38, sm: 44 },
+                        backgroundColor: isSelected
+                          ? colorTheme.primary
+                          : hasResumes
+                          ? alpha(colorTheme.primary, 0.08)
+                          : alpha(lightTheme.textMuted, 0.08),
+                        color: isSelected
+                          ? "#fff"
+                          : hasResumes
+                          ? colorTheme.primary
+                          : lightTheme.textMuted,
+                        border: `2px solid ${
+                          isSelected
+                            ? colorTheme.primary
+                            : hasResumes
+                            ? alpha(colorTheme.primary, 0.2)
+                            : "transparent"
+                        }`,
+                        transition: "all 0.3s ease",
+                        cursor: hasResumes ? "pointer" : "not-allowed",
+                        ...(!hasResumes
+                          ? {}
+                          : {
+                              "&:hover": {
+                                backgroundColor: isSelected
+                                  ? colorTheme.primary
+                                  : alpha(colorTheme.primary, 0.12),
+                                transform: "translateY(-2px)",
+                                boxShadow: `0 8px 24px ${alpha(
+                                  colorTheme.primary,
+                                  0.2
+                                )}`,
+                              },
+                            }),
+                        "& .MuiChip-label": {
+                          px: { xs: 1.5, sm: 2 },
+                          fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                        },
+                        "&.Mui-disabled": {
+                          opacity: 0.4,
+                        },
+                      }}
+                    />
+                  );
+                })}
               </Box>
             </Box>
           )}
-
-          {/* No Groups Available Message - Aligned with content */}
-          {!groupsError &&
-            !groupsLoading &&
-            groupStats.length === 0 &&
-            resumes.length > 0 && (
-              <Box
-                sx={{
-                  position: "relative",
-                  zIndex: 1,
-                  maxWidth: "1400px",
-                  mx: "auto",
-                  px: 2,
-                  mb: 4,
-                }}
-              >
-                <Box
-                  sx={{
-                    textAlign: "center",
-                    py: 4,
-                    px: 3,
-                    background: `linear-gradient(135deg, ${alpha(
-                      lightTheme.warning,
-                      0.1
-                    )} 0%, ${alpha(lightTheme.warning, 0.2)} 100%)`,
-                    borderRadius: "16px",
-                    border: `1px solid ${alpha(lightTheme.warning, 0.3)}`,
-                  }}
-                >
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: lightTheme.warning,
-                      fontWeight: 600,
-                      mb: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 1,
-                    }}
-                  >
-                    <Assessment sx={{ fontSize: "1.2rem" }} />
-                    No Groups Available
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: lightTheme.textSecondary,
-                      fontSize: "0.9rem",
-                    }}
-                  >
-                    Groups are not available at the moment. You can still search
-                    through all resumes using the search bar above.
-                  </Typography>
-                </Box>
-              </Box>
-            )}
         </Box>
 
         {/* Enhanced Loading State */}
@@ -2183,26 +1752,26 @@ const ResumeCollection = ({
               </CardContent>
             </Card>
           </Box>
-        ) : /* Resume Grid */
-        filteredResumes.length === 0 ? (
+        ) : filteredResumes.length === 0 ? (
           <Box
             sx={{
               display: "flex",
               justifyContent: "center",
-              py: 12,
+              py: { xs: 8, sm: 12 },
             }}
           >
             <Card
               sx={{
                 textAlign: "center",
-                py: 8,
-                px: 6,
+                py: { xs: 6, sm: 8 },
+                px: { xs: 4, sm: 6 },
                 maxWidth: 500,
+                width: "100%",
                 background: `linear-gradient(135deg, ${
                   lightTheme.surface
                 } 0%, ${alpha(lightTheme.surfaceLight, 0.9)} 100%)`,
                 border: `1px solid ${alpha(lightTheme.border, 0.3)}`,
-                borderRadius: "24px",
+                borderRadius: { xs: "20px", sm: "24px" },
                 boxShadow: `0 20px 60px ${alpha(lightTheme.background, 0.4)}`,
                 backdropFilter: "blur(10px)",
                 position: "relative",
@@ -2229,15 +1798,15 @@ const ResumeCollection = ({
                 <Box
                   sx={{
                     position: "relative",
-                    mb: 4,
+                    mb: { xs: 3, sm: 4 },
                     mx: "auto",
                     width: "fit-content",
                   }}
                 >
                   <Box
                     sx={{
-                      width: 120,
-                      height: 120,
+                      width: { xs: 100, sm: 120 },
+                      height: { xs: 100, sm: 120 },
                       borderRadius: "50%",
                       background: `linear-gradient(135deg, ${alpha(
                         lightTheme.textMuted,
@@ -2275,7 +1844,7 @@ const ResumeCollection = ({
                   >
                     <FolderOpen
                       sx={{
-                        fontSize: "3.5rem",
+                        fontSize: { xs: "2.75rem", sm: "3.5rem" },
                         color: lightTheme.textMuted,
                         opacity: 0.8,
                       }}
@@ -2292,7 +1861,7 @@ const ResumeCollection = ({
                     backgroundClip: "text",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
-                    fontSize: "1.8rem",
+                    fontSize: { xs: "1.5rem", sm: "1.8rem" },
                   }}
                 >
                   {selectedGroup && searchQuery.trim()
@@ -2308,9 +1877,9 @@ const ResumeCollection = ({
                   variant="body1"
                   sx={{
                     color: lightTheme.textSecondary,
-                    fontSize: "1.1rem",
+                    fontSize: { xs: "1rem", sm: "1.1rem" },
                     lineHeight: 1.6,
-                    mb: 4,
+                    mb: { xs: 3, sm: 4 },
                     maxWidth: 400,
                     mx: "auto",
                   }}
@@ -2330,17 +1899,17 @@ const ResumeCollection = ({
                     onClick={clearAllFilters}
                     startIcon={<Close />}
                     sx={{
-                      background: `linear-gradient(135deg, ${lightTheme.primary} 0%, #357abd 100%)`,
+                      background: `linear-gradient(135deg, ${lightTheme.primary} 0%, ${colorPalette[0].primary} 100%)`,
                       color: "#ffffff",
-                      borderRadius: "12px",
-                      px: 4,
-                      py: 1.5,
-                      fontSize: "1rem",
+                      borderRadius: { xs: "10px", sm: "12px" },
+                      px: { xs: 3, sm: 4 },
+                      py: { xs: 1.25, sm: 1.5 },
+                      fontSize: { xs: "0.9375rem", sm: "1rem" },
                       fontWeight: 600,
                       textTransform: "none",
                       boxShadow: `0 8px 24px ${alpha(lightTheme.primary, 0.3)}`,
                       "&:hover": {
-                        background: `linear-gradient(135deg, #357abd 0%, #2c5aa0 100%)`,
+                        background: `linear-gradient(135deg, ${colorPalette[0].primary} 0%, ${lightTheme.primary} 100%)`,
                         boxShadow: `0 12px 32px ${alpha(
                           lightTheme.primary,
                           0.4
@@ -2360,22 +1929,22 @@ const ResumeCollection = ({
           /* Resume Grid - Aligned with search */
           <Box
             sx={{
-              maxWidth: "1400px",
-              mx: "auto",
-              px: 2,
+              width: "100%",
               position: "relative",
             }}
           >
             {/* Results Header */}
             <Box
               sx={{
-                mb: 3,
+                mb: { xs: 2, sm: 3 },
                 display: "flex",
-                alignItems: "center",
+                alignItems: { xs: "flex-start", sm: "center" },
+                flexDirection: { xs: "column", sm: "row" },
                 justifyContent: "space-between",
-                p: 2,
+                gap: { xs: 2, sm: 0 },
+                p: { xs: 1.5, sm: 2 },
                 background: alpha(lightTheme.surface, 0.5),
-                borderRadius: "12px",
+                borderRadius: { xs: "10px", sm: "12px" },
                 border: `1px solid ${alpha(lightTheme.border, 0.2)}`,
               }}
             >
@@ -2384,12 +1953,24 @@ const ResumeCollection = ({
                 sx={{
                   color: lightTheme.text,
                   fontWeight: 600,
-                  fontSize: "1.1rem",
+                  fontSize: { xs: "1rem", sm: "1.1rem" },
                 }}
               >
                 {selectedGroup
                   ? `${selectedGroup} Resumes (${filteredResumes.length})`
                   : `All Resumes (${filteredResumes.length})`}
+                {totalPages > 1 && (
+                  <Typography
+                    component="span"
+                    sx={{
+                      color: lightTheme.textSecondary,
+                      fontSize: { xs: "0.875rem", sm: "0.9rem" },
+                      ml: 1,
+                    }}
+                  >
+                    • Page {currentPage} of {totalPages}
+                  </Typography>
+                )}
               </Typography>
 
               {(selectedGroup || searchQuery.trim()) && (
@@ -2397,22 +1978,21 @@ const ResumeCollection = ({
                   variant="contained"
                   size="small"
                   onClick={clearAllFilters}
-                  startIcon={<Close sx={{ fontSize: "1rem" }} />}
+                  startIcon={
+                    <Close sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }} />
+                  }
                   sx={{
-                    background: `linear-gradient(135deg, ${alpha(
-                      lightTheme.error,
-                      0.8
-                    )} 0%, ${alpha(lightTheme.error, 0.9)} 100%)`,
+                    background: `linear-gradient(135deg, ${lightTheme.error} 0%, #FDA052 100%)`,
                     color: "#ffffff",
-                    borderRadius: "12px",
+                    borderRadius: { xs: "10px", sm: "12px" },
                     textTransform: "none",
-                    fontSize: "0.85rem",
+                    fontSize: { xs: "0.8125rem", sm: "0.85rem" },
                     fontWeight: 600,
-                    px: 3,
-                    py: 1,
+                    px: { xs: 2, sm: 3 },
+                    py: { xs: 0.75, sm: 1 },
                     boxShadow: `0 4px 16px ${alpha(lightTheme.error, 0.3)}`,
                     "&:hover": {
-                      background: `linear-gradient(135deg, ${lightTheme.error} 0%, #dc2626 100%)`,
+                      background: `linear-gradient(135deg, #FDA052 0%, ${lightTheme.error} 100%)`,
                       boxShadow: `0 6px 20px ${alpha(lightTheme.error, 0.4)}`,
                       transform: "translateY(-2px)",
                     },
@@ -2430,199 +2010,113 @@ const ResumeCollection = ({
                 display: "grid",
                 gridTemplateColumns: {
                   xs: "1fr",
-                  sm: "repeat(auto-fill, minmax(360px, 1fr))",
-                  md: "repeat(auto-fill, minmax(380px, 1fr))",
-                  lg: "repeat(auto-fill, minmax(400px, 1fr))",
-                  xl: "repeat(3, 1fr)",
+                  sm: "repeat(auto-fill, minmax(300px, 1fr))",
+                  md: "repeat(auto-fill, minmax(320px, 1fr))",
+                  lg: "repeat(auto-fill, minmax(340px, 1fr))",
                 },
-                gap: { xs: 3, sm: 4 },
+                gap: { xs: 2, sm: 2.5, md: 3 },
+                mb: { xs: 3, md: 4 },
                 width: "100%",
-                maxWidth: "1400px",
-                mx: "auto",
-                position: "relative",
-                alignItems: "stretch",
-                "&::before": {
-                  content: '""',
-                  position: "absolute",
-                  top: -20,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: "80%",
-                  height: 1,
-                  background: `linear-gradient(90deg, transparent 0%, ${alpha(
-                    lightTheme.border,
-                    0.5
-                  )} 50%, transparent 100%)`,
-                  zIndex: 0,
-                },
-                "& > *": {
-                  height: "100%",
-                  minHeight: "100%",
-                },
               }}
             >
-              {filteredResumes.map((resume) => {
-                const colorTheme = getGroupColorTheme(resume.group);
-                return (
-                  <Card
-                    key={resume.id}
-                    sx={{
-                      backgroundColor: lightTheme.background,
-                      borderRadius: "16px",
-                      boxShadow: colorTheme.shadowColor,
-                      border: `2px solid ${colorTheme.primary}`,
-                      transition: "all 0.3s ease",
-                      "&:hover": {
-                        transform: "translateY(-4px)",
-                        boxShadow: colorTheme.hoverShadowColor,
-                      },
-                      mb: 2,
-                    }}
-                  >
-                    <CardContent>
-                      <Stack direction="row" spacing={2} alignItems="center">
-                        <Box
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: "8px",
-                            background: colorTheme.gradient,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          {resume.fileType === "pdf" ? (
-                            <PictureAsPdf sx={{ color: "#FFFFFF" }} />
-                          ) : (
-                            <Description sx={{ color: "#FFFFFF" }} />
-                          )}
-                        </Box>
-
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Typography
-                            variant="subtitle1"
-                            sx={{ color: lightTheme.text, fontWeight: 600 }}
-                          >
-                            {resume.filename}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            sx={{ color: lightTheme.textSecondary }}
-                          >
-                            {resume.group} • {resume.fileSize}
-                          </Typography>
-                        </Box>
-
-                        <Stack direction="row" spacing={1}>
-                          <IconButton
-                            size="small"
-                            onClick={() => onView(resume)}
-                            sx={{
-                              color: lightTheme.textMuted,
-                              "&:hover": {
-                                color: lightTheme.text,
-                                backgroundColor: lightTheme.surface,
-                              },
-                            }}
-                          >
-                            <Visibility />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => onDownload(resume)}
-                            sx={{
-                              color: lightTheme.textMuted,
-                              "&:hover": {
-                                color: lightTheme.text,
-                                backgroundColor: lightTheme.surface,
-                              },
-                            }}
-                          >
-                            <Download />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => onDelete(resume)}
-                            sx={{
-                              color: lightTheme.textMuted,
-                              "&:hover": {
-                                color: lightTheme.error,
-                                backgroundColor: alpha(lightTheme.error, 0.1),
-                              },
-                            }}
-                          >
-                            <Delete />
-                          </IconButton>
-                        </Stack>
-                      </Stack>
-
-                      {resume.uploadedAt && (
-                        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                          <Chip
-                            size="small"
-                            icon={<Schedule sx={{ fontSize: 16 }} />}
-                            label={`Uploaded ${resume.uploadedAt}`}
-                            sx={{
-                              backgroundColor: lightTheme.surface,
-                              color: lightTheme.textSecondary,
-                              "& .MuiChip-icon": {
-                                color: lightTheme.textSecondary,
-                              },
-                            }}
-                          />
-                          <Chip
-                            size="small"
-                            icon={<InsertDriveFile sx={{ fontSize: 16 }} />}
-                            label={resume.fileType.toUpperCase()}
-                            sx={{
-                              backgroundColor: lightTheme.surface,
-                              color: lightTheme.textSecondary,
-                              "& .MuiChip-icon": {
-                                color: lightTheme.textSecondary,
-                              },
-                            }}
-                          />
-                          {resume.status && (
-                            <Chip
-                              size="small"
-                              icon={
-                                resume.status === "completed" ? (
-                                  <CheckCircle sx={{ fontSize: 16 }} />
-                                ) : (
-                                  <Assessment sx={{ fontSize: 16 }} />
-                                )
-                              }
-                              label={
-                                resume.status === "completed"
-                                  ? "Processed"
-                                  : "Processing"
-                              }
-                              sx={{
-                                backgroundColor:
-                                  resume.status === "completed"
-                                    ? alpha(lightTheme.success, 0.1)
-                                    : alpha(lightTheme.warning, 0.1),
-                                color:
-                                  resume.status === "completed"
-                                    ? lightTheme.success
-                                    : lightTheme.warning,
-                                "& .MuiChip-icon": {
-                                  color:
-                                    resume.status === "completed"
-                                      ? lightTheme.success
-                                      : lightTheme.warning,
-                                },
-                              }}
-                            />
-                          )}
-                        </Stack>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
+              {paginatedResumes.map((resume) => (
+                <FileCard
+                  key={resume.id}
+                  resume={resume}
+                  onView={onView}
+                  onDownload={onDownload}
+                  onDelete={onDelete}
+                  onResumeDeleted={handleResumeDeleted}
+                />
+              ))}
             </Box>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 2,
+                  mt: { xs: 3, sm: 4 },
+                  mb: { xs: 2, sm: 3 },
+                }}
+              >
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  size="large"
+                  sx={{
+                    "& .MuiPaginationItem-root": {
+                      borderRadius: { xs: "10px", sm: "12px" },
+                      fontSize: { xs: "0.875rem", sm: "1rem" },
+                      fontWeight: 500,
+                      minWidth: { xs: "32px", sm: "40px" },
+                      height: { xs: "32px", sm: "40px" },
+                      margin: { xs: "0 2px", sm: "0 4px" },
+                      color: lightTheme.textSecondary,
+                      border: `1px solid ${alpha(lightTheme.border, 0.5)}`,
+                      "&:hover": {
+                        backgroundColor: alpha(lightTheme.primary, 0.05),
+                        borderColor: lightTheme.primary,
+                        color: lightTheme.primary,
+                      },
+                      "&.Mui-selected": {
+                        background: `linear-gradient(135deg, ${lightTheme.primary} 0%, ${colorPalette[0].primary} 100%)`,
+                        color: "#ffffff",
+                        borderColor: lightTheme.primary,
+                        boxShadow: `0 4px 12px ${alpha(
+                          lightTheme.primary,
+                          0.25
+                        )}`,
+                        "&:hover": {
+                          background: `linear-gradient(135deg, ${colorPalette[0].primary} 0%, ${lightTheme.primary} 100%)`,
+                          color: "#ffffff",
+                        },
+                      },
+                      // Navigation arrows
+                      "&.MuiPaginationItem-previousNext": {
+                        backgroundColor: alpha(lightTheme.primary, 0.05),
+                        borderColor: alpha(lightTheme.primary, 0.2),
+                        color: lightTheme.primary,
+                        "&:hover": {
+                          backgroundColor: alpha(lightTheme.primary, 0.1),
+                          borderColor: lightTheme.primary,
+                        },
+                        "&.Mui-disabled": {
+                          opacity: 0.4,
+                          backgroundColor: alpha(lightTheme.textMuted, 0.05),
+                          borderColor: lightTheme.border,
+                          color: lightTheme.textMuted,
+                        },
+                      },
+                    },
+                  }}
+                />
+
+                {/* Pagination Info */}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: lightTheme.textSecondary,
+                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                    fontWeight: 500,
+                    textAlign: "center",
+                    background: alpha(lightTheme.primary, 0.05),
+                    borderRadius: "8px",
+                    px: 2,
+                    py: 1,
+                    border: `1px solid ${alpha(lightTheme.primary, 0.1)}`,
+                  }}
+                >
+                  Showing {startIndex + 1} to{" "}
+                  {Math.min(endIndex, filteredResumes.length)} of{" "}
+                  {filteredResumes.length} resumes
+                </Typography>
+              </Box>
+            )}
           </Box>
         )}
       </Box>

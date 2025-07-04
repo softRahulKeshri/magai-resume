@@ -25,6 +25,7 @@ import ResumeSearch from "./components/ResumeSearch";
 import ResumeCollection from "./components/ResumeCollection";
 import { Resume, UploadResult } from "./types";
 import { apiService } from "./services/api";
+import { API_CONFIG } from "./theme/constants";
 
 // Color palette
 const brand_gradient = {
@@ -299,12 +300,106 @@ const App = () => {
                 <ResumeCollection
                   resumes={resumes}
                   isLoading={loading}
-                  onView={(resume: Resume) =>
-                    console.log("View resume:", resume)
-                  }
-                  onDownload={(resume: Resume) =>
-                    console.log("Download resume:", resume)
-                  }
+                  onView={(resume: Resume) => {
+                    try {
+                      // Use original filename for API calls
+                      const originalFilename =
+                        resume.filename || resume.original_filename;
+
+                      if (!originalFilename) {
+                        console.error("No filename available for viewing");
+                        alert("Unable to view CV: Filename not available");
+                        return;
+                      }
+
+                      const viewUrl = `${API_CONFIG.baseURL}/uploads/${originalFilename}`;
+                      console.log("Opening CV viewer with URL:", viewUrl);
+                      window.open(viewUrl, "_blank");
+                    } catch (error) {
+                      console.error("Error viewing CV:", error);
+                      alert("Failed to open CV viewer. Please try again.");
+                    }
+                  }}
+                  onDownload={async (resume: Resume) => {
+                    try {
+                      // Use original filename for API calls
+                      const originalFilename =
+                        resume.filename || resume.original_filename;
+
+                      if (!originalFilename) {
+                        throw new Error("Filename not available for download");
+                      }
+
+                      console.log(
+                        "Attempting to download file:",
+                        originalFilename
+                      );
+                      console.log(
+                        "Download URL:",
+                        `${API_CONFIG.baseURL}/uploads/${originalFilename}`
+                      );
+
+                      // Fetch the file for download
+                      const response = await fetch(
+                        `${API_CONFIG.baseURL}/uploads/${originalFilename}`,
+                        {
+                          method: "GET",
+                          headers: {
+                            Accept:
+                              "application/pdf,application/octet-stream,*/*",
+                          },
+                        }
+                      );
+
+                      console.log("Download response status:", response.status);
+
+                      if (response.ok) {
+                        // Get the file as a blob
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+
+                        // Create a temporary link element and trigger download
+                        const link = document.createElement("a");
+                        link.href = url;
+                        // Use original filename for download
+                        link.download = originalFilename;
+                        // Ensure the link is not visible
+                        link.style.display = "none";
+                        document.body.appendChild(link);
+                        link.click();
+
+                        // Clean up
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url);
+
+                        console.log("Download initiated successfully");
+                      } else {
+                        // Log detailed error information
+                        const errorText = await response
+                          .text()
+                          .catch(() => "Unknown error");
+                        console.error("Download failed:", {
+                          status: response.status,
+                          statusText: response.statusText,
+                          url: response.url,
+                          errorBody: errorText,
+                        });
+                        throw new Error(
+                          `Download failed: ${response.status} ${response.statusText}`
+                        );
+                      }
+                    } catch (error) {
+                      console.error("Error downloading CV:", error);
+                      // Enhanced error message with debugging info
+                      const errorMessage =
+                        error instanceof Error
+                          ? error.message
+                          : "Unknown error occurred";
+                      alert(
+                        `Failed to download CV: ${errorMessage}\n\nPlease check the browser console for more details.`
+                      );
+                    }
+                  }}
                   onResumeDeleted={async (resumeId: number) => {
                     console.log("🔄 Resume deleted, refreshing data...");
                     await fetchResumes();
