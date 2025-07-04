@@ -46,8 +46,8 @@ import {
 } from "@mui/icons-material";
 
 // Internal imports
-import { UploadResult, UploadProgress, Group } from "../types";
-import { UPLOAD_CONFIG, BRAND_COLORS } from "../theme/constants";
+import { UploadResult, UploadProgress, Group, Resume } from "../types";
+import { UPLOAD_CONFIG, BRAND_COLORS, API_CONFIG } from "../theme/constants";
 import { useGroups } from "../hooks/useGroups";
 import { apiService } from "../services/api";
 
@@ -68,6 +68,7 @@ interface FileWithProgress {
   status: "ready" | "uploading" | "processing" | "complete" | "error";
   error?: string;
   file: File; // Keep reference to original file for upload
+  stored_filename?: string; // Add stored filename for API calls
 }
 
 const ResumeUploader = ({
@@ -418,6 +419,21 @@ const ResumeUploader = ({
       // Use the new uploadCVsToGroup method
       const result = await apiService.uploadCVsToGroup(formData);
 
+      // Update files with stored filenames from the response
+      const updatedFiles = files.map((file) => {
+        const resultFile = result.results.find(
+          (r: { original_filename: string; stored_filename: string }) =>
+            r.original_filename === file.name
+        );
+        return {
+          ...file,
+          status: "complete" as const,
+          stored_filename: resultFile?.stored_filename,
+        };
+      });
+
+      setFiles(updatedFiles);
+
       // Final progress update
       setUploadProgress((prev) => ({
         ...prev,
@@ -426,10 +442,6 @@ const ResumeUploader = ({
         currentFile: "Upload completed!",
       }));
 
-      // Update files to complete status
-      setFiles((prev) =>
-        prev.map((file) => ({ ...file, status: "complete" as const }))
-      );
       setUploadResults(result);
       setUploadStatus("success");
       onUploadSuccess(result);
@@ -510,7 +522,8 @@ const ResumeUploader = ({
         justifyContent: "center",
         px: 3,
         py: files.length > 8 ? 2 : 4,
-        background: "linear-gradient(135deg, #FFFFFF 0%, #EFF5FF 100%)",
+        background:
+          "linear-gradient(135deg,rgba(255, 255, 255, 0.67) 0%,rgba(245, 245, 245, 0.75) 100%)",
       }}
     >
       <Box sx={{ maxWidth: 800, width: "100%" }}>
@@ -1342,15 +1355,62 @@ const ResumeUploader = ({
                     </ListItemIcon>
                     <ListItemText
                       primary={
-                        <Typography
-                          sx={{
-                            fontWeight: 500,
-                            color: "#2E3141",
-                            fontSize: "0.95rem",
-                          }}
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
                         >
-                          {file.name}
-                        </Typography>
+                          <Typography
+                            sx={{
+                              fontWeight: 500,
+                              color: "#2E3141",
+                              fontSize: "0.95rem",
+                            }}
+                          >
+                            {file.name}
+                          </Typography>
+                          {file.status === "complete" &&
+                            file.stored_filename && (
+                              <Box sx={{ display: "flex", gap: 1 }}>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  href={`${API_CONFIG.baseURL}/uploads/${file.stored_filename}`}
+                                  target="_blank"
+                                  sx={{
+                                    minWidth: "auto",
+                                    px: 1,
+                                    py: 0.5,
+                                    borderColor: "#3077F3",
+                                    color: "#3077F3",
+                                    "&:hover": {
+                                      borderColor: "#1E50A8",
+                                      backgroundColor: "#EFF5FF",
+                                    },
+                                  }}
+                                >
+                                  View
+                                </Button>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  href={`${API_CONFIG.baseURL}/uploads/${file.stored_filename}`}
+                                  download
+                                  sx={{
+                                    minWidth: "auto",
+                                    px: 1,
+                                    py: 0.5,
+                                    borderColor: "#3077F3",
+                                    color: "#3077F3",
+                                    "&:hover": {
+                                      borderColor: "#1E50A8",
+                                      backgroundColor: "#EFF5FF",
+                                    },
+                                  }}
+                                >
+                                  Download
+                                </Button>
+                              </Box>
+                            )}
+                        </Box>
                       }
                       secondary={
                         <Typography
@@ -1573,6 +1633,7 @@ const ResumeUploader = ({
           sx={{
             mt: 4,
             display: "flex",
+            borderRadius: 4,
             justifyContent: "center",
             gap: 2,
             position: "sticky",
@@ -1580,7 +1641,7 @@ const ResumeUploader = ({
             backgroundColor: "white",
             py: 2,
             zIndex: 2,
-            boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.05)",
+            boxShadow: "0 -4px 12px rgba(53, 133, 245, 0.09)",
           }}
         >
           <Button

@@ -569,7 +569,7 @@ const App = () => {
           flexShrink: 0,
           p: 3,
           bgcolor: neutral_palette.n100,
-          borderRight: `1px solid ${neutral_palette.n150}`,
+          // borderRight: `1px solid ${neutral_palette.n150}`,
           height: "100vh",
           position: "sticky",
           top: 0,

@@ -32,7 +32,7 @@ import {
   Delete,
   Schedule,
   InsertDriveFile,
-  Assessment,
+  Folder,
   FolderOpen,
   Close,
   Warning,
@@ -1133,7 +1133,7 @@ const ResumeCollection = ({
               },
             }}
           >
-            <Assessment
+            <InsertDriveFile
               sx={{
                 fontSize: "2.5rem",
                 color: "#ffffff",
@@ -1192,7 +1192,7 @@ const ResumeCollection = ({
             color="#fff"
             bgColor="linear-gradient(135deg, #3077F3 0%, #94BAFD 100%)"
             icon={
-              <FolderOpen
+              <InsertDriveFile
                 sx={{ fontSize: "2.5rem", color: "rgba(255,255,255,0.9)" }}
               />
             }
@@ -1203,7 +1203,7 @@ const ResumeCollection = ({
             color="#fff"
             bgColor="linear-gradient(135deg, #41E6F8 0%, #3077F3 100%)"
             icon={
-              <Assessment
+              <Folder
                 sx={{ fontSize: "2.5rem", color: "rgba(255,255,255,0.9)" }}
               />
             }
@@ -1444,7 +1444,7 @@ const ResumeCollection = ({
                     boxShadow: `0 4px 12px ${alpha(lightTheme.success, 0.3)}`,
                   }}
                 >
-                  <Assessment sx={{ fontSize: "1.125rem", color: "#ffffff" }} />
+                  <Folder sx={{ fontSize: "1.125rem", color: "#ffffff" }} />
                 </Box>
                 Filter by Group
                 {groupsLoading && (
@@ -1509,7 +1509,7 @@ const ResumeCollection = ({
                                 : "none",
                             }}
                           >
-                            <Assessment
+                            <Folder
                               sx={{
                                 fontSize: "0.75rem",
                                 color: isSelected
