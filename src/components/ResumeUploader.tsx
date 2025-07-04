@@ -42,6 +42,7 @@ import {
   Add,
   Warning,
   FolderOpen,
+  Upload,
 } from "@mui/icons-material";
 
 // Internal imports
@@ -245,7 +246,6 @@ const ResumeUploader = ({
     },
     maxFiles: UPLOAD_CONFIG.maxFiles,
     disabled: isUploading || !selectedGroup, // Disabled until group is selected
-    noClick: true, // Disable click on the dropzone itself
   });
 
   // Remove file
@@ -565,7 +565,7 @@ const ResumeUploader = ({
                   letterSpacing: "-0.02em",
                 }}
               >
-                CV Upload Center
+                Upload Center
               </Typography>
               <Typography
                 variant="h6"
@@ -586,10 +586,10 @@ const ResumeUploader = ({
           <Box
             sx={{
               position: "absolute",
-              bottom: 0,
+              bottom: 20,
               left: "50%",
               transform: "translateX(-50%)",
-              width: "80px",
+              width: "200px",
               height: "3px",
               background:
                 "linear-gradient(90deg, #3077F3, #41E6F8, #B96AF7, #FDA052)",
@@ -605,7 +605,7 @@ const ResumeUploader = ({
             mb: 3,
             backgroundColor: "#FFFFFF",
             border: "1px solid #E3EDFF",
-            borderRadius: 1.25,
+            borderRadius: 4,
             overflow: "hidden",
             boxShadow: "0 8px 32px rgba(48, 119, 243, 0.1)",
           }}
@@ -662,6 +662,7 @@ const ResumeUploader = ({
                     sx={{
                       minWidth: 200,
                       flexGrow: 1,
+                      borderRadius: 4,
                       "& .MuiOutlinedInput-root": {
                         borderRadius: 1,
                         backgroundColor: "#FFFFFF",
@@ -702,13 +703,49 @@ const ResumeUploader = ({
                       MenuProps={{
                         PaperProps: {
                           sx: {
+                            maxHeight: "600px",
                             backgroundColor: "#FFFFFF",
                             border: "1px solid #E3EDFF",
-                            borderRadius: 1,
+                            borderRadius: 4,
                             mt: 1,
                             boxShadow: "0 4px 20px rgba(48, 119, 243, 0.1)",
                             "& .MuiList-root": {
                               padding: "8px",
+                              position: "relative",
+                              "& > .MuiDivider-root": {
+                                position: "sticky",
+                                bottom: "56px",
+                                backgroundColor: "#E3EDFF",
+                                margin: "0 8px",
+                              },
+                              "& > .MuiMenuItem-root:last-child": {
+                                position: "sticky",
+                                bottom: 0,
+                                backgroundColor: "#FFFFFF",
+                                marginTop: 1,
+                                zIndex: 1,
+                                borderTop: "1px solid #E3EDFF",
+                              },
+                            },
+                            "& .MuiMenuItem-root": {
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              color: "#2E3141",
+                              px: 3,
+                              py: 2,
+                              mx: 1,
+                              my: 0.5,
+                              borderRadius: 1,
+                              "&:hover": {
+                                backgroundColor: "#EFF5FF",
+                              },
+                              "&.Mui-selected": {
+                                backgroundColor: "#E3EDFF",
+                                "&:hover": {
+                                  backgroundColor: "#BFD6FF",
+                                },
+                              },
                             },
                           },
                         },
@@ -794,13 +831,7 @@ const ResumeUploader = ({
                           </IconButton>
                         </MenuItem>
                       ))}
-                      <Divider
-                        sx={{
-                          borderColor: "#E3EDFF",
-                          mx: 1,
-                          my: 1,
-                        }}
-                      />
+                      <Divider />
                       <MenuItem
                         onClick={() => setOpenAddGroupDialog(true)}
                         sx={{
@@ -812,14 +843,30 @@ const ResumeUploader = ({
                           my: 0.5,
                           borderRadius: "8px",
                           transition: "all 0.2s ease",
+
+                          gap: 1.5,
                           "&:hover": {
                             backgroundColor: "#EFF5FF",
                             transform: "translateY(-1px)",
                           },
                         }}
                       >
-                        <Add sx={{ mr: 2 }} />
-                        <Typography sx={{ fontWeight: 600 }}>
+                        <Typography
+                          sx={{
+                            fontWeight: 600,
+                            color: "#3077F3",
+                            fontSize: "0.95rem",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          <Add
+                            sx={{
+                              fontSize: "1.5rem",
+                              color: "#3077F3",
+                            }}
+                          />{" "}
                           Create New Group
                         </Typography>
                       </MenuItem>
@@ -836,7 +883,7 @@ const ResumeUploader = ({
                   mt: 3,
                   backgroundColor: "#EFF5FF",
                   border: "1px solid #3077F3",
-                  borderRadius: 1.25,
+                  borderRadius: 4,
                   alignItems: "center",
                   "& .MuiAlert-icon": {
                     color: "#3077F3",
@@ -916,7 +963,7 @@ const ResumeUploader = ({
               mb: 3,
               backgroundColor: "#FFF7ED",
               border: "1px solid #FDA052",
-              borderRadius: 1.25,
+              borderRadius: 4,
               "& .MuiAlert-icon": {
                 color: "#FDA052",
               },
@@ -955,12 +1002,12 @@ const ResumeUploader = ({
               : uploadStatus === "error"
               ? "#FEF2F2"
               : "#EFF5FF",
-            minHeight: "300px",
+            minHeight: "400px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            borderRadius: 1.25,
+            borderRadius: 4,
             opacity: !selectedGroup ? 0.7 : isUploading ? 0.8 : 1,
             transition: "all 0.3s ease",
             "&:hover": {
@@ -1049,11 +1096,16 @@ const ResumeUploader = ({
               fontSize: "1rem",
             }}
           >
-            {uploadStatus === "success"
-              ? "Your files have been successfully uploaded!"
-              : uploadStatus === "error"
-              ? "Please try again or check your files"
-              : "or use the buttons below to upload"}
+            {uploadStatus === "success" ? (
+              "Your files have been successfully uploaded!"
+            ) : uploadStatus === "error" ? (
+              "Please try again or check your files"
+            ) : (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Upload sx={{ fontSize: "1rem", color: "#6D6F7A" }} />
+                Click to upload
+              </Box>
+            )}
           </Typography>
         </Box>
 
@@ -1064,8 +1116,8 @@ const ResumeUploader = ({
             icon={<Info sx={{ fontSize: "24px" }} />}
             sx={{
               mt: 2,
-              backgroundColor: "#EFF5FF",
-              border: "1px solid #3077F3",
+              backgroundColor: "#ffffff",
+
               borderRadius: "12px",
               p: 2,
               display: "flex",
@@ -1094,7 +1146,14 @@ const ResumeUploader = ({
                 width: "100%",
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
                 <Typography
                   component="span"
                   sx={{
@@ -1186,7 +1245,7 @@ const ResumeUploader = ({
               mt: 3,
               backgroundColor: "#FFFFFF",
               border: "1px solid #E3EDFF",
-              borderRadius: 1.25,
+              borderRadius: 4,
               overflow: "hidden",
               boxShadow: "0 8px 32px rgba(48, 119, 243, 0.1)",
             }}
@@ -1238,9 +1297,10 @@ const ResumeUploader = ({
 
               <List
                 sx={{
-                  py: 0,
-                  maxHeight: files.length > 10 ? "400px" : "auto",
-                  overflowY: files.length > 10 ? "auto" : "visible",
+                  py: 2,
+                  px: 2,
+                  maxHeight: "400px",
+                  overflowY: "auto",
                   "&::-webkit-scrollbar": {
                     width: "8px",
                   },
@@ -1265,6 +1325,7 @@ const ResumeUploader = ({
                     sx={{
                       py: 2,
                       px: 3,
+                      marginBottom: 2,
                       borderBottom:
                         index < files.length - 1 ? "1px solid #E3EDFF" : "none",
                       backgroundColor:
@@ -1523,29 +1584,6 @@ const ResumeUploader = ({
           }}
         >
           <Button
-            onClick={open}
-            variant="outlined"
-            startIcon={<FileUpload />}
-            disabled={isUploading}
-            sx={{
-              px: 4,
-              py: 1.5,
-              borderColor: "#3077F3",
-              color: "#3077F3",
-              "&:hover": {
-                borderColor: "#1E50A8",
-                backgroundColor: "#EFF5FF",
-              },
-              "&.Mui-disabled": {
-                borderColor: "#D1D5DB",
-                color: "#6B7280",
-              },
-            }}
-          >
-            Browse Files
-          </Button>
-
-          <Button
             onClick={uploadFiles}
             variant="contained"
             disabled={!selectedGroup || isUploading || files.length === 0}
@@ -1753,6 +1791,7 @@ const ResumeUploader = ({
               backgroundColor: "#FFFFFF",
               boxShadow: "0 8px 32px rgba(48, 119, 243, 0.1)",
               border: "1px solid #E3EDFF",
+              borderRadius: 4,
             },
           }}
         >
@@ -1817,7 +1856,7 @@ const ResumeUploader = ({
           fullWidth
           PaperProps={{
             sx: {
-              borderRadius: 3,
+              borderRadius: 4,
               border: "2px solid #3077F3",
               backgroundColor: "#FFFFFF",
               boxShadow: "0 8px 32px rgba(48, 119, 243, 0.1)",
