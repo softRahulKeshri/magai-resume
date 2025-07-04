@@ -86,7 +86,7 @@ const CustomTabPanel = ({ children, value, index }: TabPanelProps) => (
 );
 
 // Sidebar width constant
-const SIDEBAR_WIDTH = 280;
+const SIDEBAR_WIDTH = 320;
 
 // Main App Component
 const App = () => {
@@ -343,7 +343,9 @@ const App = () => {
         border: `1px solid ${neutral_palette.n150}`,
         display: "flex",
         flexDirection: "column",
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
+        boxShadow: `0 8px 24px rgba(36, 39, 45, 0.08),
+                    0 16px 32px rgba(228, 223, 232, 0.9),
+                    0 2px 8px rgba(65, 230, 248, 0.06)`,
       }}
       elevation={0}
     >

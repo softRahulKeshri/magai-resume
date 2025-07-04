@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   Box,
   TextField,
@@ -20,6 +20,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import {
   Person,
@@ -33,6 +35,8 @@ import {
   Folder as FolderIcon,
   Upload,
   Search,
+  TextFields,
+  Description,
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 
@@ -148,6 +152,7 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
     backgroundColor: "transparent",
     fontSize: "1rem",
     color: AppColors.text.primary,
+    height: "44px", // Fixed height for single line input
     "& fieldset": {
       border: "none",
     },
@@ -161,16 +166,11 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   "& .MuiInputBase-input": {
     padding: theme.spacing(1.5),
     color: AppColors.text.primary,
+    height: "24px", // Fixed height for input text
     "&::placeholder": {
       color: AppColors.text.secondary,
       opacity: 1,
     },
-    // Hide scrollbar but keep functionality
-    "&::-webkit-scrollbar": {
-      display: "none",
-    },
-    scrollbarWidth: "none", // Firefox
-    msOverflowStyle: "none", // IE and Edge
   },
 }));
 
@@ -585,6 +585,20 @@ interface CandidateResult {
   group?: string;
 }
 
+// Add new interface for JD upload response
+interface JDUploadResponse {
+  answer: string;
+  results: {
+    score: number;
+    content: string;
+    metadata: {
+      filename: string;
+      stored_filename: string;
+      [key: string]: any;
+    };
+  }[];
+}
+
 // Props interface
 interface ResumeSearchProps {
   onSearchResults: (results: CandidateResult[]) => void;
@@ -676,6 +690,60 @@ const CircleIcon = styled(Box)(({ theme }) => ({
   },
 }));
 
+// Add styled components for tabs
+const StyledTabs = styled(Tabs)(({ theme }) => ({
+  marginBottom: theme.spacing(4),
+  borderRadius: theme.spacing(1.5),
+  backgroundColor: AppColors.background.paper,
+  border: `1px solid ${AppColors.border.light}`,
+  padding: theme.spacing(1),
+  "& .MuiTabs-indicator": {
+    height: "100%",
+    borderRadius: theme.spacing(1),
+    backgroundColor: AppColors.primary.main,
+    opacity: 0.1,
+  },
+}));
+
+const StyledTab = styled(Tab)(({ theme }) => ({
+  textTransform: "none",
+  fontWeight: 600,
+  fontSize: "1rem",
+  padding: theme.spacing(1.5, 3),
+  color: AppColors.text.secondary,
+  borderRadius: theme.spacing(1),
+  minHeight: "unset",
+  "&.Mui-selected": {
+    color: AppColors.primary.main,
+    fontWeight: 700,
+  },
+  "& .MuiSvgIcon-root": {
+    marginRight: theme.spacing(1),
+    fontSize: "1.2rem",
+  },
+}));
+
+// Add styled component for the upload area with drag state
+const UploadArea = styled(Box)<{ isDragging?: boolean }>(
+  ({ theme, isDragging }) => ({
+    backgroundColor: isDragging
+      ? `${AppColors.primary.main}08`
+      : AppColors.background.paper,
+    borderRadius: theme.spacing(2),
+    border: `2px dashed ${
+      isDragging ? AppColors.primary.main : AppColors.border.main
+    }`,
+    padding: theme.spacing(6),
+    textAlign: "center",
+    transition: "all 0.3s ease",
+    cursor: "pointer",
+    "&:hover": {
+      backgroundColor: AppColors.background.elevated,
+      borderColor: AppColors.primary.main,
+    },
+  })
+);
+
 const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
   // State management
   const [searchQuery, setSearchQuery] = useState("");
@@ -688,6 +756,31 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
 
   // Groups management
   const { groups, loading: groupsLoading, error: groupsError } = useGroups();
+
+  // Add new state for file upload
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Add tab state
+  const [activeTab, setActiveTab] = useState(0);
+
+  // Add drag state
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Handle tab change
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+    // Clear previous search/upload state
+    setSearchQuery("");
+    setSelectedFile(null);
+    setSearchResults([]);
+    setError(null);
+    setHasSearched(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   // Helper function to clean up filename for display
   const getDisplayFilename = (originalFilename: string): string => {
@@ -1214,6 +1307,74 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
     }
   }, [searchQuery, selectedGroup, onSearchResults, parseCandidateFromText]);
 
+  // Handle JD upload and search
+  const handleJDUpload = async () => {
+    if (!selectedFile) {
+      setError("Please select a file first");
+      return;
+    }
+
+    setIsUploading(true);
+    setError(null);
+    setHasSearched(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      if (selectedGroup) {
+        formData.append("group", selectedGroup);
+      }
+
+      const response = await fetch(`${API_CONFIG.baseURL}/upload_jd`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Upload failed: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data: JDUploadResponse = await response.json();
+
+      // Process and transform the results to match our CandidateResult format
+      const transformedResults: CandidateResult[] = data.results.map(
+        (result, index) => ({
+          id: result.metadata.stored_filename || `result-${index}`,
+          name: getDisplayFilename(result.metadata.filename),
+          filename: result.metadata.stored_filename,
+          matchScore: result.score,
+          rawText: result.content,
+          highlights: [data.answer], // Use AI analysis as the first highlight
+          details: result.content.substring(0, 300) + "...", // Preview of the content
+        })
+      );
+
+      setSearchResults(transformedResults);
+      setSearchSummary(data.answer);
+      onSearchResults(transformedResults);
+
+      // Clear the file input
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Upload failed. Please try again."
+      );
+      setSearchResults([]);
+      setSearchSummary(null);
+      onSearchResults([]);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // Clear search
   const clearSearch = useCallback(() => {
     setSearchQuery("");
@@ -1229,6 +1390,71 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !isSearching) {
       handleSearch();
+    }
+  };
+
+  // Handle drag events
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (
+        file.type === "application/pdf" ||
+        file.type ===
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        setSelectedFile(file);
+        setError(null);
+      } else {
+        setError("Please upload a PDF or DOCX file only");
+      }
+    }
+  };
+
+  // Handle file selection
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check file type
+      if (
+        file.type === "application/pdf" ||
+        file.type ===
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        setSelectedFile(file);
+        setError(null);
+      } else {
+        setError("Please upload a PDF or DOCX file only");
+      }
+    }
+  };
+
+  // Handle manual file upload click
+  const handleUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -1276,7 +1502,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
             <Typography
               variant="h6"
               sx={{
-                mb: 6,
+                mb: 4,
                 color: AppColors.primary.contrast,
                 fontWeight: 400,
                 lineHeight: 1.6,
@@ -1287,42 +1513,25 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
               }}
             >
               Find the perfect candidates with AI-powered search. Search by
-              keywords or paste a complete job description.
+              keywords, job description, or upload a JD file.
             </Typography>
 
+            {/* Tabs */}
+            <StyledTabs value={activeTab} onChange={handleTabChange} centered>
+              <StyledTab icon={<TextFields />} label="Search by Text" />
+              <StyledTab icon={<Description />} label="Upload JD" />
+            </StyledTabs>
+
             {/* Search Input Area */}
-            <SearchContainer>
-              {/* Group Selection First */}
-              <GroupSelectContainer>
-                <Select
-                  value={selectedGroup}
-                  onChange={(e) => setSelectedGroup(e.target.value)}
-                  displayEmpty
-                  renderValue={(value) => (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <FolderIcon
-                        sx={{
-                          fontSize: "20px",
-                          color: AppColors.primary_ui_blue.p500,
-                        }}
-                      />
-                      {value || "All Groups"}
-                    </Box>
-                  )}
-                >
-                  <MenuItem value="">
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <FolderIcon
-                        sx={{
-                          fontSize: "20px",
-                          color: AppColors.primary_ui_blue.p500,
-                        }}
-                      />
-                      All Groups
-                    </Box>
-                  </MenuItem>
-                  {(groups || []).map((group) => (
-                    <MenuItem key={group.name} value={group.name}>
+            {activeTab === 0 ? (
+              <SearchContainer>
+                {/* Group Selection */}
+                <GroupSelectContainer>
+                  <Select
+                    value={selectedGroup}
+                    onChange={(e) => setSelectedGroup(e.target.value)}
+                    displayEmpty
+                    renderValue={(value) => (
                       <Box
                         sx={{ display: "flex", alignItems: "center", gap: 1 }}
                       >
@@ -1332,53 +1541,274 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                             color: AppColors.primary_ui_blue.p500,
                           }}
                         />
-                        {group.name}
+                        {value || "All Groups"}
+                      </Box>
+                    )}
+                  >
+                    <MenuItem value="">
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <FolderIcon
+                          sx={{
+                            fontSize: "20px",
+                            color: AppColors.primary_ui_blue.p500,
+                          }}
+                        />
+                        All Groups
                       </Box>
                     </MenuItem>
-                  ))}
-                </Select>
-              </GroupSelectContainer>
+                    {(groups || []).map((group) => (
+                      <MenuItem key={group.name} value={group.name}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <FolderIcon
+                            sx={{
+                              fontSize: "20px",
+                              color: AppColors.primary_ui_blue.p500,
+                            }}
+                          />
+                          {group.name}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </GroupSelectContainer>
 
-              {/* Search Input */}
-              <StyledTextField
-                fullWidth
-                placeholder="Enter search terms or paste a job description to find matching candidates..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                variant="outlined"
-                multiline
-                rows={1}
-              />
+                {/* Text Search Input */}
+                <StyledTextField
+                  fullWidth
+                  placeholder="Enter search terms or job title to find matching candidates..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  variant="outlined"
+                />
 
-              {/* Upload Button */}
-              <UploadButton
-                startIcon={<Upload />}
-                onClick={() => {
-                  // Handle upload functionality
-                }}
-              >
-                Upload JD
-              </UploadButton>
+                {/* Search Button */}
+                <SearchButton
+                  onClick={handleSearch}
+                  disabled={
+                    isSearching ||
+                    !searchQuery.trim() ||
+                    searchQuery.trim().length < 5
+                  }
+                  startIcon={
+                    isSearching ? (
+                      <CircularProgress size={20} color="inherit" />
+                    ) : (
+                      <Search />
+                    )
+                  }
+                >
+                  {isSearching ? "Searching..." : "Search"}
+                </SearchButton>
+              </SearchContainer>
+            ) : (
+              // Upload JD Interface
+              <Box sx={{ maxWidth: "800px", mx: "auto" }}>
+                {/* Group Selection for Upload */}
+                <GroupSelectContainer sx={{ mb: 3, width: "100%" }}>
+                  <Select
+                    value={selectedGroup}
+                    onChange={(e) => setSelectedGroup(e.target.value)}
+                    displayEmpty
+                    fullWidth
+                    renderValue={(value) => (
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <FolderIcon
+                          sx={{
+                            fontSize: "20px",
+                            color: AppColors.primary_ui_blue.p500,
+                          }}
+                        />
+                        {value || "All Groups"}
+                      </Box>
+                    )}
+                  >
+                    <MenuItem value="">
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <FolderIcon
+                          sx={{
+                            fontSize: "20px",
+                            color: AppColors.primary_ui_blue.p500,
+                          }}
+                        />
+                        All Groups
+                      </Box>
+                    </MenuItem>
+                    {(groups || []).map((group) => (
+                      <MenuItem key={group.name} value={group.name}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <FolderIcon
+                            sx={{
+                              fontSize: "20px",
+                              color: AppColors.primary_ui_blue.p500,
+                            }}
+                          />
+                          {group.name}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </GroupSelectContainer>
 
-              {/* Search Button */}
-              <SearchButton
-                onClick={handleSearch}
-                disabled={
-                  isSearching ||
-                  !searchQuery.trim() ||
-                  searchQuery.trim().length < 5
-                }
-                startIcon={
-                  isSearching ? (
-                    <CircularProgress size={20} color="inherit" />
+                {/* Upload Area */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  accept=".pdf,.docx"
+                  style={{ display: "none" }}
+                />
+
+                <UploadArea
+                  isDragging={isDragging}
+                  onClick={handleUploadClick}
+                  onDragEnter={handleDragEnter}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                >
+                  {selectedFile ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 2,
+                        position: "relative",
+                        "&::after": isDragging
+                          ? {
+                              content: '""',
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              backgroundColor: "rgba(255, 255, 255, 0.1)",
+                              borderRadius: 1,
+                            }
+                          : {},
+                      }}
+                    >
+                      <Description
+                        sx={{
+                          fontSize: "3rem",
+                          color: isDragging
+                            ? AppColors.primary.main
+                            : AppColors.primary.main,
+                          transition: "all 0.3s ease",
+                        }}
+                      />
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: AppColors.text.primary,
+                          fontWeight: 600,
+                          transition: "all 0.3s ease",
+                        }}
+                      >
+                        {selectedFile.name}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: isDragging
+                            ? AppColors.primary.main
+                            : AppColors.text.secondary,
+                          transition: "all 0.3s ease",
+                        }}
+                      >
+                        {isDragging
+                          ? "Drop to replace file"
+                          : "Click to change file"}
+                      </Typography>
+                    </Box>
                   ) : (
-                    <Search />
-                  )
-                }
-              >
-                {isSearching ? "Searching..." : "Search"}
-              </SearchButton>
-            </SearchContainer>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 2,
+                        position: "relative",
+                        "&::after": isDragging
+                          ? {
+                              content: '""',
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              backgroundColor: "rgba(255, 255, 255, 0.1)",
+                              borderRadius: 1,
+                            }
+                          : {},
+                      }}
+                    >
+                      <Upload
+                        sx={{
+                          fontSize: "3rem",
+                          color: isDragging
+                            ? AppColors.primary.main
+                            : AppColors.text.secondary,
+                          transition: "all 0.3s ease",
+                        }}
+                      />
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          color: AppColors.text.primary,
+                          fontWeight: 600,
+                          transition: "all 0.3s ease",
+                        }}
+                      >
+                        {isDragging
+                          ? "Drop your file here"
+                          : "Drop your JD file here or click to browse"}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: isDragging
+                            ? AppColors.primary.main
+                            : AppColors.text.secondary,
+                          transition: "all 0.3s ease",
+                        }}
+                      >
+                        Supports PDF and DOCX files
+                      </Typography>
+                    </Box>
+                  )}
+                </UploadArea>
+
+                {/* Upload Button */}
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+                  <SearchButton
+                    onClick={handleJDUpload}
+                    disabled={isUploading || !selectedFile}
+                    startIcon={
+                      isUploading ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : (
+                        <Search />
+                      )
+                    }
+                    sx={{ minWidth: "200px" }}
+                  >
+                    {isUploading ? "Uploading..." : "Search with JD"}
+                  </SearchButton>
+                </Box>
+              </Box>
+            )}
           </Box>
         </HeroSection>
 
