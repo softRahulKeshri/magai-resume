@@ -34,7 +34,7 @@ import {
   TextFields,
   Description,
   Download,
-  PersonAdd,
+  Visibility,
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 
@@ -2851,7 +2851,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                   <Button
                                     variant="outlined"
                                     startIcon={<Download />}
-                                    onClick={() => {
+                                    onClick={async () => {
                                       try {
                                         const originalFilename =
                                           candidate.filename || candidate.id;
@@ -2861,7 +2861,32 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                           );
                                         }
                                         const downloadUrl = `${API_CONFIG.baseURL}/uploads/${originalFilename}`;
-                                        window.open(downloadUrl, "_blank");
+
+                                        // Fetch the file
+                                        const response = await fetch(
+                                          downloadUrl
+                                        );
+                                        if (!response.ok)
+                                          throw new Error("Download failed");
+
+                                        // Get the blob from response
+                                        const blob = await response.blob();
+
+                                        // Create a temporary URL for the blob
+                                        const url =
+                                          window.URL.createObjectURL(blob);
+
+                                        // Create a temporary link element
+                                        const link =
+                                          document.createElement("a");
+                                        link.href = url;
+                                        link.download = originalFilename; // Set the download filename
+
+                                        // Append to document, click, and cleanup
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                        window.URL.revokeObjectURL(url);
                                       } catch (error) {
                                         console.error(
                                           "Error downloading CV:",
@@ -2893,10 +2918,27 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                   </Button>
                                   <Button
                                     variant="contained"
-                                    startIcon={<PersonAdd />}
+                                    startIcon={<Visibility />}
                                     onClick={() => {
-                                      // Handle contact candidate action
-                                      alert("Contact feature coming soon!");
+                                      try {
+                                        const originalFilename =
+                                          candidate.filename || candidate.id;
+                                        if (!originalFilename) {
+                                          throw new Error(
+                                            "Filename not available for viewing"
+                                          );
+                                        }
+                                        const viewUrl = `${API_CONFIG.baseURL}/uploads/${originalFilename}`;
+                                        window.open(viewUrl, "_blank");
+                                      } catch (error) {
+                                        console.error(
+                                          "Error viewing CV:",
+                                          error
+                                        );
+                                        alert(
+                                          "Failed to view CV. Please try again."
+                                        );
+                                      }
                                     }}
                                     sx={{
                                       backgroundColor: AppColors.primary.main,
@@ -2915,7 +2957,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                         "0 4px 12px rgba(37, 99, 235, 0.2)",
                                     }}
                                   >
-                                    Contact Candidate
+                                    View Resume
                                   </Button>
                                 </Box>
                               </Box>

@@ -93,7 +93,7 @@ export const API_CONFIG = {
   baseURL:
     process.env.REACT_APP_API_URL ||
     "http://ec2-13-232-75-51.ap-south-1.compute.amazonaws.com/api",
-  timeout: 30000,
+  timeout: 300000,
   retryAttempts: 3,
   retryDelay: 1000,
 } as const;
@@ -103,7 +103,7 @@ if (process.env.NODE_ENV === "development") {
   console.log("API Configuration:", {
     baseURL: API_CONFIG.baseURL,
     envVariable: process.env.REACT_APP_API_URL,
-    defaultURL: "http://localhost:5001/api",
+    defaultURL: "http://ec2-13-232-75-51.ap-south-1.compute.amazonaws.com/api",
     fullUploadURL: `${API_CONFIG.baseURL}/upload_cv`,
   });
 }

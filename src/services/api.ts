@@ -384,9 +384,18 @@ class ApiService {
         `📤 API Service: Uploading CVs to group "${groupName}" at: ${url}`
       );
 
-      // Use XMLHttpRequest for upload progress (same as original implementation)
+      // Use XMLHttpRequest for upload progress
       return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
+
+        // Add upload progress tracking
+        xhr.upload.addEventListener("progress", (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = (event.loaded / event.total) * 100;
+            console.log(`Upload progress: ${percentComplete.toFixed(2)}%`);
+            // You can emit this progress if needed
+          }
+        });
 
         xhr.addEventListener("load", () => {
           if (xhr.status === 200) {
@@ -437,18 +446,31 @@ class ApiService {
         });
 
         xhr.addEventListener("error", () => {
-          reject(new Error("Network error: Unable to connect to server"));
+          const errorMessage = "Network error: Unable to connect to server";
+          console.error("❌ Upload error:", errorMessage);
+          reject(new Error(errorMessage));
         });
 
         xhr.addEventListener("timeout", () => {
-          reject(
-            new Error("Upload timeout: The request took too long to complete")
-          );
+          const errorMessage = `Upload timeout after ${
+            this.timeout / 1000
+          } seconds. Please try with fewer or smaller files.`;
+          console.error("❌ Upload timeout:", errorMessage);
+          reject(new Error(errorMessage));
         });
 
+        // Set timeout from configuration
+        xhr.timeout = this.timeout;
+
+        // Initialize request with proper headers
         xhr.open("POST", url);
         xhr.setRequestHeader("Accept", "application/json");
-        xhr.timeout = 30000;
+
+        // Add custom headers for better error handling
+        xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+        xhr.setRequestHeader("X-Upload-Group", groupName);
+
+        // Send the form data
         xhr.send(formData);
       });
     } catch (error) {
