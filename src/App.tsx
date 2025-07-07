@@ -304,16 +304,14 @@ const App = () => {
                     try {
                       // Use original filename for API calls
                       const originalFilename =
-                        resume.filename || resume.original_filename;
+                        resume.stored_filename || resume.filename;
 
                       if (!originalFilename) {
                         console.error("No filename available for viewing");
-                        alert("Unable to view CV: Filename not available");
                         return;
                       }
 
                       const viewUrl = `${API_CONFIG.baseURL}/uploads/${originalFilename}`;
-                      console.log("Opening CV viewer with URL:", viewUrl);
                       window.open(viewUrl, "_blank");
                     } catch (error) {
                       console.error("Error viewing CV:", error);
@@ -324,20 +322,11 @@ const App = () => {
                     try {
                       // Use original filename for API calls
                       const originalFilename =
-                        resume.filename || resume.original_filename;
+                        resume.stored_filename || resume.filename;
 
                       if (!originalFilename) {
                         throw new Error("Filename not available for download");
                       }
-
-                      console.log(
-                        "Attempting to download file:",
-                        originalFilename
-                      );
-                      console.log(
-                        "Download URL:",
-                        `${API_CONFIG.baseURL}/uploads/${originalFilename}`
-                      );
 
                       // Fetch the file for download
                       const response = await fetch(
@@ -350,8 +339,6 @@ const App = () => {
                           },
                         }
                       );
-
-                      console.log("Download response status:", response.status);
 
                       if (response.ok) {
                         // Get the file as a blob
@@ -371,8 +358,6 @@ const App = () => {
                         // Clean up
                         document.body.removeChild(link);
                         window.URL.revokeObjectURL(url);
-
-                        console.log("Download initiated successfully");
                       } else {
                         // Log detailed error information
                         const errorText = await response
