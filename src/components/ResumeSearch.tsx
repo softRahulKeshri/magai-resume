@@ -646,17 +646,30 @@ const SearchResultSkeleton = () => (
 );
 
 const InitialStateCard = styled(Card)(({ theme }) => ({
-  minHeight: 400,
+  minHeight: 300, // Reduced height
   borderRadius: theme.spacing(3),
-  backgroundColor: AppColors.background.paper,
-  border: `1px solid ${AppColors.border.light}`,
-  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)",
+  background: `linear-gradient(135deg, rgba(185, 106, 247, 0.08) 0%, rgba(48, 119, 243, 0.08) 50%, rgba(65, 230, 248, 0.08) 100%)`,
+  padding: theme.spacing(8, 6), // Reduced padding
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  padding: theme.spacing(4),
   textAlign: "center",
+  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.03)",
+  position: "relative",
+  overflow: "hidden",
+  border: `1px solid rgba(185, 106, 247, 0.1)`,
+  "&::before": {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background:
+      "linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%)",
+    pointerEvents: "none",
+  },
 }));
 
 const CircleIcon = styled(Box)(({ theme }) => ({
@@ -1304,50 +1317,56 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
       console.log("JD Upload Response:", data);
 
       // Use the same logic as text search
-      if (data.answer && data.answer.candidate_details && data.answer.candidate_details.length > 0) {
+      if (
+        data.answer &&
+        data.answer.candidate_details &&
+        data.answer.candidate_details.length > 0
+      ) {
         const candidateDetails = data.answer.candidate_details;
 
         // Calculate average score from all score categories
-        const candidates: CandidateResult[] = candidateDetails.map((detail, index) => {
-          const scoreCard = detail.score_card;
-          const averageScore = scoreCard
-            ? (scoreCard.clarity_score +
-                scoreCard.experience_score +
-                scoreCard.loyality_score +
-                scoreCard.reputation_score) /
-              4
-            : 0;
+        const candidates: CandidateResult[] = candidateDetails.map(
+          (detail, index) => {
+            const scoreCard = detail.score_card;
+            const averageScore = scoreCard
+              ? (scoreCard.clarity_score +
+                  scoreCard.experience_score +
+                  scoreCard.loyality_score +
+                  scoreCard.reputation_score) /
+                4
+              : 0;
 
-          // Extract name from filename if candidate_name is "Name not found"
-          let displayName = detail.candidate_name;
-          if (displayName === "Name not found" && detail.file_name) {
-            const nameParts = detail.file_name.split("_");
-            if (nameParts.length > 1) {
-              displayName = nameParts
-                .slice(1, -1)
-                .join(" ")
-                .replace(/\.pdf$|\.docx$/i, "");
+            // Extract name from filename if candidate_name is "Name not found"
+            let displayName = detail.candidate_name;
+            if (displayName === "Name not found" && detail.file_name) {
+              const nameParts = detail.file_name.split("_");
+              if (nameParts.length > 1) {
+                displayName = nameParts
+                  .slice(1, -1)
+                  .join(" ")
+                  .replace(/\.pdf$|\.docx$/i, "");
+              }
             }
-          }
 
-          return {
-            id: detail.file_name || `candidate-${index}`,
-            name: displayName || "Unknown Candidate",
-            filename: detail.file_name,
-            details: detail.details,
-            clarityScore: scoreCard.clarity_score,
-            experienceScore: scoreCard.experience_score,
-            loyaltyScore: scoreCard.loyality_score,
-            reputationScore: scoreCard.reputation_score,
-            averageScore,
-            matchScore: scoreCard.clarity_score / 10,
-            highlights: detail.details
-              .split("\n")
-              .map(line => line.trim().replace(/^[-•]\s*/, ""))
-              .filter(line => line.length > 0),
-            rawText: detail.details
-          };
-        });
+            return {
+              id: detail.file_name || `candidate-${index}`,
+              name: displayName || "Unknown Candidate",
+              filename: detail.file_name,
+              details: detail.details,
+              clarityScore: scoreCard.clarity_score,
+              experienceScore: scoreCard.experience_score,
+              loyaltyScore: scoreCard.loyality_score,
+              reputationScore: scoreCard.reputation_score,
+              averageScore,
+              matchScore: scoreCard.clarity_score / 10,
+              highlights: detail.details
+                .split("\n")
+                .map((line) => line.trim().replace(/^[-•]\s*/, ""))
+                .filter((line) => line.length > 0),
+              rawText: detail.details,
+            };
+          }
+        );
 
         // Sort candidates by average score in descending order
         const sortedCandidates = candidates.sort(
@@ -1911,18 +1930,55 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
           <Fade in timeout={500}>
             <InitialStateCard>
               <Typography
-                variant="h5"
+                variant="h4"
                 sx={{
-                  color: AppColors.text.secondary,
-                  fontWeight: 500,
+                  color: AppColors.text.primary,
+                  fontWeight: 600,
                   textAlign: "center",
+                  fontSize: "1.75rem",
+                  mb: 2,
+                  position: "relative",
+                  fontFamily:
+                    '"SF Pro Display", -apple-system, system-ui, sans-serif',
+                  letterSpacing: "-0.02em",
                 }}
               >
-                Ready to find your perfect match?{" "}
-                {activeTab === 0
-                  ? "Start by entering skills, experience, or job requirements above."
-                  : "Upload a job description file to begin matching."}
+                Ready to Find Your Perfect Match?
               </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: AppColors.text.secondary,
+                  maxWidth: "600px",
+                  mx: "auto",
+                  lineHeight: 1.6,
+                  fontSize: "1rem",
+                  textAlign: "center",
+                  position: "relative",
+                  "& .emphasis": {
+                    color: AppColors.primary.main,
+                    fontWeight: 500,
+                  },
+                }}
+              >
+                Start by entering your desired{" "}
+                <span className="emphasis">skills</span>,{" "}
+                <span className="emphasis">experience</span>, or{" "}
+                <span className="emphasis">job requirements</span> above to
+                discover candidates that perfectly align with your needs.
+              </Typography>
+              <Box
+                sx={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: "20%",
+                  background:
+                    "linear-gradient(0deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 100%)",
+                  pointerEvents: "none",
+                }}
+              />
             </InitialStateCard>
           </Fade>
         )}
