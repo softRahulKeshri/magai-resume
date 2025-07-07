@@ -541,7 +541,7 @@ interface CandidateDetail {
 interface ScoreCard {
   clarity_score: number;
   experience_score: number;
-  loyality_score: number;
+  loyalty_score: number;
   reputation_score: number;
 }
 
@@ -567,7 +567,7 @@ interface CandidateResult {
   filename?: string;
   rawText?: string;
   highlights?: string[];
-  // New score fields
+  // Updated score field names to match API response
   clarityScore?: number;
   experienceScore?: number;
   loyaltyScore?: number;
@@ -1197,7 +1197,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
           const total =
             scores.clarity_score +
             scores.experience_score +
-            scores.loyality_score +
+            scores.loyalty_score +
             scores.reputation_score;
           return total / 4;
         };
@@ -1219,7 +1219,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
             const averageScore = scoreCard
               ? ((scoreCard.clarity_score || 0) +
                   (scoreCard.experience_score || 0) +
-                  (scoreCard.loyality_score || 0) +
+                  (scoreCard.loyalty_score || 0) +
                   (scoreCard.reputation_score || 0)) /
                 4
               : 0;
@@ -1232,7 +1232,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
               // Include all individual scores with null checks
               clarityScore: scoreCard?.clarity_score || 0,
               experienceScore: scoreCard?.experience_score || 0,
-              loyaltyScore: scoreCard?.loyality_score || 0,
+              loyaltyScore: scoreCard?.loyalty_score || 0,
               reputationScore: scoreCard?.reputation_score || 0,
               averageScore: averageScore,
               // Include chunk-based match score if available
@@ -1331,7 +1331,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
             const averageScore = scoreCard
               ? (scoreCard.clarity_score +
                   scoreCard.experience_score +
-                  scoreCard.loyality_score +
+                  scoreCard.loyalty_score +
                   scoreCard.reputation_score) /
                 4
               : 0;
@@ -1355,7 +1355,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
               details: detail.details,
               clarityScore: scoreCard.clarity_score,
               experienceScore: scoreCard.experience_score,
-              loyaltyScore: scoreCard.loyality_score,
+              loyaltyScore: scoreCard.loyalty_score,
               reputationScore: scoreCard.reputation_score,
               averageScore,
               matchScore: scoreCard.clarity_score / 10,
@@ -1847,9 +1847,10 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                         border: "1px solidrgb(222, 228, 238)",
                         transform: selectedFile ? "scale(1)" : "scale(0.95)",
                         transition: "all 0.3s ease",
-                        backgroundColor: selectedFile ? "#8B5CF6" : "#A78BFA",
+                        color: selectedFile ? "#000" : "#fff",
+                        backgroundColor: selectedFile ? "#fff" : "#A78BFA",
                         "&:hover": {
-                          backgroundColor: selectedFile ? "#7C3AED" : "#9333EA",
+                          backgroundColor: selectedFile ? "#fff" : "#9333EA",
                           transform: selectedFile
                             ? "translateY(-2px)"
                             : "scale(0.95)",
@@ -2217,6 +2218,7 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                     textAlign: "center",
                                   }}
                                 >
+                                  {/* Score Label */}
                                   <ScoreLabel
                                     sx={{
                                       color: AppColors.text.secondary,
