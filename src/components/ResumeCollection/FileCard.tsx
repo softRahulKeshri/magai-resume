@@ -503,56 +503,64 @@ const FileCard = ({
               </IconButton>
             </Stack>
 
-            {/* Comment Button */}
-            <Button
-              variant="outlined"
-              size="medium"
-              startIcon={
-                resume.comment ? (
-                  <Edit sx={{ fontSize: { xs: "1rem", sm: "1.125rem" } }} />
-                ) : (
-                  <Comment sx={{ fontSize: { xs: "1rem", sm: "1.125rem" } }} />
-                )
-              }
-              onClick={() =>
-                resume.comment
-                  ? setShowEditCommentDialog(true)
-                  : setShowAddCommentDialog(true)
-              }
-              sx={{
-                mt: { xs: 1.5, sm: 2 },
-                borderRadius: { xs: "10px", sm: "12px" },
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: { xs: "0.8125rem", sm: "0.875rem" },
-                py: { xs: 1, sm: 1.25 },
-                px: { xs: 1.5, sm: 2 },
-                minHeight: { xs: "36px", sm: "40px" },
-                borderColor: alpha(lightTheme.warning, 0.3),
-                color: lightTheme.warning,
-                backgroundColor: alpha(lightTheme.warning, 0.03),
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  backgroundColor: alpha(lightTheme.warning, 0.08),
-                  borderColor: lightTheme.warning,
-                  transform: "translateY(-1px)",
-                  boxShadow: `0 4px 12px ${alpha(lightTheme.warning, 0.2)}`,
-                },
-                "& .MuiButton-startIcon": {
-                  mr: { xs: 0.5, sm: 1 },
-                },
-              }}
-            >
-              {resume.comment ? "Edit Comment" : "Add Comment"}
-            </Button>
-
-            {/* Comment Display */}
+            {/* Comment Display - now compact and inline */}
             {resume.comment && (
-              <CommentDisplay
-                comment={resume.comment}
-                onEdit={() => setShowEditCommentDialog(true)}
-                onDelete={() => setShowDeleteCommentModal(true)}
-              />
+              <Box sx={{ mt: 0.5 }}>
+                <CommentDisplay
+                  comment={resume.comment}
+                  onEdit={() => setShowEditCommentDialog(true)}
+                  onDelete={() => setShowDeleteCommentModal(true)}
+                />
+              </Box>
+            )}
+
+            {/* Comment Button */}
+            {!(showEditCommentDialog && resume.comment) && (
+              <Button
+                variant="outlined"
+                size="medium"
+                fullWidth
+                startIcon={
+                  resume.comment ? (
+                    <Edit sx={{ fontSize: { xs: "1rem", sm: "1.125rem" } }} />
+                  ) : (
+                    <Comment
+                      sx={{ fontSize: { xs: "1rem", sm: "1.125rem" } }}
+                    />
+                  )
+                }
+                onClick={() =>
+                  resume.comment
+                    ? setShowEditCommentDialog(true)
+                    : setShowAddCommentDialog(true)
+                }
+                sx={{
+                  mt: { xs: 1.5, sm: 2 },
+                  mb: resume.comment ? 0.5 : 0, // Reduce gap if comment exists
+                  borderRadius: { xs: "10px", sm: "12px" },
+                  textTransform: "none",
+                  fontWeight: 600,
+                  fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                  py: { xs: 1, sm: 1.25 },
+                  px: { xs: 1.5, sm: 2 },
+                  minHeight: { xs: "36px", sm: "40px" },
+                  borderColor: alpha(lightTheme.warning, 0.3),
+                  color: lightTheme.warning,
+                  backgroundColor: alpha(lightTheme.warning, 0.03),
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    backgroundColor: alpha(lightTheme.warning, 0.08),
+                    borderColor: lightTheme.warning,
+                    transform: "translateY(-1px)",
+                    boxShadow: `0 4px 12px ${alpha(lightTheme.warning, 0.2)}`,
+                  },
+                  "& .MuiButton-startIcon": {
+                    mr: { xs: 0.5, sm: 1 },
+                  },
+                }}
+              >
+                {resume.comment ? "Edit Comment" : "Add Comment"}
+              </Button>
             )}
           </Box>
         </CardContent>
