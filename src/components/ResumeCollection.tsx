@@ -22,6 +22,11 @@ import {
   Fade,
   IconButton,
   Pagination,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Divider,
 } from "@mui/material";
 import {
   Search,
@@ -36,11 +41,16 @@ import {
   FolderOpen,
   Close,
   Warning,
+  Comment,
+  Edit,
+  Send,
+  Person,
 } from "@mui/icons-material";
 
-import { Resume } from "../types";
+import { Resume, ResumeComment } from "../types";
 import { API_CONFIG } from "../theme/constants";
 import { useGroups } from "../hooks/useGroups";
+import { addOrUpdateComment, deleteComment } from "../services/api";
 
 // Theme type definitions
 interface LightTheme {
@@ -159,12 +169,22 @@ const getGroupColorTheme = (groupName: string = "default"): ColorTheme => {
   return colorPalette[index];
 };
 
-// Custom Styled Modal Component
+// Custom Styled Modal Component for File Deletion
 interface DeleteConfirmModalProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
   filename: string;
+  isDeleting: boolean;
+}
+
+// Custom Styled Modal Component for Comment Deletion
+interface DeleteCommentModalProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  filename: string;
+  commentText: string;
   isDeleting: boolean;
 }
 
@@ -373,6 +393,653 @@ const DeleteConfirmModal = ({
   );
 };
 
+// Comment Deletion Modal Component
+const DeleteCommentModal = ({
+  open,
+  onClose,
+  onConfirm,
+  filename,
+  commentText,
+  isDeleting,
+}: DeleteCommentModalProps) => {
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      closeAfterTransition
+      BackdropComponent={Backdrop}
+      BackdropProps={{
+        timeout: 300,
+        sx: {
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          backdropFilter: "blur(4px)",
+        },
+      }}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 2,
+      }}
+    >
+      <Fade in={open} timeout={300}>
+        <Card
+          sx={{
+            minWidth: 400,
+            maxWidth: 500,
+            background: `linear-gradient(135deg, ${lightTheme.surface} 0%, ${lightTheme.surfaceLight} 100%)`,
+            border: `2px solid ${lightTheme.warning}`,
+            borderRadius: "16px",
+            boxShadow: "0 20px 60px rgba(253, 160, 82, 0.3)",
+            outline: "none",
+            position: "relative",
+            overflow: "visible",
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            {/* Close Button */}
+            <IconButton
+              onClick={onClose}
+              disabled={isDeleting}
+              sx={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                color: lightTheme.textMuted,
+                "&:hover": {
+                  backgroundColor: alpha(lightTheme.warning, 0.1),
+                  color: lightTheme.warning,
+                },
+              }}
+            >
+              <Close />
+            </IconButton>
+
+            {/* Warning Icon */}
+            <Box sx={{ textAlign: "center", mb: 3 }}>
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: "50%",
+                  background: `linear-gradient(135deg, ${lightTheme.warning} 0%, #FDA052 100%)`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  mx: "auto",
+                  mb: 2,
+                  boxShadow: `0 8px 32px rgba(253, 160, 82, 0.4)`,
+                }}
+              >
+                <Comment
+                  sx={{
+                    fontSize: "2.5rem",
+                    color: "#ffffff",
+                  }}
+                />
+              </Box>
+            </Box>
+
+            {/* Title */}
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 700,
+                color: lightTheme.text,
+                textAlign: "center",
+                mb: 2,
+              }}
+            >
+              Delete Comment?
+            </Typography>
+
+            {/* Message */}
+            <Typography
+              variant="body1"
+              sx={{
+                color: lightTheme.textSecondary,
+                textAlign: "center",
+                mb: 2,
+                lineHeight: 1.6,
+              }}
+            >
+              Are you sure you want to delete the comment on
+            </Typography>
+
+            <Typography
+              variant="body1"
+              sx={{
+                color: lightTheme.text,
+                textAlign: "center",
+                fontWeight: 600,
+                mb: 2,
+                background: alpha(lightTheme.warning, 0.1),
+                borderRadius: "8px",
+                p: 1,
+                border: `1px solid ${alpha(lightTheme.warning, 0.2)}`,
+              }}
+            >
+              "{filename}"
+            </Typography>
+
+            {/* Comment Preview */}
+            <Box
+              sx={{
+                background: alpha(lightTheme.textMuted, 0.05),
+                borderRadius: "12px",
+                p: 2,
+                mb: 3,
+                border: `1px solid ${alpha(lightTheme.textMuted, 0.1)}`,
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  color: lightTheme.textSecondary,
+                  fontStyle: "italic",
+                  lineHeight: 1.5,
+                  wordBreak: "break-word",
+                }}
+              >
+                "{commentText}"
+              </Typography>
+            </Box>
+
+            <Typography
+              variant="body2"
+              sx={{
+                color: lightTheme.textMuted,
+                textAlign: "center",
+                mb: 4,
+                fontStyle: "italic",
+              }}
+            >
+              This action cannot be undone.
+            </Typography>
+
+            {/* Action Buttons */}
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ justifyContent: "center" }}
+            >
+              <Button
+                variant="outlined"
+                onClick={onClose}
+                disabled={isDeleting}
+                sx={{
+                  minWidth: 120,
+                  borderColor: lightTheme.border,
+                  color: lightTheme.textSecondary,
+                  borderRadius: "12px",
+                  px: 3,
+                  py: 1.5,
+                  fontWeight: 600,
+                  textTransform: "none",
+                  "&:hover": {
+                    borderColor: lightTheme.textSecondary,
+                    backgroundColor: alpha(lightTheme.textSecondary, 0.05),
+                  },
+                }}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                variant="contained"
+                onClick={onConfirm}
+                disabled={isDeleting}
+                startIcon={isDeleting ? undefined : <Delete />}
+                sx={{
+                  minWidth: 120,
+                  background: `linear-gradient(135deg, ${lightTheme.warning} 0%, #FDA052 100%)`,
+                  color: "#ffffff",
+                  borderRadius: "12px",
+                  px: 3,
+                  py: 1.5,
+                  fontWeight: 700,
+                  textTransform: "none",
+                  boxShadow: `0 4px 16px rgba(253, 160, 82, 0.4)`,
+                  "&:hover": {
+                    background: `linear-gradient(135deg, #FDA052 0%, #f97316 100%)`,
+                    boxShadow: `0 6px 20px rgba(253, 160, 82, 0.5)`,
+                    transform: "translateY(-1px)",
+                  },
+                  "&:disabled": {
+                    background: lightTheme.textMuted,
+                    color: lightTheme.background,
+                    transform: "none",
+                    boxShadow: "none",
+                  },
+                }}
+              >
+                {isDeleting ? "Deleting..." : "Delete Comment"}
+              </Button>
+            </Stack>
+          </CardContent>
+        </Card>
+      </Fade>
+    </Modal>
+  );
+};
+
+// Comment Management Dialogs
+interface CommentDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (comment: string) => void;
+  isLoading: boolean;
+  title: string;
+  initialComment?: string;
+  submitLabel: string;
+}
+
+const CommentDialog = ({
+  open,
+  onClose,
+  onSubmit,
+  isLoading,
+  title,
+  initialComment = "",
+  submitLabel,
+}: CommentDialogProps) => {
+  const [comment, setComment] = useState(initialComment);
+  const [error, setError] = useState("");
+
+  // Reset form when dialog opens/closes
+  React.useEffect(() => {
+    if (open) {
+      setComment(initialComment);
+      setError("");
+    }
+  }, [open, initialComment]);
+
+  const handleSubmit = () => {
+    const trimmedComment = comment.trim();
+
+    // Validation
+    if (trimmedComment.length < 10) {
+      setError("Comment must be at least 10 characters long");
+      return;
+    }
+
+    if (trimmedComment.length > 200) {
+      setError("Comment cannot exceed 200 characters");
+      return;
+    }
+
+    setError("");
+    onSubmit(trimmedComment);
+  };
+
+  const handleClose = () => {
+    if (!isLoading) {
+      onClose();
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: "16px",
+          background: `linear-gradient(135deg, ${lightTheme.surface} 0%, ${lightTheme.surfaceLight} 100%)`,
+          border: `1px solid ${lightTheme.border}`,
+          boxShadow: `0 20px 60px ${alpha(lightTheme.primary, 0.15)}`,
+          overflow: "visible",
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          pb: 2,
+          pt: 3,
+          px: 3,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 48,
+            height: 48,
+            borderRadius: "12px",
+            background: `linear-gradient(135deg, ${
+              lightTheme.primary
+            } 0%, ${alpha(lightTheme.primary, 0.8)} 100%)`,
+            boxShadow: `0 8px 24px ${alpha(lightTheme.primary, 0.3)}`,
+          }}
+        >
+          <Comment sx={{ fontSize: "1.5rem", color: "#ffffff" }} />
+        </Box>
+        <Box>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              color: lightTheme.text,
+              fontSize: "1.25rem",
+              mb: 0.5,
+            }}
+          >
+            {title}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: lightTheme.textSecondary,
+              fontSize: "0.875rem",
+            }}
+          >
+            Share your feedback and notes about this resume
+          </Typography>
+        </Box>
+        <IconButton
+          onClick={handleClose}
+          disabled={isLoading}
+          sx={{
+            ml: "auto",
+            color: lightTheme.textMuted,
+            "&:hover": {
+              backgroundColor: alpha(lightTheme.error, 0.1),
+              color: lightTheme.error,
+            },
+          }}
+        >
+          <Close />
+        </IconButton>
+      </DialogTitle>
+
+      <Divider sx={{ borderColor: alpha(lightTheme.border, 0.5) }} />
+
+      <DialogContent sx={{ p: 3 }}>
+        <TextField
+          fullWidth
+          multiline
+          rows={4}
+          placeholder="Enter your comment here... (minimum 10 characters, maximum 200 characters)"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          disabled={isLoading}
+          error={!!error}
+          helperText={
+            error || (
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}
+              >
+                <span>
+                  {comment.trim().length < 10
+                    ? `${10 - comment.trim().length} more characters needed`
+                    : "✓ Minimum length met"}
+                </span>
+                <span
+                  style={{
+                    color:
+                      comment.length > 200
+                        ? lightTheme.error
+                        : lightTheme.textMuted,
+                  }}
+                >
+                  {comment.length}/200
+                </span>
+              </Box>
+            )
+          }
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "12px",
+              backgroundColor: lightTheme.background,
+              border: `2px solid ${lightTheme.border}`,
+              transition: "all 0.3s ease",
+              "&:hover": {
+                borderColor: alpha(lightTheme.primary, 0.4),
+              },
+              "&.Mui-focused": {
+                borderColor: lightTheme.primary,
+                boxShadow: `0 0 0 4px ${alpha(lightTheme.primary, 0.1)}`,
+              },
+              "&.Mui-error": {
+                borderColor: lightTheme.error,
+                boxShadow: `0 0 0 4px ${alpha(lightTheme.error, 0.1)}`,
+              },
+            },
+            "& .MuiInputBase-input": {
+              fontSize: "1rem",
+              lineHeight: 1.6,
+              "&::placeholder": {
+                color: lightTheme.textMuted,
+                opacity: 1,
+              },
+            },
+            "& .MuiFormHelperText-root": {
+              mx: 0,
+              mt: 1,
+              fontSize: "0.875rem",
+              "&.Mui-error": {
+                color: lightTheme.error,
+              },
+            },
+          }}
+        />
+      </DialogContent>
+
+      <DialogActions sx={{ p: 3, pt: 0 }}>
+        <Button
+          onClick={handleClose}
+          disabled={isLoading}
+          variant="outlined"
+          sx={{
+            borderRadius: "12px",
+            px: 3,
+            py: 1.5,
+            borderColor: lightTheme.border,
+            color: lightTheme.textSecondary,
+            fontWeight: 600,
+            textTransform: "none",
+            "&:hover": {
+              borderColor: lightTheme.textSecondary,
+              backgroundColor: alpha(lightTheme.textSecondary, 0.05),
+            },
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          disabled={
+            isLoading || comment.trim().length < 10 || comment.length > 200
+          }
+          variant="contained"
+          startIcon={isLoading ? undefined : <Send />}
+          sx={{
+            borderRadius: "12px",
+            px: 3,
+            py: 1.5,
+            background: `linear-gradient(135deg, ${
+              lightTheme.primary
+            } 0%, ${alpha(lightTheme.primary, 0.8)} 100%)`,
+            color: "#ffffff",
+            fontWeight: 700,
+            textTransform: "none",
+            boxShadow: `0 4px 16px ${alpha(lightTheme.primary, 0.4)}`,
+            "&:hover": {
+              background: `linear-gradient(135deg, ${alpha(
+                lightTheme.primary,
+                0.9
+              )} 0%, ${lightTheme.primary} 100%)`,
+              boxShadow: `0 6px 20px ${alpha(lightTheme.primary, 0.5)}`,
+              transform: "translateY(-1px)",
+            },
+            "&:disabled": {
+              background: lightTheme.textMuted,
+              color: lightTheme.background,
+              transform: "none",
+              boxShadow: "none",
+            },
+          }}
+        >
+          {isLoading ? "Saving..." : submitLabel}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// Comment Display Component
+interface CommentDisplayProps {
+  comment: ResumeComment;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+const CommentDisplay = ({ comment, onEdit, onDelete }: CommentDisplayProps) => {
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  return (
+    <Card
+      sx={{
+        mt: 2,
+        background: `linear-gradient(135deg, ${alpha(
+          lightTheme.primary,
+          0.03
+        )} 0%, ${alpha(lightTheme.primary, 0.08)} 100%)`,
+        border: `1px solid ${alpha(lightTheme.primary, 0.2)}`,
+        borderRadius: "12px",
+        transition: "all 0.3s ease",
+        "&:hover": {
+          boxShadow: `0 4px 12px ${alpha(lightTheme.primary, 0.15)}`,
+        },
+      }}
+    >
+      <CardContent sx={{ p: 2.5 }}>
+        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 36,
+              height: 36,
+              borderRadius: "10px",
+              background: `linear-gradient(135deg, ${
+                lightTheme.primary
+              } 0%, ${alpha(lightTheme.primary, 0.8)} 100%)`,
+              boxShadow: `0 4px 12px ${alpha(lightTheme.primary, 0.3)}`,
+              flexShrink: 0,
+            }}
+          >
+            <Person sx={{ fontSize: "1.125rem", color: "#ffffff" }} />
+          </Box>
+
+          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  color: lightTheme.text,
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                }}
+              >
+                {comment.hrName || "HR Team"}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: lightTheme.textMuted,
+                  fontSize: "0.75rem",
+                }}
+              >
+                •
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: lightTheme.textMuted,
+                  fontSize: "0.75rem",
+                }}
+              >
+                {formatDate(comment.updatedAt || comment.createdAt)}
+              </Typography>
+            </Box>
+
+            <Typography
+              variant="body2"
+              sx={{
+                color: lightTheme.textSecondary,
+                fontSize: "0.875rem",
+                lineHeight: 1.6,
+                wordBreak: "break-word",
+              }}
+            >
+              {comment.comment}
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
+            <IconButton
+              size="small"
+              onClick={onEdit}
+              sx={{
+                color: lightTheme.textMuted,
+                backgroundColor: alpha(lightTheme.primary, 0.05),
+                borderRadius: "8px",
+                width: 32,
+                height: 32,
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  backgroundColor: alpha(lightTheme.primary, 0.1),
+                  color: lightTheme.primary,
+                  transform: "translateY(-1px)",
+                },
+              }}
+            >
+              <Edit sx={{ fontSize: "0.875rem" }} />
+            </IconButton>
+
+            <IconButton
+              size="small"
+              onClick={onDelete}
+              sx={{
+                color: lightTheme.textMuted,
+                backgroundColor: alpha(lightTheme.error, 0.05),
+                borderRadius: "8px",
+                width: 32,
+                height: 32,
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  backgroundColor: alpha(lightTheme.error, 0.1),
+                  color: lightTheme.error,
+                  transform: "translateY(-1px)",
+                },
+              }}
+            >
+              <Delete sx={{ fontSize: "0.875rem" }} />
+            </IconButton>
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
 // Enhanced Statistics Card Component - Simplified for essential metrics only
 interface StatsCardProps {
   title: string;
@@ -484,6 +1151,9 @@ interface FileCardProps {
   onDownload: (resume: Resume) => void;
   onDelete: (resume: Resume) => void;
   onResumeDeleted?: (resumeId: number) => void;
+  onCommentAdded?: (resumeId: number, comment: ResumeComment) => void;
+  onCommentUpdated?: (resumeId: number, comment: ResumeComment) => void;
+  onCommentDeleted?: (resumeId: number, commentId: number) => void;
 }
 
 const FileCard = ({
@@ -492,10 +1162,20 @@ const FileCard = ({
   onDownload,
   onDelete,
   onResumeDeleted,
+  onCommentAdded,
+  onCommentUpdated,
+  onCommentDeleted,
 }: FileCardProps) => {
   // Modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Comment state
+  const [showAddCommentDialog, setShowAddCommentDialog] = useState(false);
+  const [showEditCommentDialog, setShowEditCommentDialog] = useState(false);
+  const [showDeleteCommentModal, setShowDeleteCommentModal] = useState(false);
+  const [isCommentLoading, setIsCommentLoading] = useState(false);
+  const [isDeletingComment, setIsDeletingComment] = useState(false);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 B";
@@ -570,6 +1250,76 @@ const FileCard = ({
       alert(`Failed to delete resume: ${errorMessage}`);
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  // Add or Edit Comment
+  const handleAddOrEditComment = async (comment: string) => {
+    try {
+      setIsCommentLoading(true);
+      const success = await addOrUpdateComment(resume.id, comment);
+
+      if (success) {
+        // Create the comment object locally since API doesn't return comment data
+        const newComment: ResumeComment = {
+          id: Date.now(), // Generate local ID
+          resumeId: resume.id,
+          comment: comment,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          hrName: "HR Team", // Default HR name
+        };
+
+        setShowAddCommentDialog(false);
+        setShowEditCommentDialog(false);
+
+        // Update local state and notify parent
+        if (onCommentAdded) onCommentAdded(resume.id, newComment);
+        if (onCommentUpdated) onCommentUpdated(resume.id, newComment);
+
+        console.log("Comment added/updated successfully:", newComment);
+      } else {
+        throw new Error("Comment operation failed");
+      }
+    } catch (error) {
+      console.error("Error adding/updating comment:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to add/update comment. Please try again.";
+      alert(errorMessage);
+    } finally {
+      setIsCommentLoading(false);
+    }
+  };
+
+  // Delete Comment
+  const handleDeleteComment = async () => {
+    try {
+      setIsDeletingComment(true);
+      const success = await deleteComment(resume.id);
+
+      if (success) {
+        setShowDeleteCommentModal(false);
+
+        // Notify parent component about comment deletion
+        if (onCommentDeleted && resume.comment) {
+          onCommentDeleted(resume.id, resume.comment.id);
+        }
+
+        console.log("Comment deleted successfully");
+      } else {
+        throw new Error("Comment deletion failed");
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to delete comment. Please try again.";
+      alert(errorMessage);
+    } finally {
+      setIsDeletingComment(false);
     }
   };
 
@@ -889,6 +1639,58 @@ const FileCard = ({
                 <Delete sx={{ fontSize: { xs: "1rem", sm: "1.125rem" } }} />
               </IconButton>
             </Stack>
+
+            {/* Comment Button */}
+            <Button
+              variant="outlined"
+              size="medium"
+              startIcon={
+                resume.comment ? (
+                  <Edit sx={{ fontSize: { xs: "1rem", sm: "1.125rem" } }} />
+                ) : (
+                  <Comment sx={{ fontSize: { xs: "1rem", sm: "1.125rem" } }} />
+                )
+              }
+              onClick={() =>
+                resume.comment
+                  ? setShowEditCommentDialog(true)
+                  : setShowAddCommentDialog(true)
+              }
+              sx={{
+                mt: { xs: 1.5, sm: 2 },
+                borderRadius: { xs: "10px", sm: "12px" },
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: { xs: "0.8125rem", sm: "0.875rem" },
+                py: { xs: 1, sm: 1.25 },
+                px: { xs: 1.5, sm: 2 },
+                minHeight: { xs: "36px", sm: "40px" },
+                borderColor: alpha(lightTheme.warning, 0.3),
+                color: lightTheme.warning,
+                backgroundColor: alpha(lightTheme.warning, 0.03),
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  backgroundColor: alpha(lightTheme.warning, 0.08),
+                  borderColor: lightTheme.warning,
+                  transform: "translateY(-1px)",
+                  boxShadow: `0 4px 12px ${alpha(lightTheme.warning, 0.2)}`,
+                },
+                "& .MuiButton-startIcon": {
+                  mr: { xs: 0.5, sm: 1 },
+                },
+              }}
+            >
+              {resume.comment ? "Edit Comment" : "Add Comment"}
+            </Button>
+
+            {/* Comment Display */}
+            {resume.comment && (
+              <CommentDisplay
+                comment={resume.comment}
+                onEdit={() => setShowEditCommentDialog(true)}
+                onDelete={() => setShowDeleteCommentModal(true)}
+              />
+            )}
           </Box>
         </CardContent>
       </Card>
@@ -901,6 +1703,37 @@ const FileCard = ({
         filename={resume.original_filename || resume.filename}
         isDeleting={isDeleting}
       />
+
+      {/* Add Comment Dialog */}
+      <CommentDialog
+        open={showAddCommentDialog}
+        onClose={() => setShowAddCommentDialog(false)}
+        onSubmit={handleAddOrEditComment}
+        isLoading={isCommentLoading}
+        title="Add HR Comment"
+        submitLabel="Add Comment"
+      />
+
+      {/* Edit Comment Dialog */}
+      <CommentDialog
+        open={showEditCommentDialog}
+        onClose={() => setShowEditCommentDialog(false)}
+        onSubmit={handleAddOrEditComment}
+        isLoading={isCommentLoading}
+        title="Edit HR Comment"
+        initialComment={resume.comment?.comment || ""}
+        submitLabel="Update Comment"
+      />
+
+      {/* Delete Comment Confirmation Modal */}
+      <DeleteCommentModal
+        open={showDeleteCommentModal}
+        onClose={() => setShowDeleteCommentModal(false)}
+        onConfirm={handleDeleteComment}
+        filename={resume.original_filename || resume.filename}
+        commentText={resume.comment?.comment || ""}
+        isDeleting={isDeletingComment}
+      />
     </>
   );
 };
@@ -912,6 +1745,8 @@ interface ResumeCollectionProps {
   onDownload?: (resume: Resume) => void;
   onDelete?: (resume: Resume) => void;
   onResumeDeleted?: (resumeId: number) => void;
+  onResumeUpdated?: (resumeId: number, updatedResume: Resume) => void;
+  onRefreshResumes?: () => Promise<void>; // Add refresh function prop
   isLoading?: boolean;
 }
 
@@ -921,6 +1756,8 @@ const ResumeCollection = ({
   onDownload = () => {},
   onDelete = () => {},
   onResumeDeleted = () => {},
+  onResumeUpdated = () => {},
+  onRefreshResumes,
   isLoading = false,
 }: ResumeCollectionProps) => {
   // State
@@ -928,6 +1765,117 @@ const ResumeCollection = ({
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Local state for managing resume updates (for comment changes)
+  const [localResumes, setLocalResumes] = useState<Resume[]>(resumes);
+
+  // Update local resumes when prop changes
+  React.useEffect(() => {
+    setLocalResumes(resumes);
+  }, [resumes]);
+
+  // Comment handling functions
+  const handleCommentAdded = async (
+    resumeId: number,
+    comment: ResumeComment
+  ) => {
+    console.log("Adding comment to resume:", resumeId, comment);
+
+    // Update local state immediately for optimistic UI
+    setLocalResumes((prev) => {
+      const updated = prev.map((resume) =>
+        resume.id === resumeId ? { ...resume, comment } : resume
+      );
+      console.log("Updated local resumes:", updated);
+      return updated;
+    });
+
+    // Notify parent component
+    const updatedResume = localResumes.find((r) => r.id === resumeId);
+    if (updatedResume) {
+      onResumeUpdated(resumeId, { ...updatedResume, comment });
+    }
+
+    // Refresh resumes from API to get the latest data
+    if (onRefreshResumes) {
+      try {
+        await onRefreshResumes();
+        console.log("✅ Resumes refreshed after adding comment");
+      } catch (error) {
+        console.error(
+          "❌ Failed to refresh resumes after adding comment:",
+          error
+        );
+      }
+    }
+  };
+
+  const handleCommentUpdated = async (
+    resumeId: number,
+    comment: ResumeComment
+  ) => {
+    console.log("Updating comment for resume:", resumeId, comment);
+
+    // Update local state immediately for optimistic UI
+    setLocalResumes((prev) => {
+      const updated = prev.map((resume) =>
+        resume.id === resumeId ? { ...resume, comment } : resume
+      );
+      console.log("Updated local resumes:", updated);
+      return updated;
+    });
+
+    // Notify parent component
+    const updatedResume = localResumes.find((r) => r.id === resumeId);
+    if (updatedResume) {
+      onResumeUpdated(resumeId, { ...updatedResume, comment });
+    }
+
+    // Refresh resumes from API to get the latest data
+    if (onRefreshResumes) {
+      try {
+        await onRefreshResumes();
+        console.log("✅ Resumes refreshed after updating comment");
+      } catch (error) {
+        console.error(
+          "❌ Failed to refresh resumes after updating comment:",
+          error
+        );
+      }
+    }
+  };
+
+  const handleCommentDeleted = async (resumeId: number, commentId: number) => {
+    console.log("Deleting comment from resume:", resumeId, commentId);
+
+    // Update local state immediately for optimistic UI
+    setLocalResumes((prev) => {
+      const updated = prev.map((resume) =>
+        resume.id === resumeId ? { ...resume, comment: undefined } : resume
+      );
+      console.log("Updated local resumes:", updated);
+      return updated;
+    });
+
+    // Notify parent component
+    const updatedResume = localResumes.find((r) => r.id === resumeId);
+    if (updatedResume) {
+      onResumeUpdated(resumeId, { ...updatedResume, comment: undefined });
+    }
+
+    // Refresh resumes from API to get the latest data
+    if (onRefreshResumes) {
+      try {
+        await onRefreshResumes();
+        console.log("✅ Resumes refreshed after deleting comment");
+      } catch (error) {
+        console.error(
+          "❌ Failed to refresh resumes after deleting comment:",
+          error
+        );
+      }
+    }
+  };
 
   // Fetch groups using the useGroups hook
   const {
@@ -944,7 +1892,7 @@ const ResumeCollection = ({
 
     // Create stats for ALL groups from API, not just ones with resumes
     const groupStatsArray = groups.map((group) => {
-      const resumeCount = resumes.filter((resume) => {
+      const resumeCount = localResumes.filter((resume) => {
         if (!resume.group) return false;
         return (
           resume.group.toLowerCase().trim() === group.name.toLowerCase().trim()
@@ -975,11 +1923,11 @@ const ResumeCollection = ({
       // Finally, sort alphabetically
       return a.group.localeCompare(b.group);
     });
-  }, [groups, resumes]);
+  }, [groups, localResumes]);
 
   // Filtered resumes - now considers both search and group filter
   const filteredResumes = useMemo(() => {
-    let filtered = resumes;
+    let filtered = localResumes;
 
     // Filter by selected group first
     if (selectedGroup) {
@@ -1000,7 +1948,7 @@ const ResumeCollection = ({
     }
 
     return filtered;
-  }, [resumes, searchQuery, selectedGroup]);
+  }, [localResumes, searchQuery, selectedGroup]);
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredResumes.length / itemsPerPage);
@@ -1015,14 +1963,14 @@ const ResumeCollection = ({
 
   // Enhanced Statistics - Only 2 essential metrics to avoid clutter
   const stats = useMemo(() => {
-    const totalFiles = resumes.length;
+    const totalFiles = localResumes.length;
     const totalGroups = groups.length;
 
     return {
       totalFiles,
       totalGroups,
     };
-  }, [resumes, groups]);
+  }, [localResumes, groups]);
 
   // Handle group selection
   const handleGroupSelect = (group: string, hasResumes: boolean) => {
@@ -2027,6 +2975,9 @@ const ResumeCollection = ({
                   onDownload={onDownload}
                   onDelete={onDelete}
                   onResumeDeleted={handleResumeDeleted}
+                  onCommentAdded={handleCommentAdded}
+                  onCommentUpdated={handleCommentUpdated}
+                  onCommentDeleted={handleCommentDeleted}
                 />
               ))}
             </Box>

@@ -135,18 +135,34 @@ class ApiService {
       const resumesArray = Array.isArray(response) ? response : [];
 
       // Transform backend data to match frontend Resume interface
-      const transformedResumes: Resume[] = resumesArray.map((resume: any) => ({
-        id: resume.id || 0,
-        filename: resume.original_filename || "Unknown file",
-        original_filename: resume.original_filename || undefined,
-        stored_filename: resume.stored_filename || undefined,
-        filepath: resume.filepath || resume.stored_filename || "",
-        fileSize: this.estimateFileSize(resume.original_filename || ""), // Estimate since not provided
-        fileType: this.extractFileType(resume.original_filename || ""),
-        uploadedAt: resume.upload_time || new Date().toISOString(),
-        status: "completed" as const, // Default to completed since no status field
-        group: resume.group || undefined, // Include group field from API response
-      }));
+      const transformedResumes: Resume[] = resumesArray.map((resume: any) => {
+        // Build comment object if comment exists
+        let commentObj = undefined;
+        if (resume.comment && resume.commented_at) {
+          commentObj = {
+            id: resume.id, // Use resume id as comment id (or change if backend provides separate comment id)
+            resumeId: resume.id,
+            comment: resume.comment,
+            createdAt: resume.commented_at,
+            updatedAt: resume.commented_at,
+            hrName: resume.hr_name || "HR Team",
+          };
+        }
+
+        return {
+          id: resume.id || 0,
+          filename: resume.original_filename || "Unknown file",
+          original_filename: resume.original_filename || undefined,
+          stored_filename: resume.stored_filename || undefined,
+          filepath: resume.filepath || resume.stored_filename || "",
+          fileSize: this.estimateFileSize(resume.original_filename || ""), // Estimate since not provided
+          fileType: this.extractFileType(resume.original_filename || ""),
+          uploadedAt: resume.upload_time || new Date().toISOString(),
+          status: "completed" as const, // Default to completed since no status field
+          group: resume.group || undefined, // Include group field from API response
+          comment: commentObj, // Attach the comment object here
+        };
+      });
 
       console.log(
         `✅ Successfully transformed ${transformedResumes.length} resumes`
@@ -478,8 +494,80 @@ class ApiService {
       throw error;
     }
   }
+
+  /**
+   * Add or update a comment for a CV
+   * POST /api/cv/{cvId}/comment
+   */
+  async addOrUpdateComment(cvId: number, comment: string): Promise<boolean> {
+    const url = `${this.baseURL}/cv/${cvId}/comment`;
+    console.log(
+      `💬 API Service: Adding/updating comment for CV ${cvId} at: ${url}`
+    );
+    console.log(`📝 Comment content:`, comment);
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ comment }),
+      });
+
+      console.log(`📡 Comment API Status:`, response.status);
+
+      if (response.status === 200) {
+        console.log(`✅ Comment operation successful`);
+        return true;
+      } else {
+        console.error(
+          `❌ Comment operation failed with status:`,
+          response.status
+        );
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("❌ Error adding/updating comment:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a comment for a CV
+   * DELETE /api/cv/{cvId}/comment
+   */
+  async deleteComment(cvId: number): Promise<boolean> {
+    const url = `${this.baseURL}/cv/${cvId}/comment`;
+    console.log(`🗑️ API Service: Deleting comment for CV ${cvId} at: ${url}`);
+
+    try {
+      const response = await fetch(url, {
+        method: "DELETE",
+      });
+
+      console.log(`📡 Delete Comment API Status:`, response.status);
+
+      if (response.status === 200) {
+        console.log(`✅ Comment deleted successfully`);
+        return true;
+      } else {
+        console.error(
+          `❌ Comment deletion failed with status:`,
+          response.status
+        );
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("❌ Error deleting comment:", error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance
 export const apiService = new ApiService();
 export default apiService;
+
+// Export comment API functions for use in components
+export const addOrUpdateComment =
+  apiService.addOrUpdateComment.bind(apiService);
+export const deleteComment = apiService.deleteComment.bind(apiService);

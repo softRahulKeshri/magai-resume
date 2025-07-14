@@ -300,6 +300,7 @@ const App = () => {
                 <ResumeCollection
                   resumes={resumes}
                   isLoading={loading}
+                  onRefreshResumes={fetchResumes}
                   onView={(resume: Resume) => {
                     try {
                       // Use original filename for API calls
