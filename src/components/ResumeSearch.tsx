@@ -35,6 +35,8 @@ import {
   Description,
   Download,
   Visibility,
+  Comment,
+  AccessTime,
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 
@@ -486,29 +488,7 @@ const ResultCard = styled(Card)(({ theme }) => ({
   boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)",
   transition: "all 0.3s ease",
   overflow: "visible",
-  "&:hover": {
-    transform: "translateY(-4px)",
-    boxShadow: "0 12px 48px rgba(0, 0, 0, 0.12)",
-    borderColor: AppColors.primary.main,
-    "&::before": {
-      opacity: 1,
-      transform: "scaleX(1)",
-    },
-  },
-  "&::before": {
-    content: '""',
-    position: "absolute",
-    top: -1,
-    left: 0,
-    right: 0,
-    height: "3px",
-    background: "linear-gradient(90deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%)",
-    borderRadius: "8px 8px 0 0",
-    opacity: 0,
-    transform: "scaleX(0.6)",
-    transition: "all 0.3s ease",
-    transformOrigin: "center",
-  },
+  // Removed hover border and shadow for a cleaner, less clickable look
 }));
 
 const StyledAlert = styled(Alert)(({ theme }) => ({
@@ -536,6 +516,8 @@ interface CandidateDetail {
   details: string;
   file_name: string;
   score_card: ScoreCard;
+  comment?: string | null;
+  commented_at?: string | null;
 }
 
 interface ScoreCard {
@@ -575,13 +557,12 @@ interface CandidateResult {
   averageScore?: number;
   details?: string;
   group?: string;
+  // Comment fields
+  comment?: string | null;
+  commentedAt?: string | null;
 }
 
-// Add new interface for JD upload response
-interface JDUploadResponse {
-  candidate_details: CandidateDetail[];
-  summary: string;
-}
+// Note: JDUploadResponse interface removed as it's not being used
 
 // Props interface
 interface ResumeSearchProps {
@@ -718,6 +699,22 @@ const getDisplayFilename = (originalFilename: string): string => {
   if (!originalFilename) return "Unknown file";
   const cleaned = originalFilename.replace(/^[a-zA-Z0-9]+_[a-zA-Z0-9]+_/, "");
   return cleaned.length < 5 ? originalFilename : cleaned;
+};
+
+// Helper function to format comment date
+const formatCommentDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch (error) {
+    return "Invalid date";
+  }
 };
 
 const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
@@ -1249,6 +1246,9 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                 .filter((item) => item.trim())
                 .map((item) => item.trim().replace(/^,\s*/, "")),
               group: matchingChunk?.group,
+              // Include comment fields
+              comment: detail.comment || null,
+              commentedAt: detail.commented_at || null,
             };
           }
         );
@@ -1364,6 +1364,9 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                 .map((line) => line.trim().replace(/^[-•]\s*/, ""))
                 .filter((line) => line.length > 0),
               rawText: detail.details,
+              // Include comment fields
+              comment: detail.comment || null,
+              commentedAt: detail.commented_at || null,
             };
           }
         );
@@ -2216,6 +2219,9 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                     top: 20,
                                     right: 20,
                                     textAlign: "center",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 2,
                                   }}
                                 >
                                   {/* Score Label */}
@@ -2824,6 +2830,111 @@ const ResumeSearch = ({ onSearchResults }: ResumeSearchProps) => {
                                     </>
                                   )}
                                 </Box>
+
+                                {/* Comment Section */}
+                                {candidate.comment && (
+                                  <Box sx={{ mb: 3 }}>
+                                    <Typography
+                                      variant="h6"
+                                      sx={{
+                                        color: AppColors.text.primary,
+                                        fontWeight: 700,
+                                        mb: 2,
+                                        fontSize: "1.1rem",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1.2,
+                                      }}
+                                    >
+                                      <Comment
+                                        sx={{
+                                          fontSize: "1.1rem",
+                                          color: AppColors.secondary.main,
+                                        }}
+                                      />
+                                      Recruiter Comment
+                                    </Typography>
+                                    <Paper
+                                      elevation={0}
+                                      sx={{
+                                        backgroundColor: "#FFF8E1",
+                                        borderRadius: 2,
+                                        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                                        display: "flex",
+                                        alignItems: "flex-start",
+                                        gap: 2,
+                                        p: 2.5,
+                                        mb: 1,
+                                      }}
+                                    >
+                                      <Box
+                                        sx={{
+                                          width: 36,
+                                          height: 36,
+                                          borderRadius: "50%",
+                                          backgroundColor:
+                                            AppColors.secondary.main,
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          mt: 0.5,
+                                          flexShrink: 0,
+                                        }}
+                                      >
+                                        <Comment
+                                          sx={{
+                                            color: "#fff",
+                                            fontSize: "1.3rem",
+                                          }}
+                                        />
+                                      </Box>
+                                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                                        <Typography
+                                          variant="body1"
+                                          sx={{
+                                            color: AppColors.text.primary,
+                                            fontSize: "1.05rem",
+                                            fontWeight: 600,
+                                            fontStyle: "normal",
+                                            mb: 0.5,
+                                            wordBreak: "break-word",
+                                          }}
+                                        >
+                                          {candidate.comment}
+                                        </Typography>
+                                        {candidate.commentedAt && (
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              gap: 1,
+                                              mt: 0.5,
+                                            }}
+                                          >
+                                            <AccessTime
+                                              sx={{
+                                                fontSize: "1rem",
+                                                color: AppColors.text.secondary,
+                                              }}
+                                            />
+                                            <Typography
+                                              variant="caption"
+                                              sx={{
+                                                color: AppColors.text.secondary,
+                                                fontSize: "0.8rem",
+                                                fontWeight: 400,
+                                              }}
+                                            >
+                                              {formatCommentDate(
+                                                candidate.commentedAt
+                                              )}
+                                            </Typography>
+                                          </Box>
+                                        )}
+                                      </Box>
+                                    </Paper>
+                                  </Box>
+                                )}
 
                                 {/* Premium Action Buttons */}
                                 <Box
