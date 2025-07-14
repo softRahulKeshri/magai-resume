@@ -92,7 +92,7 @@ export const TYPOGRAPHY = {
 export const API_CONFIG = {
   baseURL:
     process.env.REACT_APP_API_URL ||
-    "http://ec2-13-232-75-51.ap-south-1.compute.amazonaws.com/api",
+    "http://localhost:5001/api",
   timeout: 300000,
   retryAttempts: 3,
   retryDelay: 1000,
@@ -103,7 +103,7 @@ if (process.env.NODE_ENV === "development") {
   console.log("API Configuration:", {
     baseURL: API_CONFIG.baseURL,
     envVariable: process.env.REACT_APP_API_URL,
-    defaultURL: "http://ec2-13-232-75-51.ap-south-1.compute.amazonaws.com/api",
+    defaultURL: "http://localhost:5001/api",
     fullUploadURL: `${API_CONFIG.baseURL}/upload_cv`,
   });
 }

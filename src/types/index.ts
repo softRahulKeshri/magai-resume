@@ -16,6 +16,31 @@ export interface Resume {
   uploadedAt: string;
   status: "uploaded" | "processing" | "completed" | "failed";
   group?: string; // Group/category the resume belongs to
+  comment?: ResumeComment; // HR comment on the resume
+}
+
+// Comment-related types for HR functionality
+export interface ResumeComment {
+  id: number;
+  resumeId: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+  hrName?: string; // Optional HR person name
+}
+
+export interface CreateCommentRequest {
+  resumeId: number;
+  comment: string;
+}
+
+export interface UpdateCommentRequest {
+  commentId: number;
+  comment: string;
+}
+
+export interface CommentResponse extends ApiResponse {
+  data?: ResumeComment;
 }
 
 export interface UploadResult {
