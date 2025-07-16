@@ -110,8 +110,24 @@ export const useGroups = (): UseGroupsReturn => {
         if (!result.success) {
           // Rollback on failure
           setGroups(originalGroups);
-          setError(result.message || "Failed to delete group");
-          return false;
+
+          // Check if this is a linked CVs error - throw error for these so UI can handle them
+          const errorMessage = result.message || "Failed to delete group";
+          const isLinkedCVsError =
+            errorMessage.includes(
+              "Cannot delete group with CVs linked to it"
+            ) ||
+            errorMessage.includes("CVs linked") ||
+            errorMessage.includes("associated data") ||
+            errorMessage.includes("Group has associated CVs");
+
+          if (isLinkedCVsError) {
+            // Throw error for linked CVs so UI can catch and handle appropriately
+            throw new Error(errorMessage);
+          } else {
+            setError(errorMessage);
+            return false;
+          }
         }
 
         return true;
@@ -119,12 +135,24 @@ export const useGroups = (): UseGroupsReturn => {
         // Rollback on error
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete group";
-        setError(errorMessage);
-        console.error("Error deleting group:", err);
 
-        // Refresh groups to ensure consistency
-        await fetchGroups();
-        return false;
+        // Check if this is a linked CVs error - re-throw for UI handling
+        const isLinkedCVsError =
+          errorMessage.includes("Cannot delete group with CVs linked to it") ||
+          errorMessage.includes("CVs linked") ||
+          errorMessage.includes("associated data") ||
+          errorMessage.includes("Group has associated CVs");
+
+        if (isLinkedCVsError) {
+          // Re-throw linked CVs errors for UI to handle
+          throw err;
+        } else {
+          setError(errorMessage);
+          console.error("Error deleting group:", err);
+          // Refresh groups to ensure consistency
+          await fetchGroups();
+          return false;
+        }
       }
     },
     [groups, fetchGroups]

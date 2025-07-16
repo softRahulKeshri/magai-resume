@@ -342,6 +342,7 @@ const ResumeUploader = ({
           setSnackbarSeverity("success");
           setSnackbarOpen(true);
         } else {
+          // If deleteGroup returns false, it means the operation failed for a non-linked CVs reason
           setSnackbarMessage("Failed to delete group");
           setSnackbarSeverity("error");
           setSnackbarOpen(true);
@@ -355,12 +356,14 @@ const ResumeUploader = ({
         const isLinkedCVsError =
           errorMessage.includes("Cannot delete group with CVs linked to it") ||
           errorMessage.includes("CVs linked") ||
-          errorMessage.includes("associated data");
+          errorMessage.includes("associated data") ||
+          errorMessage.includes("Group has associated CVs");
 
         if (isLinkedCVsError) {
           // Hide delete confirmation modal and show informative modal
           setDeleteGroupDialog({ open: false, group: null });
           setCannotDeleteDialog({ open: true, group });
+          // Don't show snackbar for linked CVs error - the modal is sufficient
         } else {
           setSnackbarMessage("Failed to delete group. Please try again.");
           setSnackbarSeverity("error");
@@ -370,7 +373,7 @@ const ResumeUploader = ({
         setDeletingGroup(false);
       }
     },
-    [deleteGroup, selectedGroup, capitalizeGroupName, clearError]
+    [deleteGroup, selectedGroup, clearError]
   );
 
   const openDeleteDialog = useCallback((group: Group) => {
@@ -378,8 +381,10 @@ const ResumeUploader = ({
   }, []);
 
   const closeDeleteDialog = useCallback(() => {
-    setDeleteGroupDialog({ open: false, group: null });
-  }, []);
+    if (!deletingGroup) {
+      setDeleteGroupDialog({ open: false, group: null });
+    }
+  }, [deletingGroup]);
 
   const closeCannotDeleteDialog = useCallback(() => {
     setCannotDeleteDialog({ open: false, group: null });
@@ -1844,7 +1849,7 @@ const ResumeUploader = ({
         {/* Delete Group Confirmation Dialog */}
         <Dialog
           open={deleteGroupDialog.open}
-          onClose={deletingGroup ? undefined : closeDeleteDialog}
+          onClose={closeDeleteDialog}
           maxWidth="sm"
           fullWidth
           PaperProps={{
@@ -1881,10 +1886,11 @@ const ResumeUploader = ({
               Cancel
             </Button>
             <Button
-              onClick={() =>
-                deleteGroupDialog.group &&
-                handleDeleteGroup(deleteGroupDialog.group)
-              }
+              onClick={() => {
+                if (deleteGroupDialog.group) {
+                  handleDeleteGroup(deleteGroupDialog.group);
+                }
+              }}
               variant="contained"
               color="error"
               disabled={deletingGroup}
