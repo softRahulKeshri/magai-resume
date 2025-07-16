@@ -325,27 +325,58 @@ class ApiService {
 
       console.log(`📡 Create Group API Response:`, response);
 
-      // Handle response structure
-      const responseData = response.data || response;
+      // Handle different response structures
+      let responseGroupData: any = null;
 
-      if (
-        !responseData ||
-        typeof responseData !== "object" ||
-        !("id" in responseData)
-      ) {
-        throw new Error("Invalid response: Group not created");
+      // Check if response has a data property (wrapped response)
+      if (response && typeof response === "object" && "data" in response) {
+        responseGroupData = response.data;
+      }
+      // Check if response is the group data directly
+      else if (response && typeof response === "object") {
+        responseGroupData = response;
       }
 
-      const group = responseData as Group;
+      // Validate that we have group data with required fields
+      if (!responseGroupData || typeof responseGroupData !== "object") {
+        throw new Error("Invalid response: No group data received");
+      }
+
+      // Check for id field (could be named differently)
+      const groupId =
+        responseGroupData.id ||
+        responseGroupData.group_id ||
+        responseGroupData.groupId;
+      if (!groupId) {
+        console.warn("Group response missing ID field:", responseGroupData);
+        // Don't throw error, try to create a valid group object
+      }
 
       // Transform to ensure consistent Group interface
       const transformedGroup: Group = {
-        id: group.id,
-        name: group.name || groupData.name,
-        description: group.description || groupData.description || "",
+        id: groupId || Date.now(), // Fallback ID if not provided
+        name:
+          responseGroupData.name ||
+          responseGroupData.group_name ||
+          responseGroupData.groupName ||
+          groupData.name ||
+          "Untitled Group",
+        description:
+          responseGroupData.description ||
+          responseGroupData.group_description ||
+          responseGroupData.groupDescription ||
+          groupData.description ||
+          "",
         createdAt:
-          group.createdAt || group.created_at || new Date().toISOString(),
-        resumeCount: group.resumeCount || group.resume_count || 0,
+          responseGroupData.createdAt ||
+          responseGroupData.created_at ||
+          responseGroupData.createdAt ||
+          new Date().toISOString(),
+        resumeCount:
+          responseGroupData.resumeCount ||
+          responseGroupData.resume_count ||
+          responseGroupData.resumeCount ||
+          0,
       };
 
       console.log(`✅ Successfully created group:`, transformedGroup);
