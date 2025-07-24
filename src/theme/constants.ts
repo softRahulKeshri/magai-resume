@@ -92,7 +92,7 @@ export const TYPOGRAPHY = {
 export const API_CONFIG = {
   baseURL:
     process.env.REACT_APP_API_URL ||
-    "http://localhost:5001/api",
+    "http://ec2-13-232-75-51.ap-south-1.compute.amazonaws.com/api",
   timeout: 300000,
   retryAttempts: 3,
   retryDelay: 1000,
@@ -103,16 +103,16 @@ if (process.env.NODE_ENV === "development") {
   console.log("API Configuration:", {
     baseURL: API_CONFIG.baseURL,
     envVariable: process.env.REACT_APP_API_URL,
-    defaultURL: "http://localhost:5001/api",
+    defaultURL: "http://ec2-13-232-75-51.ap-south-1.compute.amazonaws.com/api",
     fullUploadURL: `${API_CONFIG.baseURL}/upload_cv`,
   });
 }
 
 // File Upload Configuration
 export const UPLOAD_CONFIG = {
-  maxFileSize: 10 * 1024 * 1024, // 10MB
+  maxFileSize: 200 * 1024 * 1024, // 200MB total limit
   allowedTypes: [
     "application/pdf", // PDF only as per UI requirements
   ],
-  maxFiles: 50,
+  maxFiles: 100,
 } as const;

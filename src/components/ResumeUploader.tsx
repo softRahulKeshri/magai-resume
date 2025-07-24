@@ -50,6 +50,7 @@ import { UploadResult, UploadProgress, Group, Resume } from "../types";
 import { UPLOAD_CONFIG, BRAND_COLORS, API_CONFIG } from "../theme/constants";
 import { useGroups } from "../hooks/useGroups";
 import { apiService } from "../services/api";
+import { formatFileLimit } from "../utils";
 
 // Props interface
 interface ResumeUploaderProps {
@@ -1119,9 +1120,28 @@ const ResumeUploader = ({
             ) : uploadStatus === "error" ? (
               "Please try again or check your files"
             ) : (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Upload sx={{ fontSize: "1rem", color: "#6D6F7A" }} />
-                Click to upload
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Upload sx={{ fontSize: "1rem", color: "#6D6F7A" }} />
+                  Click to upload
+                </Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "#82838D",
+                    fontSize: "0.8rem",
+                    opacity: 0.8,
+                  }}
+                >
+                  Up to {UPLOAD_CONFIG.maxFiles} files • 200MB total
+                </Typography>
               </Box>
             )}
           </Typography>
@@ -1159,17 +1179,20 @@ const ResumeUploader = ({
             <Box
               sx={{
                 display: "flex",
-                alignItems: "center",
-                gap: 2,
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "flex-start", sm: "center" },
+                gap: { xs: 2, sm: 2 },
                 width: "100%",
               }}
             >
+              {/* Supported formats section */}
               <Box
                 sx={{
                   display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
+                  flexDirection: { xs: "column", sm: "row" },
+                  alignItems: { xs: "flex-start", sm: "center" },
                   gap: 1,
+                  minWidth: { xs: "100%", sm: "auto" },
                 }}
               >
                 <Typography
@@ -1178,11 +1201,12 @@ const ResumeUploader = ({
                     color: "#2E3141",
                     fontWeight: 500,
                     fontSize: "0.95rem",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   Supported formats:
                 </Typography>
-                <Box sx={{ display: "flex", gap: 1 }}>
+                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                   <Chip
                     label="PDF"
                     size="small"
@@ -1209,27 +1233,87 @@ const ResumeUploader = ({
                   />
                 </Box>
               </Box>
+
+              {/* Divider - hidden on mobile */}
               <Box
                 sx={{
-                  width: "2px",
-                  height: "24px",
+                  width: { xs: "100%", sm: "2px" },
+                  height: { xs: "1px", sm: "24px" },
                   backgroundColor: "#BFD6FF",
-                  mx: 1,
+                  mx: { xs: 0, sm: 1 },
+                  my: { xs: 1, sm: 0 },
                 }}
               />
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+
+              {/* Maximum size section */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  alignItems: { xs: "flex-start", sm: "center" },
+                  gap: 1,
+                  minWidth: { xs: "100%", sm: "auto" },
+                }}
+              >
                 <Typography
                   component="span"
                   sx={{
                     color: "#2E3141",
                     fontWeight: 500,
                     fontSize: "0.95rem",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  Maximum size:
+                  Total size limit:
                 </Typography>
                 <Chip
-                  label="10MB per file"
+                  label="200MB total"
+                  size="small"
+                  sx={{
+                    backgroundColor: "#E3EDFF",
+                    color: "#3077F3",
+                    fontWeight: 600,
+                    fontSize: "0.85rem",
+                    height: "24px",
+                    borderRadius: "6px",
+                  }}
+                />
+              </Box>
+
+              {/* Divider - hidden on mobile */}
+              <Box
+                sx={{
+                  width: { xs: "100%", sm: "2px" },
+                  height: { xs: "1px", sm: "24px" },
+                  backgroundColor: "#BFD6FF",
+                  mx: { xs: 0, sm: 1 },
+                  my: { xs: 1, sm: 0 },
+                }}
+              />
+
+              {/* File limit section */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  alignItems: { xs: "flex-start", sm: "center" },
+                  gap: 1,
+                  minWidth: { xs: "100%", sm: "auto" },
+                }}
+              >
+                <Typography
+                  component="span"
+                  sx={{
+                    color: "#2E3141",
+                    fontWeight: 500,
+                    fontSize: "0.95rem",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  File limit:
+                </Typography>
+                <Chip
+                  label={`${UPLOAD_CONFIG.maxFiles} files max`}
                   size="small"
                   sx={{
                     backgroundColor: "#E3EDFF",
@@ -1289,7 +1373,7 @@ const ResumeUploader = ({
                     gap: 1,
                   }}
                 >
-                  Selected Files ({files.length})
+                  Selected Files ({formatFileLimit(files.length)})
                   {isUploading && (
                     <CircularProgress
                       size={16}
